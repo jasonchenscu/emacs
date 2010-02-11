@@ -1,0 +1,169 @@
+;; Object semantic.cache
+;; SEMANTICDB Tags save file
+(semanticdb-project-database "semantic.cache"
+  :file "semantic.cache"
+  :tables (list 
+   (semanticdb-table "frame-cmds.el"
+    :file "frame-cmds.el"
+    :pointmax 60412
+    :major-mode 'emacs-lisp-mode
+    :tokens '(("eval-when-compile" code nil [17734 17767]) ("frame-fns" include nil nil nil [17906 17926]) ("strings" include nil nil nil [18007 18031]) ("misc-fns" include nil nil nil [18071 18096]) ("eval-when-compile" code nil [18139 18186]) ("defgroup" code nil [18573 19932]) ("rename-frame-when-iconify-flag" variable nil t ((user-visible . t)) "*Non-nil means frames are renamed when iconified.
+The new name is the name of the current buffer." nil [19934 20120]) ("frame-config-register" variable nil 12 ((user-visible . t)) "*Character naming register for saving/restoring frame configuration." nil [20122 20318]) ("show-hide-show-function" variable nil (quote jump-to-frame-config-register) ((user-visible . t)) "*Function to show stuff that is hidden or iconified by `show-hide'.
+Candidates include `jump-to-frame-config-register' and `show-buffer-menu'." nil [20320 20701]) ("window-mgr-title-bar-pixel-height" variable nil (if (eq window-system (quote mac)) 22 27) ((user-visible . t)) "*Height of frame title bar provided by the window manager, in pixels.
+You might alternatively call this constant the title-bar \"width\" or
+\"thickness\".  There is no way for Emacs to determine this, so you
+must set it." nil [20703 21048]) ("enlarge-font-tries" variable nil 100 nil "Number of times to try to change font-size, when looking for a font.
+The font-size portion of a font name is incremented or decremented at
+most this many times, before giving up and raising an error." nil [21050 21328]) ("frame-parameters-to-exclude" variable nil (quote ((window-id) (buffer-list) (name) (title) (icon-name))) nil "Parameters to exclude in `set-all-frame-alist-parameters-from-frame'.
+An alist of the same form as that returned by `frame-parameters'.
+The cdr of each alist element is ignored.
+These frame parameters are not copied to the target alist." nil [21330 21726]) ("move-frame-wrap-within-display-flag" variable nil t ((user-visible . t)) "*Non-nil means wrap frame movements within the display.
+Commands `move-frame-up', `move-frame-down', `move-frame-left', and
+`move-frame-right' then move the frame back onto the display when it
+moves off of it.
+If nil, you can move the frame as far off the display as you like." nil [21728 22098]) ("available-screen-pixel-bounds" variable nil nil nil "Upper left and lower right of available screen space for tiling frames.
+Integer list: (x0 y0 x1 y1), where (x0, y0) is the upper left position
+and (x1, y1) is the lower right position.  Coordinates are in pixels,
+measured from the screen absolute origin, (0, 0), at the upper left.
+
+If this is nil, then the available space is calculated.  That should
+give good results in most cases." nil [22100 22852]) ("save-frame-config" function nil nil ((user-visible . t)) "Save current frame configuration.
+You can restore it with \\[jump-to-frame-config-register]." nil [22936 23523]) ("jump-to-frame-config-register" function nil nil ((user-visible . t)) "Restore frame configuration saved in `frame-config-register'." nil [23540 23705]) ("iconify-everything" function nil nil ((user-visible . t)) "Iconify all frames of session at once.
+Remembers frame configuration in register `C-l' (Control-L).
+To restore this frame configuration, use `\\[jump-to-register] C-l'." nil [23722 24226]) ("hide-everything" function nil nil ((user-visible . t)) "Hide all frames of session at once.
+Iconify minibuffer frame; make all others invisible.
+Remembers frame configuration in register `C-l' (Control-L).
+To restore this frame configuration, use `\\[jump-to-register] C-l'." nil [24243 25015]) ("show-hide" function nil nil ((user-visible . t)) "1 frame visible: `show-hide-show-function'; else: `hide-everything'." nil [25047 25261]) ("show-buffer-menu" function nil nil ((user-visible . t)) "Call `buffer-menu' after making all frames visible.
+Useful after using `hide-everything' because of a Windows bug that
+doesn't let you display frames that have been made visible after
+being made invisible." nil [25278 25940]) ("mouse-show-hide-mark-unmark" function nil ("event") ((user-visible . t)) "In minibuffer: `show-hide'.  In dired: mark/unmark; else: buffer menu." nil [25957 26404]) ("iconify/map-frame" function nil ("&optional" "iconify-all") ((user-visible . t)) "Iconify selected frame if now mapped.  Map it if now iconified.
+With non-nil prefix arg ICONIFY-ALL, iconify all visible frames." nil [26421 26774]) ("mouse-iconify/map-frame" function nil ("event") ((user-visible . t)) "Iconify frame clicked on, if now mapped.  Map it if now iconified." nil [26791 27074]) ("or" code nil [27077 27173]) ("delete-window" function nil ("&optional" "window") ((user-visible . t)) "Remove WINDOW from the display.  Default is `selected-window'.
+If WINDOW is the only one in its frame, then `delete-frame' too." nil [27282 27618]) ("delete-windows-for" function nil ("&optional" "buffer") ((user-visible . t)) "`delete-window' or prompt for buffer and delete its windows.
+With no prefix arg, delete the selected window.
+With a prefix arg, prompt for a buffer and delete all windows, on any
+  frame, that show that buffer." nil [27635 28033]) ("delete-windows-on" function nil ("buffer" "&optional" "frame") ((user-visible . t)) "Delete windows showing BUFFER.
+
+Optional second arg FRAME controls which frames are considered.
+  If nil or omitted, delete all windows showing BUFFER in any frame.
+  If t, delete only windows showing BUFFER in the selected frame.
+  If `visible', delete all windows showing BUFFER in any visible frame.
+  If a frame, delete only windows showing BUFFER in that frame.
+
+Interactively, FRAME depends on the prefix arg, as follows:
+  Without a prefix arg (prefix = nil), FRAME is nil (all frames).
+  With prefix arg >= 0, FRAME is t (this frame only).
+  With prefix arg < 0,  FRAME is `visible' (all visible frames)." nil [28271 29462]) ("read-buffer-for-delete-windows" function nil nil nil "Read buffer name for delete-windows commands.
+Only displayed buffers are completion candidates." nil [29464 30028]) ("frame-iconified-p" function nil ("frame") nil "Return non-nil if FRAME is `frame-live-p' and `frame-visible-p'." nil [30030 30199]) ("defalias" code nil [31388 31428]) ("remove-windows-on" function nil ("buffer") ((user-visible . t)) "Remove all windows showing BUFFER.  This calls `remove-window'
+on each window showing BUFFER." nil [31445 31903]) ("mouse-remove-window" function nil ("event") ((user-visible . t)) "Remove the window you click on.  (This calls `remove-window'.)
+This command must be bound to a mouse click." nil [31920 32172]) ("delete/iconify-window" function nil ("&optional" "window" "frame-p") ((user-visible . t)) "Delete or iconify WINDOW (default: `selected-window').
+If WINDOW is the only one in its frame (`one-window-p'), then optional
+arg FRAME-P determines the behavior regarding the frame, as follows:
+  If FRAME-P is nil, then the frame is deleted (with the window).
+  If FRAME-P is t, then the frame is iconified.
+  If FRAME-P is a symbol naming a function, the function is applied
+             to WINDOW as its only arg.
+             If the result is nil, then the frame is deleted.
+             If the result is non-nil, then the frame is iconified.
+  If FRAME-P is anything else, then behavior is as if FRAME-P were the
+             symbol `window-dedicated-p': the frame is iconified if
+             WINDOW is dedicated, otherwise the frame is deleted.
+
+Interactively, FRAME-P depends on the prefix arg, as follows:
+  Without a prefix arg (prefix = nil), FRAME-P is `window-dedicated-p'.
+  With prefix arg < 0, FRAME-P is t.  The frame is iconified.
+  With prefix arg >= 0, FRAME-P is nil.  The frame is deleted." nil [32189 34043]) ("delete/iconify-windows-on" function nil ("buffer" "&optional" "frame" "frame-p") ((user-visible . t)) "For each window showing BUFFER: delete it or iconify its frame.
+(This calls `delete/iconify-window' on each window showing BUFFER.)
+
+Optional second arg FRAME controls which frames are considered.
+  If nil or omitted, treat all windows showing BUFFER in any frame.
+  If t, treat only windows showing BUFFER in the selected frame.
+  If `visible', treat all windows showing BUFFER in any visible frame.
+  If a frame, treat only windows showing BUFFER in that frame.
+
+Optional third arg FRAME-P controls what to do with one-window frames.
+  If FRAME-P is nil, then one-window frames showing BUFFER are deleted.
+  If FRAME-P is t, then one-window frames are iconified.
+  If FRAME-P is a symbol naming a function, the function is applied
+             to each window showing buffer in a frame by itself.
+             If the result is nil, then the frame is deleted.
+             If the result is non-nil, then the frame is iconified.
+  If FRAME-P is anything else, then behavior is as if FRAME-P were the
+             symbol `window-dedicated-p': One-window frames are
+             iconified if window is dedicated, else they are deleted.
+
+Interactively, FRAME is nil, and FRAME-P depends on the prefix arg:
+  Without a prefix arg (prefix = nil), FRAME-P is `window-dedicated-p'.
+  With prefix arg < 0, FRAME-P is t.  The frame is iconified.
+  With prefix arg >= 0, FRAME-P is nil.  The frame is deleted." nil [34060 36174]) ("rename-frame" function nil ("&optional" "old-name" "new-name" "all-named") ((user-visible . t)) "Rename a frame named OLD-NAME to NEW-NAME.
+Prefix arg ALL-NAMED non-nil means rename all frames named FRAME to NEWNAME.
+
+OLD-NAME may be a frame, its name, or nil.  Default is `selected-frame'.
+
+NEW-NAME is a string or nil.  Default NEW-NAME is current `buffer-name'." nil [36191 37417]) ("rename-non-minibuffer-frame" function nil ("&optional" "old-name" "new-name" "all-named") ((user-visible . t)) "Unless OLD-NAME names the minibuffer frame, use `rename-frame'
+to rename a frame named OLD-NAME to NEW-NAME.
+
+Prefix arg ALL-NAMED non-nil => Rename all frames named FRAME to NEWNAME.
+OLD-NAME may be a frame, its name, or nil.  Default is `selected-frame'.
+NEW-NAME is a string or nil.  Default NEW-NAME is current `buffer-name'." nil [37434 38730]) ("show-frame" function nil ("frame") ((user-visible . t)) "Make FRAME visible and raise it, without selecting it.
+FRAME may be a frame or its name." nil [38747 39014]) ("hide-frame" function nil ("frame" "&optional" "prefix") ((user-visible . t)) "Make FRAME invisible.  Like `make-frame-invisible', but reads frame name.
+Non-nil PREFIX makes it invisible even if all other frames are invisible." nil [39031 39342]) ("show-a-frame-on" function nil ("buffer") ((user-visible . t)) "Make visible and raise a frame showing BUFFER, if there is one.
+Neither the frame nor the BUFFER are selected.
+BUFFER may be a buffer or its name (a string)." nil [39359 39981]) ("show-*Help*-buffer" function nil nil ((user-visible . t)) "Raise a frame showing buffer *Help*, without selecting it." nil [39998 40133]) ("delete-1-window-frames-on" function nil ("buffer") ((user-visible . t)) "Delete all visible 1-window frames showing BUFFER." nil [40150 40753]) ("delete-other-frames" function nil ("&optional" "frame") ((user-visible . t)) "Delete all frames except FRAME (default: selected frame).
+Interactively, use a prefix arg (`\\[universal-argument]') to be prompted for FRAME." nil [40770 41255]) ("tile-frames-horizontally" function nil ("&optional" "frames") ((user-visible . t)) "Tile frames horizontally.
+Interatively:
+  With prefix arg, you are prompted for names of two frames to tile.
+  With no prefix arg, all visible frames are tiled, except a
+       standalone minibuffer frame, if any.
+If called from a program, all frames in list FRAMES are tiled." nil [41272 41708]) ("tile-frames-vertically" function nil ("&optional" "frames") ((user-visible . t)) "Tile frames vertically.
+Interatively:
+  With prefix arg, you are prompted for names of two frames to tile.
+  With no prefix arg, all visible frames are tiled, except a
+       standalone minibuffer frame, if any.
+If called from a program, all frames in list FRAMES are tiled." nil [41725 42155]) ("tile-frames" function nil ("direction" "frames") nil "Tile visible frames horizontally or vertically, depending on DIRECTION.
+Arg DIRECTION is `horizontal' or `vertical'.
+Arg FRAMES is the list of frames to tile.  If nil, then tile all visible
+frames (except a standalone minibuffer frame, if any)." nil [42172 45020]) ("frame-extra-pixels-width" function nil ("frame") nil "Pixel difference between FRAME total width and its text area width." nil [45022 45215]) ("frame-extra-pixels-height" function nil ("frame") nil "Pixel difference between FRAME total height and its text area height." nil [45217 45416]) ("smart-tool-bar-pixel-height" function nil ("&optional" "frame") nil "Pixel height of Mac smart tool bar." nil [45418 45667]) ("read-args-for-tile-frames" function nil nil nil "Read arguments for `tile-frames'." nil [45669 47155]) ("available-screen-pixel-bounds" function nil nil nil "Returns a value of the same form as `available-screen-pixel-bounds'.
+This represents the currently available screen area." nil [47157 47574]) ("effective-screen-pixel-bounds" function nil nil nil "Upper left and lower right of available screen space for tiling frames.
+This is `available-screen-pixel-bounds', possibly adjusted to allow
+for the standalone minibuffer frame provided by `oneonone.el'." nil [47576 48135]) ("available-screen-pixel-width" function nil ("&optional" "include-mini-p") nil "Width of the usable screen, in pixels.
+Non-nil optional argument `include-mini-p' means include the space
+occupied by a standalone minibuffer, if any." nil [48137 48532]) ("available-screen-pixel-height" function nil ("&optional" "include-mini-p") nil "Height of the usable screen, in pixels.
+Non-nil optional argument `include-mini-p' means include the
+space occupied by a standalone minibuffer, if any." nil [48544 48943]) ("enlarge-frame" function nil ("&optional" "increment" "frame") ((user-visible . t)) "Increase the height of FRAME (default: selected-frame) by INCREMENT.
+INCREMENT is in lines (characters).
+Interactively, it is given by the prefix argument." nil [49047 49338]) ("enlarge-frame-horizontally" function nil ("&optional" "increment" "frame") ((user-visible . t)) "Increase the width of FRAME (default: selected-frame) by INCREMENT.
+INCREMENT is in columns (characters).
+Interactively, it is given by the prefix argument." nil [49355 49658]) ("shrink-frame" function nil ("&optional" "increment" "frame") ((user-visible . t)) "Decrease the height of FRAME (default: selected-frame) by INCREMENT.
+INCREMENT is in lines (characters).
+Interactively, it is given by the prefix argument." nil [49675 49965]) ("shrink-frame-horizontally" function nil ("&optional" "increment" "frame") ((user-visible . t)) "Decrease the width of FRAME (default: selected-frame) by INCREMENT.
+INCREMENT is in columns (characters).
+Interactively, it is given by the prefix argument." nil [49982 50284]) ("move-frame-down" function nil ("&optional" "increment" "frame") ((user-visible . t)) "Move FRAME (default: selected-frame) down by INCREMENT.
+INCREMENT is in units of ten pixels.
+Interactively, it is given by the prefix argument." nil [50301 50732]) ("move-frame-up" function nil ("&optional" "increment" "frame") ((user-visible . t)) "Move FRAME (default: selected-frame) up by INCREMENT.
+INCREMENT is in units of ten pixels.
+Interactively, it is given by the prefix argument." nil [50749 51085]) ("move-frame-right" function nil ("&optional" "increment" "frame") ((user-visible . t)) "Move FRAME (default: selected-frame) toward the right by INCREMENT.
+INCREMENT is in units of ten pixels.
+Interactively, it is given by the prefix argument." nil [51102 51548]) ("move-frame-left" function nil ("&optional" "increment" "frame") ((user-visible . t)) "Move FRAME (default: selected-frame) toward the left by INCREMENT.
+INCREMENT is in units of ten pixels.
+Interactively, it is given by the prefix argument." nil [51565 51917]) ("new-frame-position" function nil ("frame" "type" "incr") nil "Return the new TYPE position of FRAME, incremented by INCR.
+TYPE is `left' or `top'.
+INCR is the increment to use when changing the position." nil [51939 52741]) ("enlarge-font" function nil ("&optional" "increment" "frame") ((user-visible . t)) "Increase size of font in FRAME by INCREMENT.
+Interactively, INCREMENT is given by the prefix argument.
+Optional FRAME parameter defaults to current frame." nil [53380 54211]) ("enlarged-font-name" function nil ("fontname" "frame" "increment") nil "FONTNAME, after enlarging font size of FRAME by INCREMENT.
+FONTNAME is the font of FRAME." nil [54213 55155]) ("set-frame-alist-parameter-from-frame" function nil ("alist" "parameter" "&optional" "frame") ((user-visible . t)) "Set PARAMETER of frame alist ALIST to its current value in FRAME.
+FRAME defaults to the selected frame.  ALIST is a variable (symbol)
+whose value is an alist of frame parameters." nil [55172 56291]) ("unless" code nil [56353 56886]) ("set-all-frame-alist-parameters-from-frame" function nil ("alist" "&optional" "frame" "really-all-p") ((user-visible . t)) "Set frame parameters of ALIST to their current values in FRAME.
+Unless optional argument REALLY-ALL-P (prefix arg) is non-nil, the
+frame parameters in list `frame-parameters-to-exclude' are
+excluded: they are not copied from FRAME to ALIST.
+ALIST is a variable (symbol) whose value is an alist of frame parameters.
+FRAME defaults to the selected frame." nil [56903 58128]) ("frame-alist-var-names" function nil nil nil "Return an alist of all variable names that end in \"frame-alist\".
+The CAR of each list item is a string variable name.
+The CDR is nil." nil [58130 58566]) ("frame-parameter-names" function nil nil nil "Return an alist of all available frame-parameter names.
+The CAR of each list item is a string parameter name.
+The CDR is nil." nil [58568 59781]) ("tell-customize-var-has-changed" function nil ("variable") ((user-visible . t)) "Tell Customize to recognize that VARIABLE has been set (changed).
+VARIABLE is a symbol that names a user option." nil [59798 60067]) ("other-window-or-frame" function nil ("arg") ((user-visible . t)) "`other-frame', if `one-window-p'; otherwise, `other-window'." nil [60084 60263]) ("frame-cmds" package nil nil nil [60290 60311]))
+    :unmatched-syntax 'nil
+    )
+   )
+  )

@@ -1,0 +1,28 @@
+;; -*- mode: emacs-lisp; coding: emacs-mule; -*-
+;; --------------------------------------------------------------------------
+;; Desktop File for Emacs
+;; --------------------------------------------------------------------------
+;; Created Mon Jun 15 16:05:16 2009
+;; Desktop file format version 206
+;; Emacs version 23.0.0.1
+
+;; Global section:
+(setq desktop-missing-file-warning nil)
+(setq tags-file-name "~/myemacs/data/TAGS")
+(setq tags-table-list nil)
+(setq search-ring nil)
+(setq regexp-search-ring nil)
+(setq register-alist nil)
+
+;; Buffer section -- buffers listed in same order as in buffer list:
+(desktop-create-buffer 206
+  nil
+  "data"
+  'dired-mode
+  nil
+  209
+  '(nil nil)
+  t
+  '("c:/Jason/ntemacs/ntemacs23/myemacs/data/")
+  nil)
+

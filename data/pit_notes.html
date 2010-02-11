@@ -1,0 +1,401 @@
+<?xml version="1.0" encoding="gb18030"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+               "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+lang="en" xml:lang="en">
+<head>
+<title>PIT and mauits setup notes</title>
+<meta http-equiv="Content-Type" content="text/html;charset=gb18030"/>
+<meta name="generator" content="Org-mode"/>
+<meta name="generated" content="2009-09-10 15:55:33 "/>
+<meta name="author" content="Jason Chen"/>
+<meta name="description" content=""/>
+<meta name="keywords" content=""/>
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  html { font-family: Times, serif; font-size: 12pt; }
+  .title  { text-align: center; }
+  .todo   { color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #add8e6; font-weight:normal }
+  .target { }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  p.verse { margin-left: 3% }
+  pre {
+	border: 1pt solid #AEBDCC;
+	background-color: #F3F5F7;
+	padding: 5pt;
+	font-family: courier, monospace;
+        font-size: 90%;
+        overflow:auto;
+  }
+  table { border-collapse: collapse; }
+  td, th { vertical-align: top; }
+  dt { font-weight: bold; }
+  div.figure { padding: 0.5em; }
+  div.figure p { text-align: center; }
+  .linenr { font-size:smaller }
+  .code-highlighted {background-color:#ffff00;}
+  .org-info-js_info-navigation { border-style:none; }
+  #org-info-js_console-label { font-size:10px; font-weight:bold;
+                               white-space:nowrap; }
+  .org-info-js_search-highlight {background-color:#ffff00; color:#000000;
+                                 font-weight:bold; }
+  /*]]>*/-->
+</style><style type="text/css">
+  html { font-family: Times, serif; font-size: 13pt; }
+  .title  { text-align: center; }
+  .todo   { color: red; }
+  .done   { color: green; }
+  .tag    { background-color:lightblue; font-weight:normal }
+  .target { }
+  .timestamp { color: grey }
+  .timestamp-kwd { color: CadetBlue }
+  p.verse { margin-left: 3% }
+  pre {
+	border: 1pt solid #AEBDCC;
+	background-color: #F3F5F7;
+	padding: 5pt;
+	font-family: courier, monospace;
+        font-size: 90%;
+        overflow:auto;
+  }
+  table { border-collapse: collapse; }
+  td, th { vertical-align: top; }
+  dt { font-weight: bold; }
+</style>
+<script type="text/javascript">
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">PIT and mauits setup notes</h1>
+
+
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1 Preparation setup - by Yue: </a></li>
+<li><a href="#sec-2">2 Setup PIT environment on ESX server &ndash; no DHCP server deployment in public network </a></li>
+<li><a href="#sec-3">3 Start running PIT and mauits after settled down: </a></li>
+<li><a href="#sec-4">4 Set up large scale testbed for mgmt DB test </a></li>
+<li><a href="#sec-5">5 Troubleshooting </a>
+<ul>
+<li><a href="#sec-5.1">5.1 master node cannot boot from ISO </a></li>
+<li><a href="#sec-5.2">5.2 send mail fail &ndash; Need to check with IT </a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> Preparation setup - by Yue: </h2>
+<div class="outline-text-2" id="text-1">
+
+<ol>
+<li>
+Prepare pit config file or even pit extend config file. <br/>
+</li>
+<li>
+Created an account for PIT: pit:password<br/>
+</li>
+<li>
+Checked out the latest PIT script from <a href="https://tvg01/svn/mauitools/trunk/QA/pit">https://tvg01/svn/mauitools/trunk/QA/pit</a> to /home/pit/pit.jason<br/>
+</li>
+<li>
+Checked out the latest trunk mauits script from <a href="https://tvg01/svn/mauitools/trunk/QA/mauits">https://tvg01/svn/mauitools/trunk/QA/mauits</a> to /home/pit/mauits<br/>
+</li>
+<li>
+Following the instruction in mauits/README, checked out the latest TET ware to /home/pit/tet<sub>src</sub> and installed TET in /home/pit/tet<br/>
+</li>
+<li>
+Export TET<sub>ROOT</sub>=/home/pit/tet and update pit user’s .bashrc file.<br/>
+</li>
+<li>
+Configure PIT to use the mauits in /home/pit/mauits<br/>
+
+<p><br/>
+</p></li>
+</ol>
+</div>
+
+</div>
+
+<div id="outline-container-2" class="outline-2">
+<h2 id="sec-2"><span class="section-number-2">2</span> Setup PIT environment on ESX server &ndash; no DHCP server deployment in public network </h2>
+<div class="outline-text-2" id="text-2">
+
+<ol>
+<li>
+Prepare a VM (RHEL 5.0 VM node) which will be used as PIT bridge - with only one public NIC interface<br/>
+</li>
+<li>
+Covert this VM to template<br/>
+</li>
+<li>
+If deployed DHCP on public network, at this time just prepare ready for pit configuration file, than run PIT command to start auto-deployment<br/>
+</li>
+<li>
+If no DHCP deployed, deploy a bridge VM for target ESX server. <br/>
+<ul>
+<li>
+Add additionial internal NIC card based on the RMG number and pit configuration on the $PRIVATE<sub>SWITCH</sub>. <br/>
+</li>
+<li>
+Power on the bridge VM and configure a static public IP address for eth0<br/>
+</li>
+<li>
+Then start run PIT command.   <br/>
+
+<p><br/>
+</p></li>
+</ul>
+</li>
+</ol>
+</div>
+
+</div>
+
+<div id="outline-container-3" class="outline-2">
+<h2 id="sec-3"><span class="section-number-2">3</span> Start running PIT and mauits after settled down: </h2>
+<div class="outline-text-2" id="text-3">
+
+<ol>
+<li>
+Run pit<br/>
+<ul>
+<li>
+Go to pit src directory<br/>
+</li>
+<li>
+./runpit.sh -i DB-te<br/>
+</li>
+</ul>
+</li>
+</ol>
+
+<p>st -c ../pit.conf.jason -t -b atmos-mgmtdb-1.3.0.33865-x86<sub>64</sub>-disc1.iso<br/>
+</p><ol>
+<li>
+Run mauits<br/>
+<ul>
+<li>
+./runpit.sh -i DB-test -c ../pit.conf.jason -t &ndash;tasklist "testing"<br/>
+</li>
+</ul>
+</li>
+<li>
+Create snapshot<br/>
+<ul>
+<li>
+./createsnapshot.ksh 10.32.109.36 cheny7 password snapshot<sub>name</sub> ../hostlist-171.33<br/>
+</li>
+</ul>
+</li>
+<li>
+Revert snapshot<br/>
+<ul>
+<li>
+./revertsnapshot.ksh 10.32.109.36 cheny7 password snapshot<sub>name</sub> ../hostlist-171.33<br/>
+
+<p><br/>
+</p></li>
+</ul>
+</li>
+<li>
+Tip for skip precheck process<br/>
+
+<p><br/>
+</p>
+<p><br/>
+</p></li>
+</ol>
+
+<p>Verify result: see email which mauits has sent out.<br/>
+</p>
+<p><br/>
+</p></div>
+
+</div>
+
+<div id="outline-container-4" class="outline-2">
+<h2 id="sec-4"><span class="section-number-2">4</span> Set up large scale testbed for mgmt DB test </h2>
+<div class="outline-text-2" id="text-4">
+
+<ol>
+<li>
+ssh cheny7@10.32.109.95 password<br/>
+</li>
+<li>
+Go to pit directory<br/>
+</li>
+<li>
+Prepare configuration files<br/>
+</li>
+<li>
+Manually add bridge proxy which is created based on RHEL template. Configure eth0 public IP address and add internal network which is the same as RMG's eth0. We need to manual configure public IP since we don't have a DHCP server on public network.<br/>
+</li>
+<li>
+Install first two RMGs<br/>
+<ul>
+<li>
+./runpit.sh -i RMG1-RMG2 -c ../large-scale.jason/RMG1-169.5-RMG2-171.35 -t<br/>
+</li>
+</ul>
+</li>
+<li>
+Prepare new segment configuration file<br/>
+</li>
+<li>
+Add second segment in first RMG<br/>
+<ul>
+<li>
+./addis.sh -i RMG1-IS2 -c ../large-scale.jason/RMG2-IS1-169.6 -t<br/>
+</li>
+</ul>
+</li>
+<li>
+Prepare hostlist for create snapshot. hostlist contains all nodes hostname<br/>
+</li>
+<li>
+Create snapshot after add segment<br/>
+<ul>
+<li>
+./createsnapshot.ksh 10.32.109.36 cheny7 password RMG1-IS2-ready ../hostlist-RMG1-IS2<br/>
+</li>
+</ul>
+</li>
+<li>
+Repeat step 4,5,6,7 and continue installation until finished.<br/>
+
+<p><br/>
+</p></li>
+</ol>
+
+<p>If failed at some step during add segment, first revert to previous good shape snapshot, and then continue add more segments.<br/>
+</p><ul>
+<li>
+./revertsnapshot.ksh 10.32.109.36 cheny7 password RMG1-IS2-ready ../hostlist-RMG1-IS<br/>
+
+<p><br/>
+</p></li>
+</ul>
+</div>
+
+</div>
+
+<div id="outline-container-5" class="outline-2">
+<h2 id="sec-5"><span class="section-number-2">5</span> Troubleshooting </h2>
+<div class="outline-text-2" id="text-5">
+
+
+<p><br/>
+</p>
+</div>
+
+<div id="outline-container-5.1" class="outline-3">
+<h3 id="sec-5.1"><span class="section-number-3">5.1</span> master node cannot boot from ISO </h3>
+<div class="outline-text-3" id="text-5.1">
+
+<p>Currently PIT need to copy ISO image from remote nfs/ftp to local storage by using scp, sometimes scp copy image may fail with unknown reason(network?). <br/>
+To solve this issue, try with another iso image. Or first delete this image from local storage and reboot ESX server.<br/>
+</p>
+<p><br/>
+</p></div>
+
+</div>
+
+<div id="outline-container-5.2" class="outline-3">
+<h3 id="sec-5.2"><span class="section-number-3">5.2</span> <span class="done DONE"> DONE</span> send mail fail &ndash; Need to check with IT </h3>
+<div class="outline-text-3" id="text-5.2">
+
+<p><span class="timestamp-wrapper"><span class="timestamp-kwd">CLOSED: </span> <span class="timestamp">2009-06-22 Mon 15:50</span></span><br/><br/>
+Configure a meaningful host name and add to /etc/hosts. <br/>
+Configure DNS server and search suffix.<br/>
+Start sendmail service.<br/>
+Do nothing but all right after the weekend.<br/>
+</p>
+<p><br/>
+Testing command:<br/>
+/usr/sbin/sendmail -O NoRecipientAction=add-to -F PIT<sub>NoReply</sub>@emc.com chen<sub>jason</sub>@emc.com &lt;&lt;MAIL<br/>
+&lt; test<br/>
+&lt; MAIL<br/>
+</p>
+<p><br/>
+Jun 19 16:56:55 frost sendmail<sup><a class="footref" name="fnr.1" href="#fn.1">1</a></sup>: n5J8utX9004323: from=root, size=7, class=0, nrcpts=1, msgid=&lt;200906190856.n5J8utX9004323@frost.lss.emc.com&gt;, relay=root@localhost<br/>
+Jun 19 16:56:56 frost sendmail<sup><a class="footref" name="fnr.2" href="#fn.2">2</a></sup>: n5J8ut0b004324: from=&lt;root@frost.lss.emc.com&gt;, size=334, class=0, nrcpts=1, msgid=&lt;200906190856.n5J8utX9004323@frost.lss.emc.com&gt;, proto=ESMTP, daemon=MTA, relay=localhost.localdomain [127.0.0.1]<br/>
+Jun 19 16:56:56 frost sendmail<sup><a class="footref" name="fnr.1.2" href="#fn.1">1</a></sup>: n5J8utX9004323: to=chen<sub>jason</sub>@emc.com, ctladdr=root (0/0), delay=00:00:01, xdelay=00:00:01, mailer=relay, pri=30007, relay=[127.0.0.1] [127.0.0.1], dsn=2.0.0, stat=Sent (n5J8ut0b004324 Message accepted for delivery)<br/>
+Jun 19 16:56:58 frost sendmail<sup><a class="footref" name="fnr.3" href="#fn.3">3</a></sup>: n5J8ut0b004324: to=&lt;chen<sub>jason</sub>@emc.com&gt;, ctladdr=&lt;root@frost.lss.emc.com&gt; (0/0), delay=00:00:03, xdelay=00:00:02, mailer=esmtp, pri=120334, relay=mailhub.lss.emc.com. [10.254.3.30], dsn=2.0.0, stat=Sent (n5J92Lq6025236 Message accepted for delivery)<br/>
+</p>
+<p><br/>
+Jun 20 00:25:43 localhost sendmail<sup><a class="footref" name="fnr.4" href="#fn.4">4</a></sup>: n5JGPh1t005272: from=root, size=7, class=0, nrcpts=1, msgid=&lt;200906191625.n5JGPh1t005272@jason.lss.emc.com&gt;, relay=root@localhost<br/>
+Jun 20 00:25:43 localhost sendmail<sup><a class="footref" name="fnr.5" href="#fn.5">5</a></sup>: n5JGPheb005273: from=&lt;root@jason.lss.emc.com&gt;, size=334, class=0, nrcpts=1, msgid=&lt;200906191625.n5JGPh1t005272@jason.lss.emc.com&gt;, proto=ESMTP, daemon=MTA, relay=localhost.localdomain [127.0.0.1]<br/>
+Jun 20 00:25:43 localhost sendmail<sup><a class="footref" name="fnr.4.2" href="#fn.4">4</a></sup>: n5JGPh1t005272: to=chen<sub>jason</sub>@emc.com, ctladdr=root (0/0), delay=00:00:00, xdelay=00:00:00, mailer=relay, pri=30007, relay=[127.0.0.1] [127.0.0.1], dsn=2.0.0, stat=Sent (n5JGPheb005273 Message accepted for delivery)<br/>
+Jun 20 00:25:45 localhost sendmail<sup><a class="footref" name="fnr.6" href="#fn.6">6</a></sup>: n5JGPheb005273: to=&lt;chen<sub>jason</sub>@emc.com&gt;, delay=00:00:02, xdelay=00:00:02, mailer=esmtp, pri=120334, relay=mailhub.lss.emc.com. [10.254.3.30], dsn=2.0.0, stat=Sent (n5J8xnu6021224 Message accepted for delivery)<br/>
+</p>
+<p><br/>
+</p>
+<p><br/>
+</p>
+<p><br/>
+</p>
+<p><br/>
+</p>
+<p><br/>
+</p>
+<p><br/>
+</p>
+<p><br/>
+</p></div>
+</div>
+</div>
+<div id="footnotes">
+<h2 class="footnotes">Footnotes: </h2>
+<div id="text-footnotes">
+<p class="footnote"><sup><a class="footnum" name="fn.1" href="#fnr.1">1</a></sup> FOOTNOTE DEFINITION NOT FOUND: 4323<br/>
+</p>
+<p class="footnote"><sup><a class="footnum" name="fn.2" href="#fnr.2">2</a></sup> FOOTNOTE DEFINITION NOT FOUND: 4324<br/>
+</p>
+<p class="footnote"><sup><a class="footnum" name="fn.3" href="#fnr.3">3</a></sup> FOOTNOTE DEFINITION NOT FOUND: 4327<br/>
+</p>
+<p class="footnote"><sup><a class="footnum" name="fn.4" href="#fnr.4">4</a></sup> FOOTNOTE DEFINITION NOT FOUND: 5272<br/>
+</p>
+<p class="footnote"><sup><a class="footnum" name="fn.5" href="#fnr.5">5</a></sup> FOOTNOTE DEFINITION NOT FOUND: 5273<br/>
+</p>
+<p class="footnote"><sup><a class="footnum" name="fn.6" href="#fnr.6">6</a></sup> FOOTNOTE DEFINITION NOT FOUND: 5275<br/>
+</p>
+</div>
+</div>
+<div id="postamble">
+<p class="author"> Author: Jason Chen
+<a href="mailto:chen_jason@emc.com">&lt;chen_jason@emc.com&gt;</a>
+</p>
+<p class="date"> Date: 2009-09-10 15:55:33 </p>
+<p class="creator">HTML generated by org-mode 6.27a in emacs 23</p>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,3219 @@
+* Org-mode Setting
+# Jason TODO list and notes
+# Start date: <2009-06-15 16:06>
+#+STARTUP: overview
+#+STARTUP: lognotestate
+#+STARTUP: hidestars
+#+TAGS: WORK(w) THINK(t) LIFE(l) EMACS(e) IMPORTANT(i)
+#+SEQ_TODO: TODO INPROGRESS | DONE CANCELED
+#+AUTHOR: Jason Chen
+#+EMAIL:  chen_jason@emc.com
+#+DRAWERS: SNIP
+#+OPTIONS:"\n:t"
+
+* Project development 												   :WORK:
+** TODOLIST
+
+*** TODO review board review process workflow
+*** TODO decouple genprofile for better organise and rereuse code, consider ip change and reconfiguration together.
+*** TODO seperate setnodeinfo to updatenodeinfo and insertnodeinfo, we have met several cases node UUID has changed due to setnodeInfo. bug #10948
+*** TODO Atmos in a box document update - we cannot support clone operation for existing atmos nodes. more detail see bug #10948
+*** TODO Installation /etc/hosts add public ip end mark
+
+*** TODO check installation negative test cases in testlink
+*** Task framework discussion
+
+Task discussion
+
+how to decouple task execute engine and detail task command ?
+if there has any relations between tasks, should these task be *divided* into several small tasks?
+
+
+
+
+** Atmos 1.4 cycle
+*** Task module redesign - sync framework
+Design consideration:
+1. K.I.S.S
+2. Think more in a large scale
+
+*** Postgresql changes
+**** TODO initDB -  --no-locale --encoding=EUC_JP
+
+*** setup autostart
+[root@Jason-130A-001 bin]# export FT_DIR=/etc/autostart/EAS_5.3SP3.patch/Linux/bin
+[root@Jason-130A-001 bin]# export FT_DIR=/etc/autostart/EAS_5.3SP3.patch/Linux
+[root@Jason-130A-001 bin]# vi ft_setup
+[root@Jason-130A-001 bin]# export FT_DOMAIN=atmos
+[root@Jason-130A-001 bin]# ./ft_setup
+EMC AutoStart setup script.
+
+Setting environment from /etc/autostart/EAS_5.3SP3.patch/Linux/config/agent_env.Linux
+
+Setting up the EMC AutoStart agent for domain atmos
+
+            Welcome to EMC AutoStart.  (Release 5.3 SP3 )
+
+This version of AutoStart 5.3 does not support Linux 2.6.29.6 But we are using it anyway - RDU 
+cp: cannot stat `/etc/autostart/EAS_5.3SP3.patch/Linux/bin/runInit/*.pl': No such file or directory
+Configuring Agent for current node: jason-130a-001
+
+Enter the name of your domain [atmos]: 
+
+Configuration requires the node name of a primary agent. If you
+are configuring the first node in the domain, enter the name
+of this node. (i.e. jason-130a-001)  If this is a subsequent installation
+enter the name of an existing primary agent node.
+
+Enter the name of a Primary Agent Node: Jason-130A-001
+Performing a primary node configuration.
+
+Agents require the use of 4 network ports through which to
+communicate.  These port numbers must be available and consistent
+across each of the nodes in the domain. If you are unsure about
+specifying port numbers or defining primary nodes please read the
+appropriate sections of the user documentation provided with this
+product.
+
+Specify the first of the 4 port numbers: [8042] 
+
+Ports 8042, 8043, 8044 and 8045 will be used.
+
+Enter your license key: demo
+[8009] License Key Invalid
+
+License key specified is not valid.
+
+Enter your license key: autostart
+[8009] License Key Invalid
+License key specified is not valid.
+
+Enter your license key: AMEVAL
+Version:    0
+Expires:    March 02, 2010
+Features:   Unrestricted SDK Site Eval Temporary Internal 
+
+Enter the name of your SMTP mail server (optional): 
+
+Installation for this node is complete.
+
+To start the Agent run the "ft_startup" command.
+[root@Jason-130A-001 bin]# ./ft_startup
+EMC AutoStart startup script.
+
+Setting environment from /etc/autostart/EAS_5.3SP3.patch/Linux/config/agent_env.Linux
+
+Starting agent for domain atmos
+
+
+
+Starting Backbone...
+...
+Backbone started successfully.
+
+Starting Agent...
+
+Agent started successfully.
+[root@Jason-130A-001 bin]# ./ftc
+ftcinfo      ftcli        ftcutils.pl  
+[root@Jason-130A-001 bin]# ./ftcli --help
+Usage: ftcli [options]
+Options:
+ -domain <domainName>        Cluster domain (Defaults to $FT_DOMAIN)
+ -connect <node1,node2,...>  Agents to attempt to connect to
+ -port <port-number>         Port to use when connecting to Agent
+ -timeout <time-in-seconds>  Max time to wait when connecting to Agent
+ -batch <batchfile>          Take commands from batchfile
+ -cmd <command to run>       Run a command and exit
+ -version                    Print out version info and exit
+ -luser <username>           Username for ldap Authentication
+ -lpwd <password>            Password for ldap Authentication
+ -lconnectAsUser <user type> Type of user LDAP or LOCAL 
+ -help                       This menu
+[root@Jason-130A-001 bin]# ./ftcli
+
+
+                            Welcome to EMC AutoStart
+                                Version 5.3 SP3
+           Copyright 1998 - 2008 EMC Corporation. All rights reserved
+AutoStart> help
+all                 actuator            admin               alias
+datasource          debug               domain              group
+ip                  misc                Module              monitor
+nic                 node                process             rule
+sensor              trigger             user                utility
+AutoStart> help user
+createUser <userName> <nodeName> <description> <perms>  - Create a user entry
+deleteUser <userName> <nodeName>  - Delete a user entry
+listUsers                      - List all user entries
+listProducts                   - 
+configureLdapServer <adminDN> <adminPwd> <serverList>  [-type=serverType]  [-proto=protocol] [-uSearchPath=userSearchPath] [-gSearchPath=groupSearchPath]  [-port=serverPort]  - Modify an LDAP Configuration
+configureLdap <ldapState> <userName> <password>  [-connectAsUser=userType]  - Configure ldap
+getLdapInfo                    - Display the LDAP configuration Information for the domain
+createLocalDirUser <userName> <password>  - Create a local directory user
+deleteLocalDirUser             - Delete a local directory user
+listLocalDirUsers              - List all local directory users
+addLdapGroup <groupName>       - Allows access to the domain for the user group
+deleteLdapGroup <groupName>    - Removes access to the domain for the user group
+listLdapGroups                 - Lists all ldap groups configured for access
+AutoStart> createUser      
+Usage: createUser <userName> <nodeName> <description> <perms> 
+ ... where <perms> is PERM_USER PERM_OPER PERM_ALL 
+AutoStart> createUser jason * admin PERM_ALL
+OK
+AutoStart> createUser chenj15 * admin PERM_ALL
+OK
+AutoStart> q
+Unknown command <q>
+AutoStart> quit
+
+
+------------------------------------------------------------------
+
+[root@Jason-130A-002 bin]# export FT_DOMAIN=atmos
+[root@Jason-130A-002 bin]# export FT_DIR=/etc/autostart/EAS_5.3SP3.patch/Linux
+[root@Jason-130A-002 bin]# ./ft
+ftAgent               ftcli                 ft_init.pl            ft.pl                 ft_setup.pl           ft_uninstall
+ftbackbone            ft_cmd                ftKill                ft.pm                 ft_shutdown           ft_uninstall.pl
+ftbb                  ft_cmd.pl             ftmainrule.pl         ftProcMon             ft_shutdown.pl        ft_version
+ftbbShutdown          ftcutils.pl           ftNodeStats.Linux.pl  ftRule                ft_startup            ft_version.pl
+ftCheckLicense        ftExpand              ftNodeStats.pl        ftRuleManager         ft_startup.pl         ft_watchdog.sh
+ftcinfo               ft_gethostbyname      ftPerl                ft_setup              ftStateMon            
+[root@Jason-130A-002 bin]# ./ft_setup
+EMC AutoStart setup script.
+
+Setting environment from /etc/autostart/EAS_5.3SP3.patch/Linux/config/agent_env.Linux
+
+Setting up the EMC AutoStart agent for domain atmos
+
+            Welcome to EMC AutoStart.  (Release 5.3 SP3 )
+
+This version of AutoStart 5.3 does not support Linux 2.6.29.6 But we are using it anyway - RDU 
+cp: cannot stat `/etc/autostart/EAS_5.3SP3.patch/Linux/bin/runInit/*.pl': No such file or directory
+Configuring Agent for current node: jason-130a-002
+
+Enter the name of your domain [atmos]: 
+
+Configuration requires the node name of a primary agent. If you
+are configuring the first node in the domain, enter the name
+of this node. (i.e. jason-130a-002)  If this is a subsequent installation
+enter the name of an existing primary agent node.
+
+Enter the name of a Primary Agent Node: Jason-130A-001       
+
+Agents require the use of 4 network ports through which to
+communicate.  These port numbers must be available and consistent
+across each of the nodes in the domain. If you are unsure about
+specifying port numbers or defining primary nodes please read the
+appropriate sections of the user documentation provided with this
+product.
+
+Specify the first of the 4 port numbers: [8042] 
+
+Ports 8042, 8043, 8044 and 8045 will be used.
+
+Installation for this node is complete.
+
+To start the Agent run the "ft_startup" command.
+
+Before running ft_startup you have to do the following:
+1. Add this node to the domain using the management console.
+2. Make sure that the root of this node has permissions for the domain.
+[root@Jason-130A-002 bin]# ./ft_startup
+EMC AutoStart startup script.
+
+Setting environment from /etc/autostart/EAS_5.3SP3.patch/Linux/config/agent_env.Linux
+
+Starting agent for domain atmos
+
+
+Starting Agent...
+
+This agent has been promoted while it was down.
+It will now be restarted as a primary agent.
+[root@Jason-130A-002 bin]# ping 10.32.171.80
+
+** Initialtive on effective daily work
+*** Effective code review by using ReviewBoard
+*** Effective meeting
+Preparation
+
+send out agenda before the meeting
+
+understand the goal
+
+action plan
+
+meeting minutes
+
+*** Effective coding
+
+*** Effective troubleshooting
+
+*** Need more investigation on initialtive
+
+** Installtion collection
+*** Switch configuration
+Refer to bug 5765
+
+Steps to perform switch configuration:
+
+Connect PC serial port to serial port of Allied Telesis switch (requires DB9 to RJ45 style serial cable).
+
+Login as 'manager' and password=friend.
+
+==== PromoCode1 or PromoCode5 Systems ====
+
+//Clear out settings
+set config=none
+restart reboot
+
+//When it reboots, login again and enter:
+create vlan=private vid=2
+create vlan=public vid=4
+add vlan=private port=1,3,5,7,9,11,13,15,17,19,21,23 frame=untagged
+add vlan=public port=2,4,6,8,10,12,14,16,18,20,22,24 frame=untagged
+disable igmpsnooping
+enable ip
+enable ip remote
+add ip int=vlan2 ip=dhcp
+enable snmp
+create snmp community=atmosCommunity open=on
+create config Atmos_PC1-PC5_0v02.cfg
+set config Atmos_PC1-PC5_0v02.cfg
+
+==== PromoCode3 Systems ====
+
+==Private Network Switch==
+//Clear out settings
+set config=none
+restart reboot
+
+//When it reboots, login again and enter:
+create vlan=private vid=2
+add vlan=private port=1-24 frame=untagged
+disable igmpsnooping
+enable ip
+enable ip remote
+add ip int=vlan2 ip=dhcp
+enable snmp
+create snmp community=atmosCommunity open=on
+create config Atmos_PC3private_0v02.cfg
+set config Atmos_PC3private_0v02.cfg
+
+==Public Network Switch==
+//Clear out settings
+set config=none
+restart reboot
+
+//When it reboots, login again and enter:
+create vlan=public vid=4
+add vlan=public port=1-24 frame=untagged
+disable igmpsnooping
+enable ip
+enable ip remote
+add ip int=vlan4 ip=dhcp
+enable snmp
+create snmp community=atmosCommunity open=on
+create config Atmos_PC3public_0v02.cfg
+set config Atmos_PC3public_0v02.cfg
+
+------------------------------- spliter -------------------------------
+
+add ip int=vlan103 ip=dhcp
+
+
+*** INPROGRESS Installation restore procedure
+
+**** Restore services and service related data
+- ais: 
+  - private IP address needs to be considered
+  - /etc/passwd add one more user ais (it's ok to not remove this user)
+  - # mauirexec "grep bindnetaddr /etc/maui/qpid/openais.conf" mauirexec "grep bindnetaddr /etc/maui/qpid/openais.conf"
+- authsrv:
+  - slapd configuration should be reverted
+  - mauiauthcfg should be reverted
+  - need further check with Liping
+- mauicc:
+  - remove from chkconfig list
+- claas:
+  - remove from chkconfig list
+- mauifs:
+  - restore configuration file items
+	- Client_Mountpoint /var/local/maui/mauifsmtpt <-- should be cleanup
+	- location
+	- tenant_id
+  - remove mnt point /mnt/mauifs
+  - remove from chkconfig list
+- ganglia:
+  - restore config (/usr/local/maui/ganglia/etc/ganglia/gmetad.conf)j
+	- RM_GMETAD
+	- CLUSTER_NAME
+	- RM_DATA_SOURCE
+	- Location
+	- MCAST_CHANNEL
+	- RMS_List
+	- enableGmondPort
+  - rrd config
+	- remove directory /var/lib/ganglia/rrds (optional)
+  - restore ganglia web config to httpd (optional)
+  - remove srv from chkconfig list (gmetad, gmond)
+- mauijs:
+  - restore config (/etc/maui/js_cfg.xml)
+	- QpidHost
+	- QpidBackupHost
+	- JsSet
+  - remove srv from chkconfig (mauijs)
+- mauimdls:
+  - remove config (/etc/maui/mdls_cfg.xml)
+  - remove srv from chkconfig
+- mauimds:
+  - restore config ()
+	- MDS_MntPt
+	- MDS_Master
+	- MDS_Replication
+	- HOST_IP
+	- TENANT_ID
+	- MDS_IP
+	- MDS_RootOwner
+	- RMS_IP
+	- Location
+  - restore sys config()
+	- comm_port
+	- mds_doc_cache
+	- dbb_env_cache
+  - remove srv from chkconfig
+- ntp:
+  - /etc/ntp.conf (can be reentrant)
+- postgres:
+- qpid:
+  - remove srv from chkconfig (qpidd)
+- mauirms:
+  - remove config
+	- RMS_DBDir
+	- RMS_Loglevel
+	- CLUSTER_NAME
+	- RM_DATA_SOURCE
+	- RMS_LIST
+	- RM_ALLOW_EH
+	- RM_COMPRESSION
+	- RM_METRIC_SRC_LIST
+	- RM_METRIC_SRC
+	- enableGmondPort
+  - remove srv from chkconfig (mauirms)
+- mauiss:
+  - remove seda config
+	- port
+	- dbtype
+	- dbdir
+  - remove ss config
+	- numdisks
+	- action
+	- placement
+	- disklist
+	- reserve
+	- loglevel
+  - remove srv from chkconfig (mauiss)
+  - remove ssdir /mauiss-db/ssbdb
+  - remove ssdiskloc /mauiss-disks
+- mauissproxy:
+  - remove srv from chkconfig
+- spread:
+  - remove config (/etc/eventservice/spread.conf)
+	- Spread_Segment
+  - remove config (/etc/eventservice/es.location)
+  - remove srv from chkconfig
+- mauiws:
+  - restore configuration file items (/etc/maui/mauiws_cfg.xml)
+	- location
+	- tenant_id
+  - restore config (/usr/local/maui/axis2c/services/V1/metadataws.wsdl and /usr/local/maui/axis2c/services/V1/objectws.wsdl)
+	- location in soap11:address and soap12:address 
+  - remove srv from chkconfig
+  - remove /etc/httpd/conf.d/maui.conf /etc/httpd/conf.d/wsstats.conf
+
+*Discuss with Ming about restore utility:* <2010-02-10 12:28>
+
+cleanup segment informaiton nodecfg should be generated from existing information
+
+nodecfgs table redundent? can we generate node.cfg on the fly? need to think about what field is unnesssary.
+
+if we have the source data and generate functions for the new data, it's better to not store these data persistently. The good way is to generate on the fly. prerequisite is generate cost is not big and use frequently.
+
+make file system in git control to check.
+
+try as much as possible to split existing code into small scripts and utility. these small utilities can be used in many places, e.g. put to lightweight task engine
+
+_Review process:_ Try to get Ming involved as early as possible.
+
+first keep original function not change, keep diff as small as possible, which is easy for review, test, patch
+
+
+** MISC team member mgmt 
+Start tracking this from <2009-09-19 16:25>
+*** Feedbacks for my team members
+**** Chunjie
+- Response for email (not mean timely response, but based on priority and not miss anything you need to follow 
+- 
+**** Caihua
+**** Jiang
+
+*** Bugzilla process discussed with Ming/Jiang/Chunjie
+**** Process proposal from Jiang.
+•	When a new bug is filed, someone accept the bug and change the assignee to himself;
+•	Later when the assignee is investigating on the bug, add keyword [Investigating] at the beginning of 'User Defined Keywords' field;
+•	Later when the assignee has found the root cause and does the fix work, we can change the keyword to [UnderFixing];
+•	Later when the assignee has finished the fix work and send the code for reviewing, we can change the keyword to [UnderReviewing];
+•	Other wise the keyword should be removed so others know that the bug is not currently active;
+
+**** Break history
+Chunjie - bug 8094 - no UnderReviewing
+Chunjie - bug 10016 - comment from Yubo
+I don’t think we’re doing well for bug 10016 in the below aspects: 
+•	Originally when file the bug, the problem is not clearly described. 
+•	Later when Ming asked what the problem is, haven’t given a good answer. 
+•	Chen has given a very good example to everybody — be specific when describe the problem.
+
+I will reiterate those principle in dealing with a bug in Bugzilla, but I need everyone put more attention on this part.
+
+Thanks,
+Yubo 
+
+
+*** Break build/smoke testing
+Jiang: commit bug 7898 in revision r40845/40846 <2009-09-19 16:25>
+Chunjie: commit bug 8094 in revision r44833 and fix in 44874 <2009-12-04 21:39>
+Jiang: commit bug 9122 in revision r45005 and fix in 45033 <2009-12-09 17:00>
+Chunjie: commit bug 9553 in revision r46621 and fix in r46706 - break smoke test installation<2010-01-11 09:45>
+Ming: commit bug 10439 in revision r46628 - break slave node installation <2010-01-11 16:41>
+
+
+
+
+*** Receive positive feedbacks
+*** Perform good communication
+*** Show initiative and leadership
+
+	
+*** 
+
+** Debug command collection
+select id, call, input, status, retval from tasks order by id;
+select id,scope, scopeuuid, call, input, status, retval from tasks where id>10 and call='synclb' order by id;
+
+/bin/cp -f cm /usr/local/maui/bin/; /bin/cp -f libmauimgmt* /usr/local/maui/lib/
+ scp bin/cm lib/libmauimgmt* root@10.32.165.126:.
+
+time cosuid -c --name jasonc3 --subtenid DevTen1 -u DevTestUser -p password -t DevTest -i 10.32.109.89
+cosuid -l --subtenid t1 -u t1admin -p password -t t1 -i 10.32.165.132
+cosuid -r --name bob --subtenid t1 -u t1admin -p password -t t1 -i 10.32.165.132
+cossubtenant -c --name st8 --authtype local -u t1admin -p password -t t1 -i 10.32.165.128
+
+select id, call, input, status, retval from tasks where id > 260 order by id;
+
+su - postgres -c "/usr/bin/pgreplicate -D /srv/pgsql/8.2/etc -l"
+
+psql -U postgres -d system.db -c "select id, call, input, status, retval from tasks order by id;"
+psql -U postgres -d system.db -c "select * from syncinfos order by id;"
+psql -U postgres -d system.db -c "delete from tasks where id > 11;"
+psql -U postgres -d system.db -c "select * from subtenantpolicies order by id;"
+
+cospolicy -c --policy polSpecJason --customrep y,y --numreps 2 --reptype a,s --locmod otherThan,sameAs --locplace '$client,$client' --serverplace optimal,optimal --serveract any,none --striping y,y --stripenum 8,16 --stripesize 1000,5 --stripeunit kb,gb --retention n --deletion n --readaccess random --metalocmod sameAs --metalocplace 'Beijing'  -u t1admin -p 'password' -t t1 -i 10.32.165.126
+cospolicyselector -c --name polSelJason --policy polSpecJason --polmode u --metatag filename --matchoper equals --metaval file.txt --onevent on_create -u t1admin -p 'password' -t t1 -i 10.32.165.126
+cospolicyselector -d --name polSelJason -u t1admin -p 'password' -t t1 -i 10.32.165.126
+rest_client.rb -f createobject -p <subtenantid>/u1 -k <key> -u <a local filename>
+./create_object -s 127.0.0.1 -p jason -u /root/install.log  -a jason=f,foo=w -g other=n -m part1=buy -b part4/part7/part8=quick  -k aQE/L+VQgFMezbyFfhyJgNOpfEs=
+
+cstadmin configure LocalDirectory MauiLocalDirectory -passphrase=#1Password FileName=/etc/maui/cst/auth_db.xml  PasswordDays=365 PasswordLength=4 MaxPasswordLength=10 SpecialCharsRequired=false  AlphaNumericRequired=false MixedCaseRequired=false NumPasswords=1
+
+cstadmin sign-file /etc/maui/cst/auth_db.xml -passphrase=#1Password
+
+logcopy --lclevel ALL --srchosts ALL --dstdir /root --dsthost 10.32.109.238 --dstuser root --dstpass ChangeMe
+
+svn pd svn:executable *
+
+valgrind --tool=memcheck --leak-check=full --show-reachable=yes --trace-children=yes --max-stackframe=3000000 --num-callers=50 -v --log-file=memleak.log cm -s /etc/maui/cm_sys.xml -c /etc/maui/cm_cfg.xml -g /var/local/maui/sysmgmtdb/ses_db -d &
+
+valgrind --tool=memcheck --leak-check=full --log-file=valgrind.log /usr/local/maui/bin/cm -s /etc/maui/cm_sys.xml -c /etc/maui/cm_cfg.xml -g /var/local/maui/sysmgmtdb/ses_db -d &
+
+cli_func_test.sh password ja1 password balanced 10.32.109.95
+cosclientaccess -c --nodeid EMC-001 --sharepath test1 --host * --io rw --squash all_squash --sync yes -u t1admin -p password -t t1
+cosclientaccess -l --nodeid EMC-001 -u admin -p password -t eBay
+cosclientaccess -m --nodeid EMC-001 --sharepath caihua --host 192.168.1.* --io rw --squash all_squash --sync yes -u admin -p password -t eBay
+cosclientaccess -d --nodeid EMC-001 --sharepath alend -u admin -p password -t eBay
+mauisvcmgr -s mauicm -c reload_tracer_cfg
+
+cosuser -c --userid Test111 --userpass password -u SecurityAdmin -p password --local -i 10.32.109.112
+cossysadmin -a --userid Test111 --authtype local -u SecurityAdmin -p password --local -i 10.32.109.112
+
+rpm -ivh atmos-cli-1.3.0-b39377.x86_64.rpm 
+rpm -qa atmos-cli
+rpm -e atmos-cli
+
+netconfig --eth0=192.168.11.12 --eth0_mask=255.255.255.0 --eth0_gw=192.168.11.2 --eth1=10.5.116.87 --eth1_mask=255.255.255.0 --eth1_gw=10.5.116.2
+mauimdlsutil -q -m '*'
+cat /proc/mounts  | grep mauimds |  cut -d ' ' -f2
+mauisvcmgr -s mauimds -c mauimds_getMdsSet
+mauirexec "cat /etc/maui/node.cfg | grep SS_Placement"
+mauisvcmgr -s mauicm -c mauicm_start_provision -a 'cmd=create_maui,user=MauiAdmin,seguuid=293e4386-507f-496a-b429-3d3ff9cf0730,siteuuid=8c6f4c96-3de5-4265-b248-679422b17ace'
+route add -host 10.32.165.132 gw 10.32.165.158
+netstat -natp |grep 5432 |grep SYN_RECV |cut -d':' -f 2 |sort
+netstat -natp |grep 5432 |grep ESTABLISHED | wc -l
+q "netstat -anp | grep :5432" | tee out.txt
+select  id, scope, scopename, call, input, status, retval, starttime from tasks where (status=2 or status=0 or status=1) and id < 1000 order by id;
+
+DB deadlock check:
+SELECT pg_class.relname, pg_locks.pid, pg_stat_activity.waiting, pg_stat_activity.current_query  from pg_class, pg_locks, pg_stat_activity where pg_class.relfilenode = pg_locks.relation and pg_locks.pid = pg_stat_activity.procpid order by pg_class.relname;
+
+vaccum full
+
+/usr/bin/pg_dump -U postgres -Ft -b system.db
+/usr/bin/pg_restore -U postgres -d <>
+
+diff -rupN original/ new/ > original.patch
+
+psql -U postgres -c "select * from pg_stat_activity"
+
+Cybercluster recover commands:
+rsync --server --sender -logDtprz . /srv/pgsql/8.2/data/pg_xlog
+rsync -a -r -z --delete -e ssh -o StrictHostKeyChecking=no auto3-130A-001:/srv/pgsql/8.2/data/pg_xlog /srv/pgsql/8.2/data
+
+vi /var/log/boot.log
+vi /var/log/secure
+vi /srv/pgsql/start.log
+
+find . -name "*" -type f -exec grep -Hn mauiconfig {} \;
+tar czvf JasonBash.tgz `la`
+find . -type d -name '.svn' -exec rm -rf {} \;
+find . -name "*.rhtml" -type f -exec grep Maui -Hn {} \;
+find . -exec grep -q "itf" '{}' \; -print | xargs sed -i 's/itf/production/g'
+
+develop your own grep example : (~/bin/greps)
+#!/bin/bash
+find . -type f \{ -name "*.c" -o -name "*.h"\} - print | xargs grep "$@"
+
+for i in `seq 1 100`; do cosuid -r --name uid$i tenid tenant2 -u tony2 -p 123456 -t tenant2; done
+
+select nextval('test_id_seq');
+select currval('test_id_seq');
+select setval('test_id_seq', (select max(id) from test));
+echo "select setval('sites_id_seq', (select max(id) from sites));" | su - postgres -c "psql -d system.db"
+
+echo "select setval('sites_id_seq', (select max(id) from sites));" | su - postgres -c "psql -d system.db"
+
+netstat -anp |grep 'tcp\|udp' | awk '{print $5}' | cut -d: -f1 | sort | uniq -c | sort -n
+
+*** Debug large scale installation
+
+cat /etc/hosts | grep 10.32 | sort | wc -l
+
+mauirexec "cat /etc/maui/provision " > prov_stat
+
+grep PRO prov_stat  -C 1
+
+mauirexec "grep LongString /var/log/maui/cm.log " > longstring_stat
+
+mauirexec "grep TaskUUIDList /var/log/maui/cm.log " > TaskUUIDList_stat
+
+*** MaaS login info from Sukwoo
+Jumpbox: 
+  - id: kangs5@bos01-cig02.emcatmos.com
+  - passwd: Steel4Celery66
+
+Master node: 
+  - id: wangc14@172.16.16.80
+  - passwd: ChangeMe
+  - su - (passwd: Steel4Celery66)
+
+
+** Reviewboard setup notes in Ubuntu
+1. Package setup follow instructions in [[http://www.reviewboard.org/docs/manual/1.0/admin/installation/linux/][RB site]]
+   - # sudo apt-get install python-setuptools libapache2-mod-python
+   - # sudo apt-get install memcached libmemcache-dev patch
+   - # easy_install ReviewBoard
+   - # sudo apt-get install subversion python-svn
+   - # easy_install nose Sphinx
+2. Configuration changes in [[http://www.reviewboard.org/docs/manual/1.0/admin/sites/creating-sites/#creatingsites][RB site]]
+   - # rb-site install /var/www/<site_name> - input local IP as Domain Name, just follow prompt to finish the wizard. DO remember the admin's password which will be used later
+   - # chown -R www-data:www-data /var/www/<site-name>
+   - # cd /etc/apache2/sites-available
+   - # cp /var/www/<site_name>/conf/apache-modpython.conf <site_name>.conf
+   - # cd ../sites-enabled
+   - # ln -s ../sites-available/<site_name>.conf .
+   - # rm 000-default
+   - Restart apache (# apache2ctl restart)
+3. Need one patch for Atmos subversion since it's use HTTPS -- Avoid HTTPS svn repository certificate issue.
+   - Modify file /usr/local/lib/python2.6/dist-packages/ReviewBoard-1.0.5.1-py2.6.egg/reviewboard/scmtools/svn.py
+ 47         SCMTool.__init__(self, repository)
+ 48    
+ 49         # Modified by Jason
+ 50         # Add this function to avoid callback ssl trust check
+ 51         def ssl_server_trust_prompt(trust_dict):
+ 52             return True, 1, True
+ 53         
+ 54         import pysvn
+ 55         self.client = pysvn.Client()
+ 56         self.client.callback_ssl_server_trust_prompt = ssl_server_trust_prompt
+ 57         
+4. Manage RB
+   1. Login management GUI console: http://<local IP>/admin (admin is the user you created in rb-site command)
+   2. After login Review Board administration GUI, you can add groups, reviewer, repository in your desired way. The most important setting is repository settings. Click repository and then click add repositoy in the right top side. Here is one typical Atmos trunk repository setting.
+	 - Name: Atmos trunk
+	 - Path: https://tvg01.lss.emc.com/svn/maui/trunk
+	 - Repository Type: Choose Subversion
+	 - Bug tracker URL: https://tvg01.lss.emc.com/bugzilla/show_bug.cgi?id=%s
+	 - Authentication: input your UNIX account information for SVN login
+5. Use RB
+   1. Login RB GUI dashboard http://<local IP>/
+   2. Register one user with password and email address
+   3. Then you can see all review requests in RB and your incoming review
+   4. Other usage are relatively straight forward. You can take a few minutes to take a look at offical [[http://www.reviewboard.org/docs/manual/1.0/users/#usersguide][user guide]]
+
+Another RB install on FC9: [[http://notes.tela-web.com/install_review_board_on_fedora][RB install on FC9]]
+
+Another patch to solve HTTPS subversion certificate issue
+Index: /usr/local/lib/python2.6/dist-packages/ReviewBoard-1.0.5.1-py2.6.egg/reviewboard/scmtools/svn.py
+===================================================================
+--- scmtools/svn.py	(revision 1980)
++++ scmtools/svn.py	(working copy)
+@@ -70,7 +70,18 @@
+                                             # uses 'revision 0'
+             """, re.VERBOSE)
+ 
++ def ssl_server_trust_prompt(trust_dict):
++ """Callback method to always accept ssl certificate."""
++ if self.client.get_default_username is None:
++ userpass = False
++ else:
++ userpass = True
++ return (userpass, 0, True)
++ 
++ if repository.allow_all_certs is True:
++ self.client.callback_ssl_server_trust_prompt = ssl_server_trust_prompt
+ 
++ 
+	  def get_file(self, path, revision=HEAD):
+		  if not path:
+			  raise FileNotFoundError(path, revision)
+
+** PIT and mauits setup notes
+*** New PIT framework usage
+# ssh cheny7@10.32.180.27
+
+# cd /opt/pit-framework/
+
+# bin/pit.sh -c conf/testbeds/maap/cheny7-174.1-100.conf --image /share/pub/MauiImages/atmos-auto-1.3.0.44603-x86_64-disc1.iso -i cheny7
+
+------------------------------- spliter -------------------------------
+
+destroy upgrade large scale testbed and start new installtion large scale testbed 
+1. make below change in new pit framework code. 
+cheny7@Kaylin ~/pit-framework$ svn diff lib/maap/libmaap.sh
+Index: lib/maap/libmaap.sh
+===================================================================
+--- lib/maap/libmaap.sh	(revision 46652)
++++ lib/maap/libmaap.sh	(working copy)
+@@ -1333,7 +1333,7 @@
+         host_vm_destroy $node_name || return 1
+     }
+ 
+-    __maap_create_vm $rmg $seg $node || return 1
++    #__maap_create_vm $rmg $seg $node || return 1
+     return 0
+ }
+ 
+@@ -1760,7 +1760,9 @@
+         # Sleep for a while before (re)boot next slave so that the IP addresses
+         # are assgined in order, the last node in this SEG does not need to wait
+         #
+-        ((node < node_count)) && util_wait 10s
++        # FIXME: increase power on slave from 10s to 1 minute
++        # ORIGINAL: ((node < node_count)) && util_wait 10s
++        ((node < node_count)) && util_wait 60s
+         log_message "Slave node '$node_name' ($node_ip) (re)booted," \
+             "it should boot from NIC #1 (eth0) automatically"
+     done
+
+2. bin/pit.sh -c conf/testbeds/maap/cheny7-upgrade-174.11-90.conf --image /share/pub/MauiImages/atmos-auto-1.3.0.48080-x86_64-disc1.iso os
+3. bin/pit.sh -c conf/testbeds/maap/cheny7-upgrade-174.91-150.conf --image /share/pub/MauiImages/atmos-auto-1.3.0.48080-x86_64-disc1.iso os
+4. revert back change of __maap_create_vm to enable create vm os
+5. bin/pit.sh -c conf/testbeds/maap/cheny7-174.11-202.conf --image /share/pub/MauiImages/atmos-auto-1.3.0.48080-x86_64-disc1.iso
+
+*** Preparation setup - by Yue:
+1) Prepare pit config file or even pit extend config file. 
+2) Created an account for PIT: pit:password
+3) Checked out the latest PIT script from <https://tvg01/svn/mauitools/trunk/QA/pit> to /home/pit/pit.jason
+4) Checked out the latest trunk mauits script from <https://tvg01/svn/mauitools/trunk/QA/mauits> to /home/pit/mauits
+5) Following the instruction in mauits/README, checked out the latest TET ware to /home/pit/tet_src and installed TET in /home/pit/tet
+6) Export TET_ROOT=/home/pit/tet and update pit user’s .bashrc file.
+7) Configure PIT to use the mauits in /home/pit/mauits
+
+*** Setup PIT environment on ESX server -- no DHCP server deployment in public network
+1) Prepare a VM (RHEL 5.0 VM node) which will be used as PIT bridge - with only one public NIC interface
+2) Covert this VM to template
+3) If deployed DHCP on public network, at this time just prepare ready for pit configuration file, than run PIT command to start auto-deployment
+4) If no DHCP deployed, deploy a bridge VM for target ESX server. 
+   - Add additionial internal NIC card based on the RMG number and pit configuration on the $PRIVATE_SWITCH. 
+   - Power on the bridge VM and configure a static public IP address for eth0
+   - Then start run PIT command.   
+
+*** Start running PIT and mauits after settled down:
+1. Run pit
+   - Go to pit src directory
+   - ./runpit.sh -i DB-test -c ../pit.conf.jason -t -b atmos-mgmtdb-1.3.0.33865-x86_64-disc1.iso
+2. Run mauits
+   - ./runpit.sh -i DB-test -c ../pit.conf.jason -t --tasklist "testing"
+3. Create snapshot
+   - ./createsnapshot.ksh 10.32.109.36 cheny7 password snapshot_name ../hostlist-171.33
+4. Revert snapshot
+   + ./revertsnapshot.ksh 10.32.109.36 cheny7 password snapshot_name ../hostlist-171.33
+
+- Tip for skip precheck process
+# ./runpit.sh -i DB-test -c ../pit.conf.jason -t --tasklist "install install_ext config_rmg1 config_rmg2 config_ext post_install config_client testing"
+
+# /home/pit/pit.jason/runpit.sh -i auto-mgmt-1.3.0.34358-1 -c pit_171.34.conf.jason -b atmos-mgmtdb-1.3.0.34453-x86_64-disc1.iso -t  --tasklist "testing"
+
+Verify result: see email which mauits has sent out.
+
+*** Set up large scale testbed for mgmt DB test
+1. ssh cheny7@10.32.109.95 password
+2. Go to pit directory
+3. Prepare configuration files
+4. Manually add bridge proxy which is created based on RHEL template. Configure eth0 public IP address and add internal network which is the same as RMG's eth0. We need to manual configure public IP since we don't have a DHCP server on public network.
+5. Install first two RMGs
+   - ./runpit.sh -i RMG1-RMG2 -c ../large-scale.jason/RMG1-169.5-RMG2-171.35 -t
+6. Prepare new segment configuration file
+7. Add second segment in first RMG
+   - ./addis.sh -i RMG1-IS2 -c ../large-scale.jason/RMG2-IS1-169.6 -t
+8. Prepare hostlist for create snapshot. hostlist contains all nodes hostname
+9. Create snapshot after add segment
+   - ./createsnapshot.ksh 10.32.109.36 cheny7 password RMG1-IS2-ready ../hostlist-RMG1-IS2
+10. Repeat step 4,5,6,7 and continue installation until finished.
+
+If failed at some step during add segment, first revert to previous good shape snapshot, and then continue add more segments.
+   - ./revertsnapshot.ksh 10.32.109.36 cheny7 password RMG1-IS2-ready ../hostlist-RMG1-IS
+
+*** Full cycle 1.3 testing on hulk - 169.209 ~ 169.216
+1. ssh cheny7@10.32.169.18 (password)
+2. cd pit-hulk/
+3. ./startpit jason_full_130_44138 209.cfg
+4. Check log until pit finished
+5. Running full cycle testing:
+   1) login to 10.32.180.27 (cheny7)
+   2) go to /home/cheny7/mauits and mauits config are located in /home/cheny7/mauits/config, e.g. config/1.3full_209_44138.cfg
+   3) bin/configure.ksh -F config/1.3full_209_44138.cfg
+   4) bin/run.ksh -F config/1.3full_209_44138.cfg all
+
+*** Troubleshooting
+
+**** master node cannot boot from ISO
+Currently PIT need to copy ISO image from remote nfs/ftp to local storage by using scp, sometimes scp copy image may fail with unknown reason(network?). 
+To solve this issue, try with another iso image. Or first delete this image from local storage and reboot ESX server.
+
+**** DONE send mail fail -- Need to check with IT
+	 CLOSED: [2009-06-22 Mon 15:50]
+Configure a meaningful host name and add to /etc/hosts. 
+Configure DNS server and search suffix.
+Start sendmail service.
+Do nothing but all right after the weekend.
+
+Testing command:
+/usr/sbin/sendmail -O NoRecipientAction=add-to -F PIT_NoReply@emc.com chen_jason@emc.com <<MAIL
+< test
+< MAIL
+
+Jun 19 16:56:55 frost sendmail[4323]: n5J8utX9004323: from=root, size=7, class=0, nrcpts=1, msgid=<200906190856.n5J8utX9004323@frost.lss.emc.com>, relay=root@localhost
+Jun 19 16:56:56 frost sendmail[4324]: n5J8ut0b004324: from=<root@frost.lss.emc.com>, size=334, class=0, nrcpts=1, msgid=<200906190856.n5J8utX9004323@frost.lss.emc.com>, proto=ESMTP, daemon=MTA, relay=localhost.localdomain [127.0.0.1]
+Jun 19 16:56:56 frost sendmail[4323]: n5J8utX9004323: to=chen_jason@emc.com, ctladdr=root (0/0), delay=00:00:01, xdelay=00:00:01, mailer=relay, pri=30007, relay=[127.0.0.1] [127.0.0.1], dsn=2.0.0, stat=Sent (n5J8ut0b004324 Message accepted for delivery)
+Jun 19 16:56:58 frost sendmail[4327]: n5J8ut0b004324: to=<chen_jason@emc.com>, ctladdr=<root@frost.lss.emc.com> (0/0), delay=00:00:03, xdelay=00:00:02, mailer=esmtp, pri=120334, relay=mailhub.lss.emc.com. [10.254.3.30], dsn=2.0.0, stat=Sent (n5J92Lq6025236 Message accepted for delivery)
+
+Jun 20 00:25:43 localhost sendmail[5272]: n5JGPh1t005272: from=root, size=7, class=0, nrcpts=1, msgid=<200906191625.n5JGPh1t005272@jason.lss.emc.com>, relay=root@localhost
+Jun 20 00:25:43 localhost sendmail[5273]: n5JGPheb005273: from=<root@jason.lss.emc.com>, size=334, class=0, nrcpts=1, msgid=<200906191625.n5JGPh1t005272@jason.lss.emc.com>, proto=ESMTP, daemon=MTA, relay=localhost.localdomain [127.0.0.1]
+Jun 20 00:25:43 localhost sendmail[5272]: n5JGPh1t005272: to=chen_jason@emc.com, ctladdr=root (0/0), delay=00:00:00, xdelay=00:00:00, mailer=relay, pri=30007, relay=[127.0.0.1] [127.0.0.1], dsn=2.0.0, stat=Sent (n5JGPheb005273 Message accepted for delivery)
+Jun 20 00:25:45 localhost sendmail[5275]: n5JGPheb005273: to=<chen_jason@emc.com>, delay=00:00:02, xdelay=00:00:02, mailer=esmtp, pri=120334, relay=mailhub.lss.emc.com. [10.254.3.30], dsn=2.0.0, stat=Sent (n5J8xnu6021224 Message accepted for delivery)
+** Project lesson learn 											   :WORK:
+*** Plan
+**** Checklist
+1. 
+
+**** Reminder
+1. Don't over commit.
+2. Detail the scope and consider plan/design/develop/test/verify even buffer time.
+
+*** Design
+**** Checklist
+
+*** Development
+**** Checklist
+
+*** Test
+**** Checklist
+
+
+*** Customer support 
+**** Get things better understand and prioritize what should be solve first
+**** Find easy way and simple step to solve the problem or provide the workaround
+
+*** Code review
+Tools: coderev by matt, reviewboard, viewvc
+
+Common Checklist:
+1. Proper code comment for functions and code block
+2. Enough meaningful logs with proper log level
+3. Sigh name on new file
+
+Atmos Checklist:
+1. Impact package installation, (will tool need to impact /exports/makefile/)
+2. Impact installation (master, slave, add RMG/segment)
+3. Impact CM protocal changes
+4. Impact upgrade changes (db schema, data migration)
+
+** Best practice
+*** Bugzilla comments and update
+When you update a bug in bugzilla, you need to always check what's most useful and necessary information should be updated.
+1. Bug troubleshooting process 
+2. Bug root cause
+3. Fix plan in which release 
+4. If no fix plan in this release, whether need to add into release notes? Release notes should include:
+   * Symptom - This bug would cause what problem
+   * Workaround - What workaround should be do to fix this issue. This could be a manually process.
+
+Code commit and verify:
+1. When commit the code, make sure first update the repository first to avoid confliction
+2. The build should be first clean, then rebuild the whole directory
+*** [[https://tvg01.lss.emc.com/mediawiki/index.php/Bugzilla_UDK_List][Bugzilla UDK]] (user defined keywords)
+- Investigating
+- Underfixing
+- Underreviewing
+- GUI
+- CLI
+- Large_Scale
+** Free discussion
+*** Why too many tasks?
+1. Lots of features - from customer
+2. Across feature and across components
+3. Parallel releases
+4. Continuous requirement changes
+5. CM redesign, all components redesign
+6. Less experienced people
+7. Unclear requirement, dependency of different requirements
+
+Suggestion:
+1. Assign task by feature to reduce switch
+2. Divide people into feature/release
+3. If too many new hires, need to change process for the management, like code review...
+
+** Atmos 1.2.x cycle
+*** DONE Installation getwell plan and roadmap -- meeting with Chunjie/Yubo
+   CLOSED: [2009-07-21 Tue 22:30]
+Installation
+-- Roadmap and vision
+   1. Stablize whole installation process
+   2. Summary for all installation issues which have been found at customer site
+	  a. Short description of issue has been found, classify different areas, e.g, DB failure, GUI failure, mis-operations, network failure... Based on these issues and analyze, we can get next level focus and plan to the roadmap. 
+      b. Follow up for these issues
+	  c. Conclusion and identify next step improvements. Provide details in GUI?
+   3. Next step focus
+	  a. Failure cases?
+	  b. USB installation?
+
+Overall do things better but not just write code
+Understand the scope by yourself
+
+-- 1.2.4 deliverables
+   1. Bug fixing status - completed
+   2. Troubleshooting documents - remain things
+	  a. General troubleshooting instruction - db, log, network
+	  b. Issues haven't been fixed - workaround, limitaion
+	  c. All customer issues have been addressed (fixed or update to wiki)
+   3. Estimate schedule and efforts -- Chunjie
+
+-- 1.2.5 deliverables - This would be part of installation plan and roadmap
+
+*** DONE Database testing analyze and roadmap -- meeting with Caihua/Jiang/Yubo
+	 CLOSED: [2009-08-11 Tue 12:59]
+
+-- Understand Issues
+   1. Why insert sample data very slow?
+   2. Task operation analyze
+   3. System jobs notify only one running node
+   4. Whether we can meet the requirements
+	  
+-- Roadmap and next step
+   1. Think about more db check and cleanup mechanism
+   2. Auto vacuum (not necess
+ary to run vacuum full, but only to run auto vacuum)
+   3. Consider scalable solution but not linear increase for the total performance
+   4. Task synchronization model and architecture
+   5. Understand pgreplicate issues and investigation on pgreplicate
+   6. Optimize single postgresql server and pgreplicate
+   7. Compare single postgresql and with replication solution
+   8. New database deployment architecture
+   9. Db schema refine, new format, constraint - P1
+
+-- Load generation improvement
+   1. Add UPDATE/DELETE operations
+
+-- Log analyze
+   1. Add comparision for local/remote database access
+
+-- Action items
+   1. Do more investigations on postgresql own DB performance and see what can improve for postgresql or pgreplicate server
+   2. Deep dive to task table CRUD operations and analyze which component or any redundant db operations
+   3. Refine system jobs notify mechanism by directly using task UUID
+   4. Think about notify task by directly using task UUID
+   5. Analyze system database connection number issue and find out what's the major CRUD operations to system database
+   6. Analyze slowest db operation statement and see whether these sql statements are efficiency and necessary
+   7. Compare postgresql and pgreplicate performance
+
+*** DONE subtenant root alias discussion
+	 CLOSED: [2009-08-11 Tue 12:59]
+
+Assumption:
+Clear on the definition of subtenant id and name. All these two items are necessary for different purpose. One for customer visible use, one for internal use as unique identifier (MDS, client, mgmt).
+
+Short term
+
+1. Add subtenant name symbol link for subtenant id in mauifs layer
+- No support for web service
+- Upgrade for existing subtenant
+- long term may be not needed
+
+
+2. Do on create, not support rename operation
+- Hard to support rename in the future
+- Not flexible
+- GUI many changes
+
+
+3. MDS store mapping for subtenant id and name - long term
+- whether we need to do this 
+- many changes to web service, client and mds side
+
+
+** Mgmt DB roadmap TODO list
+*** TODO Think about divide db data and log to different disks which we can leverage external DAE disks
+
+*** TODO Prepare testing use cases
+Performance:
+- Target:
+  1. UID creation time less than 3 seconds, even overall system has big load in databases
+  2. Subtenant creation time less than
+  3. Concurrency testing. 100 users concurrent management operation (e.g, enable/disable secret, email secret).
+
+- Test cases:
+  1. 
+
+Scalability:
+- Target:
+  1. 4 RMG, each RMG has 50 nodes
+  2. Database load and connections are separated to different RMGs, there is no single hot-spot for database operations
+  3. System level database operations are reduced with large number. TODO: add some profiling mechanism in task module to collect all db operations. These data can be get by simple mgmt command.
+
+- Test cases:
+
+Upgrade:
+*** TODO Integrate pgdbdump with logcopy
+*** TODO Investigate put db log files to SS disks
+*** TODO Investigate pgreplicate hold too many connections after a long time
+*** TODO Investigate postgresql data size too large after a long time
+*** TODO Compare with dump/restore and autovaccum impact to the database size and performance
+*** TODO Can we consider add more postgresql nodes to pgcluster to improve availability
+
+
+** Upgrade develop and check process
+*** Be the owner of upgrade 
+*** Track all upgrade scripts 
+*** Track all issues without any workarounds
+*** Improve upgrade test efficiency and automation test - put this into roadmap
+*** Refine log and track all issues from log for customer side
+*** Allocate enough resource and time window for upgrade
+*** Leverage QA resource to refine upgrade test cases
+*** Consider backword compatible when do new design for CM/system mgmt features
+Code should handle new/old db schema, task execution, protocol communication
+Learn from other products upgrade mechanism
+
+
+** System management team meeting
+*** Meeting minutes 090817
+Project overall status:
+No issues and risks for ongoing 1.2.5 and 1.3 projects.
+
+Team resource plan:
+Jiang:
+Last week - 
+1. DB segment/RMG failure testing, found out problem about db hang, db crash, db lost
+2. 1.2.5 bug fixing
+3. SYR investigation with new API. 
+
+This week -
+1. Continue and finish 1.2.5 bug fixing/verification
+2. SYR implementation with new GUI changes
+3. GUI mockup review for Jeff
+4. Continue DB failure testing
+
+Chunjie:
+Last week - 
+1. Finish installation troubleshooting guide
+2. Start 1.2.5 bug fixing
+3. Finish MDS remote GUI review
+
+This week -
+1. Continue and finish 1.2.5 bug fixing/verification
+2. Finish MDS remote configuration installation part, upgrade part will be handled in the following week
+
+Caihua:
+Last week -
+1. NFS failover - finish two solutions, code complete for gui, script, upgrde.
+2. 1.2.5 bug fixing - waiting check in and verify
+
+This week -
+1. Continue and finish 1.2.5 bug fixing/verification
+2. Integration testing for NFS failover(include 1.2.5 and 1.3)
+3. Start EC coding in GUI (flex out merge will also be included in EC GUI coding)
+
+Xin:
+Last week/This week: Still focus on MaaS project.
+
+*** Meeting minutes 090824
+Jiang:
+Last week -
+1. Continue and finish 1.2.5 bug fixing/verification
+2. SYR implementation with new GUI changes
+3. Send out GUI mockup review for Jeff
+4. Continue DB failure testing
+This week - 
+1. Complete SYR implementation project
+2. Add task module part refine and db upgrade integration testing
+3. 1.3 mauits and CM related issues support
+4. Discuss on setup large scale testbed for next phase scalability and performance
+
+Chunjie:
+Last week -
+1. Continue and finish 1.2.5 bug fixing/verification
+2. Fix minor db upgrade scripts during upgrade integration testing with Denny
+3. Support Lizhong's issue on pg master failover
+4. Support node replacement customer issue troubleshooting
+This week -
+1. Code complete MDS remote configuration installation and upgrade part
+2. Verify 1.2.5 bug fixing
+3. Support db upgrade process with Hang/Jiang
+
+Caihua:
+Last week -
+1. Continue and finish 1.2.5 bug fixing/verification
+2. Integration testing for NFS failover (include 1.2.5 and 1.3)
+3. Start EC coding in GUI (flex out merge will also be included in EC GUI coding)
+4. Finish flex out code merge in trunk (1.3)
+This week - 
+1. Code complete for EC GUI
+
+Xin:
+Last week/This week: Mainly focus on MaaS project, will start preparing for system management existing architecture and code.
+
+Jason:
+Last week -
+1. Continue node failure testing for database scale out project
+2. Fix smoke test issues on UIDmodify
+3. Start coding on system mgmt cli rpm support
+This week -
+1. Finish system mgmt cli rpm project
+2. Hold next phase system mgmt scalability and performance testing plan discussion and put to wiki
+3. Track team 1.3 projects status and risks
+4. Support whole team for 1.2.5/1.3 pit/mauits issues and troubleshooting
+
+** Customer site troubleshooting
+*** Goldman reinstall/reboot cause RMG missing issue
+
+**** Troubleshooting process:
+
+Check db server log
+Check GUI system/site/node dashboard
+Check CM/PXE log in two master node and slave node in 2nd RMG
+Check 2nd master node dhcpd.conf and all slave nodes MAC address to see whether 2nd RMG slave node are reconfigured.
+[root@etc003495a-001 ~]# cat /etc/dhcpd.conf | grep 'hardware ethernet '
+    hardware ethernet       00:1e:c9:fd:a4:94;
+    hardware ethernet       00:1e:c9:fd:a4:17;
+    hardware ethernet       00:1e:c9:fd:a4:8a;
+    hardware ethernet       00:1e:c9:fd:a4:67;
+    hardware ethernet       00:1d:09:6c:01:0e;
+
+[root@etc003495a-001 ~]# mauirexec "ifconfig eth0 | grep HWaddr "
+Gathering public ssh host keys
+
+Output from host : etc003495a-001
+eth0      Link encap:Ethernet  HWaddr 00:1E:C9:FD:A4:71
+
+Output from host : etc003495a-002
+eth0      Link encap:Ethernet  HWaddr 00:1E:C9:FD:A4:94
+
+Output from host : etc003495a-003
+eth0      Link encap:Ethernet  HWaddr 00:1E:C9:FD:A4:17
+
+Output from host : etc003495a-004
+eth0      Link encap:Ethernet  HWaddr 00:1E:C9:FD:A4:8A
+
+Output from host : etc003495a-006
+eth0      Link encap:Ethernet  HWaddr 00:1D:09:6C:01:0E
+
+Output from host : etc003495a-005
+eth0      Link encap:Ethernet  HWaddr 00:1E:C9:FD:A4:67
+
+system.db=# select id, mds_replication, mds_rootowner, mds_master, as_ismaster, rm_gmetad, rm_compression, rm_gdc from nodecfgs order by id;
+ id | mds_replication | mds_rootowner | mds_master | as_ismaster | rm_gmetad | rm_compression | rm_gdc
+----+-----------------+---------------+------------+-------------+-----------+----------------+--------
+  1 | t               | t             | t          | t           | f         | t              | f
+  2 | t               | t             | f          | f           | f         | t              | f
+  3 | t               | f             | t          | f           | f         | t              | f
+  4 | t               | f             | f          | f           | f         | t              | f
+  5 | t               | f             | t          | f           | f         | t              | f
+  6 | t               | f             | f          | f           | f         | t              | f
+  7 | t               | f             | t          | f           | f         | t              | f
+  8 | t               | f             | f          | f           | f         | t              | f
+(8 rows)
+
+[root@etc003495a-001 ~]# mauirexec "dmidecode | grep UUID"
+Gathering public ssh host keys
+
+Output from host : etc003478a-002
+                UUID: 44454C4C-3800-1039-8037-B9C04F364A31
+
+Output from host : etc003478a-001
+                UUID: 44454C4C-3600-104E-8047-C3C04F364A31
+
+Output from host : etc003478a-004
+                UUID: 44454C4C-4D00-104B-8037-C3C04F364A31
+
+Output from host : etc003478a-003
+                UUID: 44454C4C-4E00-104B-8037-C3C04F364A31
+
+Output from host : etc003478a-005
+                UUID: 44454C4C-3200-1047-8037-B8C04F364A31
+
+Output from host : etc003495a-002
+                UUID: 44454C4C-5000-1059-8053-B1C04F434831
+
+Output from host : etc003478a-006
+                UUID: 44454C4C-4300-1039-804C-C7C04F334831
+
+Output from host : etc003478a-008
+                UUID: 44454C4C-3000-1042-8039-B5C04F4B4831
+
+Output from host : etc003495a-004
+                UUID: 44454C4C-4C00-1059-8053-C4C04F434831
+
+Output from host : etc003495a-003
+                UUID: 44454C4C-4B00-1059-8053-C7C04F434831
+
+Output from host : etc003478a-007
+                UUID: 44454C4C-3100-104C-804C-C4C04F334831
+
+Output from host : etc003495a-006
+                UUID: 44454C4C-3100-1036-8048-B4C04F524631
+
+Output from host : etc003495a-001
+                UUID: 44454C4C-5000-1059-8053-B7C04F434831
+
+Output from host : etc003495a-005
+                UUID: 44454C4C-4C00-1059-8053-C7C04F434831
+
+
+ 187 |      0 | 44454C4C-5000-1059-8053-B7C04F434831
+ 188 |      0 | 44454C4C-5000-1059-8053-B7C04F434831
+ 189 |      0 | 44454C4C-5000-1059-8053-B7C04F434831
+ 494 |      7 | 44454C4C-5000-1059-8053-B1C04F434831
+(62 rows)
+
+system.db=# select id, hostname from nodecfgs where nodeuuid='44454C4C-5000-1059-8053-B7C04F434831';
+ id |    hostname
+----+----------------
+  9 | etc003495a-001
+(1 row)
+
+system.db=# select id, hostname from nodecfgs where nodeuuid='44454C4C-5000-1059-8053-B1C04F434831';
+ id |    hostname
+----+----------------
+ 10 | etc003495a-002
+(1 row)
+
+
+ 187 | /dev/sds  |      0 | 44454C4C-5000-1059-8053-B7C04F434831
+ 188 | /dev/sdas |      0 | 44454C4C-5000-1059-8053-B7C04F434831
+ 189 | /dev/sdr  |      0 | 44454C4C-5000-1059-8053-B7C04F434831
+ 494 | /dev/sdf  |      7 | 44454C4C-5000-1059-8053-B1C04F434831
+(62 rows)
+
+system.db=# select count(*) from disks where status != 1;
+ count
+-------
+    62
+(1 row)
+
+
+Core dump:
+Loaded symbols for /lib64/libresolv.so.2
+Reading symbols from /usr/kerberos/lib64/libkrb5support.so.0...done.
+Loaded symbols for /usr/kerberos/lib64/libkrb5support.so.0
+Reading symbols from /lib64/libnss_files.so.2...Reading symbols from /usr/lib/debug/lib64/libnss_files-2.3.6.so.debug...done.
+done.
+Loaded symbols for /lib64/libnss_files.so.2
+#0  EndPoint (this=0x45c0c100, x=@0x6264202732333435, f=
+      {static keep_dom = 256, static own_dom = 512, static dont_validate = <optimized out>, static dont_initialize = 1, static no_xml_declaration = <optimized out>, static base = 16777216, x_ = 0}, c=0x0) at memory:301
+301     memory: No such file or directory.
+        in memory
+(gdb) bt 10
+#0  EndPoint (this=0x45c0c100, x=@0x6264202732333435, f=
+      {static keep_dom = 256, static own_dom = 512, static dont_validate = <optimized out>, static dont_initialize = 1, static no_xml_declaration = <optimized out>, static base = 16777216, x_ = 0}, c=0x0) at memory:301
+#1  0x000000000046f2ae in CmDiskStage::waitFormatDiskCb (this=0x699870, ev=0x6b3880) at message.ixx:540
+#2  0x0000000000470f20 in CmDiskStage::waitCb (this=0x699870, ev=0x6b3880) at cmdiskstage.cxx:745
+#3  0x0000000000471074 in CmDiskStage::callbackEvent (this=0x699870, event=0x6b3880, context=0x0) at cmdiskstage.cxx:247
+#4  0x00007f92fad1d272 in StageEvent::doneImmediate (this=0x6b3880)
+    at /home/autobuild//autobuild/mauisrc/branches/atmos-1.2.2/src/common/seda/cpp/stageevent.cxx:101
+#5  0x00007f92fad1e608 in Threadpool::runThread (poolPtr=0x45c0c100)
+    at /home/autobuild//autobuild/mauisrc/branches/atmos-1.2.2/src/common/seda/cpp/threadpool.cxx:305
+#6  0x00007f92f9e0035a in start_thread () from /lib64/tls/libpthread.so.0
+#7  0x00007f92f8408473 in clone () from /lib64/tls/libc.so.6
+#8  0x0000000000000000 in ?? ()
+#9  0x0000000000000000 in ?? ()
+(More stack frames follow...)
+(gdb
+
+check MDS/SS service status, blkid. update to 1. 
+service status and blkid, logs looks good. There is no disk status track log, we should enhance this.
+
+Issue:
+1. 6th node of 2nd RMG node clusteruuid is missing
+2. 2nd RMG all nodecfgs info lost
+3. Check disk status. RMG1 nodes are ok, RMG2 node  etc003495a-001 all disks status is 0.  etc003495a-002 one disk status is 7.
+4. ipranges lost one record
+
+**** Manual operations:
+
+system.db=# update nodes set clusteruuid = 'e5a4cc1b-389e-41dd-906f-1e746ad7961e' where hostname='etc003495a-006';
+UPDATE 1
+system.db=# INSERT INTO ipranges (clusteruuid, start_ip, end_ip, subnetmask , gateway, left_ip_num) values ('e5a4cc1b-389e-41dd-906f-1e746ad7961e', '10.235.191.104', '10.235.191.109', '255.255.255.0',
+ '10.235.191.1', 6);
+INSERT 0 1
+system.db=# UPDATE disks SET status = 1 where status!=1;
+UPDATE 62
+
+recover 2nd RMG nodecfgs table items
+
+**** Root cause:
+1. The database changes haven't been flush to the disks. 
+2. 
+
+**** Verify process 
+[root@etc003478a-001 ~]# mauirexec "cat /etc/maui//provision "
+[root@etc003478a-001 ~]# mauirexec "mauictl status" | grep -i stop
+[root@etc003478a-001 ~]# rmsview -l mauiss/mds/mdls
+
+*** Dugway RMG2 missing
+- Collect information 
+what information has lost?
+1. nodes table
+2. rmgs table
+3. nodecfgs table?
+4. ipranges table?
+
+
+
+
+
+5. Provide scripts to dump node.cfg to nodecfg table
+
+** DB testing notes
+*** Postgres testing tips
+**** Analyse query speed
+http://drupal.org/node/343082
+The main advantage of PostgreSQL over MySQL is the ability to log long-running queries, have full access to statistics on index/disc use and optimize queries. This is a long issue to discuss. For example, UPDATEs can be written in batches, which boosts performance. Choose:
+fsync = off
+
+At first, you need to set shared memory to a good level and tune Postgresql.conf to make sure that indexes are loaded in memory. Then all your queries should run in less than 30 ms. Make sure you are using pgAdmin3 graphical interface. It has good representation of statistics on index/seqential scans.
+
+I am presently migrating a 500.000 user messages board from PhpBB to Drupal. I log every query > 30 ms and there is a bunch of them.
+
+In postgresql.conf, set:
+log_min_duration_statement = 30
+
+**** Test disks for postgresql
+http://www.westnet.com/~gsmith/content/postgresql/pg-disktesting.htm
+
+*** ATT typical setup data
+1.2.1/1.2.2 version
+
+No database connection available
+
+[root@dfw01-is01-001 ~]# netstat -natp |grep 5432 |grep ESTABLISHED | wc -l
+197
+[root@dfw01-is01-001 ~]# netstat -natp |grep 5432 |grep ESTABLISHED | grep pgreplicate | wc -l
+141
+[root@dfw01-is01-001 ~]# netstat -natp |grep 5432 |grep ESTABLISHED | grep -v pgreplicate | wc -l
+67
+
+[root@dfw01-is01-001 ~]# netstat -natp |grep 5432 |grep ESTABLISHED | grep -v pgreplicate | grep -v "172.31.30.11:5432       172.31.30.11:"
+tcp        0      0 172.31.30.11:5432       172.31.30.25:55700      ESTABLISHED 27483/postgres: pos 
+tcp        0      0 172.31.30.11:59652      172.31.30.11:5432       ESTABLISHED 2504/ruby           
+tcp        0      0 172.31.30.11:5432       172.31.30.15:44281      ESTABLISHED 27815/postgres: pos 
+tcp        0      0 172.31.30.11:5432       172.31.30.31:56881      ESTABLISHED 27689/postgres: pos 
+tcp        0      0 172.31.30.11:5432       172.31.30.34:40089      ESTABLISHED 27685/postgres: pos 
+tcp        0      0 172.31.30.11:5432       172.31.30.35:55761      ESTABLISHED 27465/postgres: pos 
+tcp        0      0 172.31.30.11:5432       172.31.30.12:56497      ESTABLISHED 27697/postgres: pos 
+tcp        0      0 172.31.30.11:5432       172.31.30.32:40975      ESTABLISHED 27516/postgres: pos 
+tcp        0      0 172.31.30.11:5432       172.31.30.24:33864      ESTABLISHED 27467/postgres: pos 
+tcp        0      0 172.31.30.11:5432       172.31.30.35:55769      ESTABLISHED -                   
+tcp        0      0 172.31.30.11:58742      172.31.30.11:5432       ESTABLISHED 4240/cm             
+tcp        0      0 172.31.30.11:5432       172.31.30.13:46334      ESTABLISHED 27565/postgres: pos 
+tcp        0      0 172.31.30.11:5432       172.31.30.14:60623      ESTABLISHED 27687/postgres: pos 
+tcp        0      0 172.31.30.11:5432       172.31.30.26:55065      ESTABLISHED 27693/postgres: pos 
+tcp        0      0 172.31.30.11:55206      172.31.30.12:5432       ESTABLISHED -                   
+tcp        0      0 172.31.30.11:5432       172.31.30.33:52925      ESTABLISHED 27632/postgres: pos 
+tcp        0      0 172.31.30.11:5432       172.31.30.23:59384      ESTABLISHED 27566/postgres: pos 
+tcp        0      0 172.31.30.11:5432       172.31.30.16:35929      ESTABLISHED 27884/postgres: pos 
+tcp        0      0 172.31.30.11:5432       172.31.30.22:37951      ESTABLISHED 27876/postgres: pos 
+tcp        0      0 172.31.30.11:5432       172.31.46.11:54710      ESTABLISHED 16620/postgres: pos 
+tcp        0      0 172.31.30.11:5432       172.31.30.21:50370      ESTABLISHED 27703/postgres: pos 
+
+[root@dfw01-is01-001 ~]# netstat -natp |grep 5432 |grep ESTABLISHED | grep -v pgreplicate | grep -v "172.31.30.11:5432       172.31.30.11:" | wc -l
+19
+
+[root@dfw01-is01-001 8.2]# pwd
+/srv/pgsql/8.2
+[root@dfw01-is01-001 8.2]# du -sh
+1.2G	
+[root@dfw01-is01-001 8.2]# du -h
+12K	./data/pg_multixact/offsets
+12K	./data/pg_multixact/members
+28K	./data/pg_multixact
+3.9M	./data/base/10819
+3.9M	./data/base/10818
+1.2G	./data/base/16384
+3.9M	./data/base/1
+1.2G	./data/base
+13M	./data/pg_clog
+4.9M	./data/pg_subtrans
+312K	./data/global
+4.0K	./data/pg_xlog/archive_status
+33M	./data/pg_xlog
+4.0K	./data/pg_tblspc
+4.0K	./data/pg_twophase
+1.2G	./data
+48K	./etc
+1.2G	.
+
+[root@dfw01-is01-001 ~]# #pgdbrestore --file=/srv/pgsql/backup/system.db.tar.gz
+[root@dfw01-is01-001 ~]# cd /srv/pgsql/8.2/
+[root@dfw01-is01-001 8.2]# du -sh
+35M	.
+
+postgres=# DROP DATABASE "system.db" ;
+DROP DATABASE
+postgres=# CREATE DATABASE "system.db";
+CREATE DATABASE
+postgres=# \q
+[root@dfw01-is01-001 backup]# pg_restore -U postgres -d system.db system.db.tar
+[root@dfw01-is01-001 8.2]# du -sh
+53M	.
+
+2009-06-27 09:22:36,616 INFO cosprovision:156 Updating node database and node table in system db
+2009-06-29 05:58:20,423 ERROR dblib.py:39 can't set datestyle to ISO
+2009-06-29 05:58:20,423 ERROR cosprovision:388 DB ACCESS ERROR
+
+system.db=# UPDATE nodecfgs SET services = 'CLIENT,WS,CC,JS,MDLS,AS,RMS,SPREAD,MDS,SS' where id=44;
+
+ 43 | is01-001       | CLIENT,WS,CC,JS,MDLS,AS,RMS,SPREAD,MDS,SS
+ 44 | is01-002       | CLIENT,WS,CC,JS,MDLS,AS,PGS,RMS,SPREAD,MDS,SS
+
+system.db=# select id, call, input, status, retval from tasks where id > 630 order by id
+;
+ id  |                              call                              |                                                                     input                                                                      | status | retval 
+-----+----------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------+--------+--------
+ 643 | smtpconf                                                       | -f admin@maui.emc.com -s smtp01.dfw01.emcatmos.com                                                                                             |      3 |      0
+ 644 |                                                                |                                                                                                                                                |      2 |      1
+ 645 | cosprovision                                                   | precheck                                                                                                                                       |      3 |      0
+ 646 | cosprovision                                                   | netconfig --nodeuuid=44454C4C-5600-1054-8054-B6C04F524631                                                                                      |      3 |      0
+ 647 | cosprovision                                                   | genprofile --cmd=add_rmg --siteuuid=c99507a1-8575-4240-b713-d2edbc51d289 --seguuid=cf66049b-6515-4ecf-9791-23eeb94350b5 --dbhost=172.31.30.11  |      3 |      0
+ 648 | cosprovision                                                   | srvconfig --cmd=setup --services=all                                                                                                           |      3 |      0
+ 649 | cosprovision                                                   | partition --cmd=create                                                                                                                         |      3 |      0
+ 650 | cosprovision                                                   | updatecfg --srv=all                                                                                                                            |      2 |      0
+ 651 | update_fs_info                                                 |                                                                                                                                                |      1 |      0
+ 652 | snmp_sys_uptime                                                |                                                                                                                                                |      1 |      0
+ 653 | /usr/local/maui/ganglia/lib/ganglia/python_modules/maui_svc.py | gen_config                                                                                                                                     |      1 |      0
+(11 rows)
+
+Usage:
+To dump a database:
+$ pg_dump mydb > db.out
+
+To reload this database:
+$ psql -d database -f db.out
+
+To dump a database called mydb that contains large objects to a tar file:
+$ pg_dump -Ft -b mydb > db.tar
+
+To reload this database (with large objects) to an existing database called newdb:
+$ pg_restore -d newdb db.tar
+
+dump database in compressed include blobs show progress
+pg_dump -i -h someserver -p 5432 -U someuser -F c -b -v -f "/somepath/somedb.backup" somedb
+dump database in sql_ascii encoding
+pg_dump -i -h someserver -p 5432 -U someuser -E sql_ascii -F c -b -v -f "/somepath/somedb.backup" somedb
+backup pgagent schema of postgres db in plain text copy format, maintain oids
+pg_dump -i -h someserver -p 5432 -U postgres -F p -o -v -n pgagent -f "C:/pgagent.sql" postgres
+dump all databases - note pg_dumpall can only output to plain text
+pg_dumpall -i -h someserver -p 5432 -U someuser -c -o -f "/somepath/alldbs.sql"
+
+
+CMLOG:"Mon Jun 29 07:03:19 2009":MAUI:is01-001:13169:1249986912:"Mon Jun 29 07:03:19 2009":0:CM:cm:4:0:ses_ctrl.cxx:monitor:129:Failed to get ses flag from DB. ret 2006
+CMLOG:"Mon Jun 29 07:03:19 2009":MAUI:is01-001:13169:1249986912:"Mon Jun 29 07:03:19 2009":0:CM:cm:3:0:sysMgmtDB.cxx:getSesFlag:1198:Failed to get SES flag for node: 44454C4C-5600-1054-8054-B6C04F524631.
+CMLOG:"Mon Jun 29 07:02:19 2009":MAUI:is01-001:13169:1249986912:"Mon Jun 29 07:02:19 2009":0:CM:cm:4:0:ses_ctrl.cxx:monitor:129:Failed to get ses flag from DB. ret 2006
+CMLOG:"Mon Jun 29 07:02:19 2009":MAUI:is01-001:13169:1249986912:"Mon Jun 29 07:02:19 2009":0:CM:cm:3:0:sysMgmtDB.cxx:getSesFlag:1198:Failed to get SES flag for node: 44454C4C-5600-1054-8054-B6C04F524631.
+CMLOG:"Mon Jun 29 07:01:19 2009":MAUI:is01-001:13169:1249986912:"Mon Jun 29 07:01:19 2009":0:CM:cm:4:0:ses_ctrl.cxx:monitor:129:Failed to get ses flag from DB. ret 2006
+CMLOG:"Mon Jun 29 07:01:19 2009":MAUI:is01-001:13169:1249986912:"Mon Jun 29 07:01:19 2009":0:CM:cm:3:0:sysMgmtDB.cxx:getSesFlag:1198:Failed to get SES flag for node: 44454C4C-5600-1054-8054-B6C04F524631.
+CMLOG:"Mon Jun 29 07:00:45 2009":MAUI:is01-001:13169:1392662880:"Mon Jun 29 07:00:45 2009":0:CM:cm:6:0:mgmtlib.cxx:_capkeyRefresh:418:The CM should not invoke capkeyRefresh. Remove the timer.
+CMLOG:"Mon Jun 29 07:00:45 2009":MAUI:is01-001:13169:47489715496320:"Mon Jun 29 07:00:45 2009":0:CM:cm:6:0:mgmtlib.cxx:itimerHandler:575:Handling signal 14 to refresh Capkeys
+
+ sqlite3 /var/local/maui/sysmgmtdb/ses_db "select * from disks"
+
+After one day, db size:
+[root@dfw01-is01-001 ~]# du -sh /srv/pgsql/8.2/
+81M	/srv/pgsql/8.2/
+
+**** Network information
+AT&T Dallas MaaS					
+DFW-IS1					Linux
+Host Name	Public IP	Private IP	RMG Name	Location	Login
+dfw01-is01-001	172.31.30.11	192.168.11.11	dfw01-rmg01	DFW	root
+dfw01-is01-002	172.31.30.12	192.168.11.12	dfw01-rmg01	DFW	root
+dfw01-is01-003	172.31.30.13	192.168.11.13	dfw01-rmg01	DFW	root
+dfw01-is01-004	172.31.30.14	192.168.11.14	dfw01-rmg01	DFW	root
+dfw01-is01-005	172.31.30.15	192.168.11.15	dfw01-rmg01	DFW	root
+dfw01-is01-006	172.31.30.16	192.168.11.16	dfw01-rmg01	DFW	root
+					Linux
+DFW-IS2				Location	Login
+dfw01-is02-001	172.31.30.21	192.168.11.11	dfw01-rmg01	DFW	root
+dfw01-is02-002	172.31.30.22	192.168.11.12	dfw01-rmg01	DFW	root
+dfw01-is02-003	172.31.30.23	192.168.11.13	dfw01-rmg01	DFW	root
+dfw01-is02-004	172.31.30.24	192.168.11.14	dfw01-rmg01	DFW	root
+dfw01-is02-005	172.31.30.25	192.168.11.15	dfw01-rmg01	DFW	root
+dfw01-is02-006	172.31.30.26	192.168.11.16	dfw01-rmg01	DFW	root
+					Linux
+DFW-IS3				Location	Login
+dfw01-is03-001	172.31.30.31	192.168.11.11	dfw01-rmg01	DFW	root
+dfw01-is03-002	172.31.30.32	192.168.11.12	dfw01-rmg01	DFW	root
+dfw01-is03-003	172.31.30.33	192.168.11.13	dfw01-rmg01	DFW	root
+dfw01-is03-004	172.31.30.34	192.168.11.14	dfw01-rmg01	DFW	root
+dfw01-is03-005	172.31.30.35	192.168.11.15	dfw01-rmg01	DFW	root
+dfw01-is03-006	172.31.30.36	192.168.11.16	dfw01-rmg01	DFW	root
+					
+Dallas General Configuration					
+Gateway	172.31.30.1				
+Mask	255.255.255.0				
+DNS1	172.31.16.53				
+DNS2	172.31.16.54				
+NTP1	ntp01.dfw01.emcatmos.com				
+NTP2	ntp02.dfw01.emcatmos.com				
+SMTP1	smtp01.dfw01.emcatmos.com				
+SMTP2	smtp02.dfw01.emcatmos.com				
+Email Alerts	dco@emcatmos.com
+			
+Domain	dfw01.emcatmos.com				
+
+AT&T Ashburn MaaS					
+IAD-IS1					Linux
+Host Name	Public IP	Private IP	RMG Name	Location	Login
+is01-001	172.31.46.11	192.168.11.11	iad01-rmg01	IAD	root
+is01-002	172.31.46.12	192.168.11.12	iad01-rmg01	IAD	root
+is01-003	172.31.46.13	192.168.11.13	iad01-rmg01	IAD	root
+is01-004	172.31.46.14	192.168.11.14	iad01-rmg01	IAD	root
+is01-005	172.31.46.15	192.168.11.15	iad01-rmg01	IAD	root
+is01-006	172.31.46.16	192.168.11.16	iad01-rmg01	IAD	root
+					Linux
+IAD-IS2				Location	Login
+is02-001	172.31.46.21	192.168.11.11	iad01-rmg01	IAD	root
+is02-002	172.31.46.22	192.168.11.12	iad01-rmg01	IAD	root
+is02-003	172.31.46.23	192.168.11.13	iad01-rmg01	IAD	root
+is02-004	172.31.46.24	192.168.11.14	iad01-rmg01	IAD	root
+is02-005	172.31.46.25	192.168.11.15	iad01-rmg01	IAD	root
+is02-006	172.31.46.26	192.168.11.16	iad01-rmg01	IAD	root
+					Linux
+IAD-IS3				Location	Login
+is03-001	172.31.46.31	192.168.11.11	iad01-rmg01	IAD	root
+is03-002	172.31.46.32	192.168.11.12	iad01-rmg01	IAD	root
+is03-003	172.31.46.33	192.168.11.13	iad01-rmg01	IAD	root
+is03-004	172.31.46.34	192.168.11.14	iad01-rmg01	IAD	root
+is03-005	172.31.46.35	192.168.11.15	iad01-rmg01	IAD	root
+is03-006	172.31.46.36	192.168.11.16	iad01-rmg01	IAD	root
+					
+Dallas General Configuration					
+Gateway	172.31.46.1				
+Mask	255.255.255.0				
+DNS1	172.31.16.53				
+DNS2	172.31.16.54				
+NTP1	ntp01.iad01.emcatmos.com				
+NTP2	ntp02.iad01.emcatmos.com				
+SMTP1	smtp01.iad01.emcatmos.com				
+SMTP2	smtp02.iad01.emcatmos.com				
+Email Alerts	dco@emcatmos.com
+			
+Domain	iad01.emcatmos.com				
+
+RMG1 and RMG2 RTT delay is 40 ms
+
+[root@is01-001 etc]# ping 172.31.30.11
+PING 172.31.30.11 (172.31.30.11) 56(84) bytes of data.
+64 bytes from 172.31.30.11: icmp_seq=0 ttl=64 time=40.0 ms
+64 bytes from 172.31.30.11: icmp_seq=1 ttl=64 time=39.8 ms
+64 bytes from 172.31.30.11: icmp_seq=2 ttl=64 time=39.8 ms
+
+[root@is01-001 etc]# ping 172.31.46.21
+PING 172.31.46.21 (172.31.46.21) 56(84) bytes of data.
+64 bytes from 172.31.46.21: icmp_seq=0 ttl=64 time=3.79 ms
+64 bytes from 172.31.46.21: icmp_seq=1 ttl=64 time=0.126 ms
+64 bytes from 172.31.46.21: icmp_seq=2 ttl=64 time=0.119 ms
+
+*** Remove new RMG master node
+1. Modify database nodecfgs table, remove target node hostname in below items:
+   - seg_heads
+   - mdls_list
+   - as_list
+   - rms_list
+   - rm_data_source
+   - rm_metric_src_list
+   - rms_rmg_list
+   - rms_node_list
+   - spread_source
+
+system.db=# UPDATE clusters SET prefixname = 'iad01-is01' where id=8;
+system.db=# UPDATE nodes SET hostname = 'iad01-is01-001' where id=23;
+system.db=# UPDATE nodecfgs SET hostname = 'iad01-is01-001' where id = 43;
+system.db=# UPDATE nodecfgs SET hostname = 'iad01-is01-002' where id = 44;
+system.db=# UPDATE nodecfgs SET hostname = 'iad01-is01-003' where id = 45;
+system.db=# UPDATE nodecfgs SET hostname = 'iad01-is01-004' where id = 46;
+system.db=# UPDATE nodecfgs SET hostname = 'iad01-is01-005' where id = 47;
+system.db=# UPDATE nodecfgs SET hostname = 'iad01-is01-006' where id = 48;
+system.db=# UPDATE nodecfgs SET seg_heads = 'dfw01-is01-001,dfw01-is02-001,dfw01-is03-001,iad01-is01-001';
+system.db=# UPDATE nodecfgs SET mdls_list = 'dfw01-is01-002,dfw01-is01-001,iad01-is01-001';
+system.db=# UPDATE nodecfgs SET as_list = 'dfw01-is01-002,dfw01-is01-001,iad01-is01-001';
+system.db=# UPDATE nodecfgs SET rms_list = 'dfw01-is01-001:DFW,dfw01-is01-002:DFW,dfw01-is01-003:DFW,dfw01-is01-004:DFW,dfw01-is01-005:DFW,dfw01-is01-006:DFW,dfw01-is02-001:DFW,dfw01-is02-002:DFW,dfw01-is02-003:DFW,dfw01-is02-004:DFW,dfw01-is02-005:DFW,dfw01-is02-006:DFW,dfw01-is03-001:DFW,dfw01-is03-002:DFW,dfw01-is03-003:DFW,dfw01-is03-004:DFW,dfw01-is03-005:DFW,dfw01-is03-006:DFW,iad01-is01-001:IAD,iad01-is01-002:IAD,iad01-is01-003:IAD,iad01-is01-004:IAD,iad01-is01-005:IAD,iad01-is01-006:IAD';
+system.db=# UPDATE nodecfgs SET rm_data_source = 'dfw01-rmg01,dfw01-is01-001,dfw01-is01-002,dfw01-is02-001,dfw01-is03-001;iad01-rmg01,iad01-is01-001,iad01-is01-002';
+system.db=# UPDATE nodecfgs SET rm_metric_src_list = 'dfw01-rmg01;iad01-rmg01';
+system.db=# UPDATE nodecfgs SET rms_rmg_list = 'dfw01-rmg01,dfw01-is01-001,dfw01-is01-002;iad01-rmg01,iad01-is01-001,iad01-is01-002';
+system.db=# UPDATE nodecfgs SET rms_node_list = 'dfw01-rmg01,dfw01-is01-003,dfw01-is01-004,dfw01-is01-005,dfw01-is01-006,dfw01-is02-003,dfw01-is02-004,dfw01-is02-005,dfw01-is02-006,dfw01-is03-003,dfw01-is03-004,dfw01-is03-005,dfw01-is03-006;iad01-rmg01,iad01-is01-003,iad01-is01-004,iad01-is01-005,iad01-is01-006';
+system.db=# UPDATE nodecfgs SET spread_source = 'iad01-is01-001:172.31.46.11:192.168.11.11:172.31.46.255;iad01-is01-002:172.31.46.12:192.168.11.12:172.31.46.255 dfw01-is03-001:172.31.30.31:192.168.11.11:172.31.30.255;dfw01-is03-002:172.31.30.32:192.168.11.12:172.31.30.255 dfw01-is02-001:172.31.30.21:192.168.11.11:172.31.30.255;dfw01-is02-002:172.31.30.22:192.168.11.12:172.31.30.255 dfw01-is01-001:172.31.30.11:192.168.11.11:172.31.30.255;dfw01-is01-002:172.31.30.12:192.168.11.12:172.31.30.255';
+system.db=# UPDATE nodecfgs SET services = 'CLIENT,WS,CC,JS,RMS,SPREAD,MDS,SS' where hostname = 'iad01-is01-002';
+
+2. Reconfigure every node in the system
+
+Backup old node config file.
+[root@dfw01-is02-006 ~]# cd /etc/maui
+[root@dfw01-is02-006 maui]# cp node.cfg node.cfg.bak
+
+Check pxe log about genprofile command
+[root@dfw01-is02-006 maui]# genprofile --cmd=load_from_db --dbhost=172.31.30.11 --siteuuid=de599df8-8f9a-4966-8032-4c75c5999d86 --seguuid=b28ba40e-6927-4839-a0d5-7a2ab04d9587
+
+Modify new generated node cfg. Here we don't want to partition disks again. So we don't need to reconfigure SS and MDS services. 
+[root@dfw01-is02-006 maui]# vimdiff node.cfg node.cfg.bak 
+Move SS_NumDisks, MDS_Ports, SS_DiskList, SS_DiskLocation from old node.cfg to new node.cfg. Remove MDS,SS from Services in new node.cfg.
+[root@dfw01-is02-006 maui]# mauiconfig -f node.cfg
+[root@dfw01-is02-006 maui]# mauictl restart
+[root@dfw01-is02-006 maui]# mauictl status
+Add MDS,SS back to Services in new node.cfg
+
+Change in new node:
+js_cfg.xml:44:    <entry key="JsSet" value="iad01-is01-001,is01-002" />
+mds/10410/mds_cfg.xml:48:  <entry key="masterHost" value="is01-002"/>
+mds/10608/mds_cfg.xml:48:  <entry key="masterHost" value="is01-002"/>
+mds/10606/mds_cfg.xml:48:  <entry key="masterHost" value="is01-002"/>
+mds/10601/mds_cfg.xml:48:  <entry key="masterHost" value="is01-002"/>
+
+Reinitialize lockboxes and dump/restore data from lockboxes:
+
+3. Issues
+Core dump:
+Core was generated by `/usr/local/maui/bin/mauisvcmgr -s mauimds -q mauimds_getmdsmaster'.
+Core was generated by `/usr/local/maui/bin/mauisvcmgr -s mauimds -q mauimds_getmdsslave'.
+Core was generated by `/usr/local/maui/bin/mauisvcmgr -s mauimds -q mauimds_getmdsdown'.
+
+*** Cybercluster troubleshooting
+There are two errors which would cause slave db start hangs:
+1. Client close connection unexpected. but the transaction id still not equal to ZERO which cause cybercluster hang to recover.
+
+[root@auto3-130A-001 ~]# ps -ef | grep pg
+root      8494  8288  0 15:16 pts/0    00:00:00 grep pg
+postgres 21063     1  0 14:57 ?        00:00:00 /usr/bin/pgreplicate -D /srv/pgsql/8.2/etc -l
+root     21206     1  0 14:57 ?        00:00:00 /bin/sh /usr/local/maui/bin/mmon pgreplicate --cleanup=service postgresql restart pgreplicate --pidfile=/srv/pgsql/8.2/etc/pgreplicate.pid --restart=1
+postgres 21298     1  0 14:57 ?        00:00:01 /usr/bin/postgres -D /srv/pgsql/8.2/data -i
+postgres 21348 21298  0 14:57 ?        00:00:00 /usr/bin/postgres -D /srv/pgsql/8.2/data -i
+
+[root@auto3-130A-001 ~]# gdb --pid=21063 /usr/bin/pgreplicate 
+GNU gdb 6.7.1
+....
+
+(gdb) info thread
+  8 Thread 0x4164e940 (LWP 21066)  0x00007fab5db63511 in nanosleep () from /lib64/libc.so.6
+  7 Thread 0x40f26940 (LWP 21067)  0x00007fab5db95da2 in select () from /lib64/libc.so.6
+  6 Thread 0x41512940 (LWP 21068)  0x00007fab5db95da2 in select () from /lib64/libc.so.6
+  5 Thread 0x41aa7940 (LWP 21346)  0x00007fab5db95da2 in select () from /lib64/libc.so.6
+  4 Thread 0x41027940 (LWP 24602)  0x00007fab5db95da2 in select () from /lib64/libc.so.6
+  3 Thread 0x41128940 (LWP 27284)  0x00007fab5db95da2 in select () from /lib64/libc.so.6
+  2 Thread 0x41ba8940 (LWP 27613)  0x00007fab5db95da2 in select () from /lib64/libc.so.6
+  1 Thread 0x7fab5f527700 (LWP 21063)  0x00007fab5db95da2 in select () from /lib64/libc.so.6
+(gdb) t 8
+[Switching to thread 8 (Thread 0x4164e940 (LWP 21066))]#0  0x00007fab5db63511 in nanosleep () from /lib64/libc.so.6
+(gdb) p Host_Tbl_Begin->transaction_count
+$1 = 1
+(gdb) set print pretty on
+(gdb) p *Host_Tbl_Begin
+$2 = {
+  useFlag = 2, 
+  same_as_replicator = 1 '\001', 
+  hostName = "auto3-130A-001", '\0' <repeats 113 times>, 
+  resolvedName = "10.32.109.102\000\000\000\000\000\000\000\000\000\000", 
+  port = 5432, 
+  recoveryPort = 7001, 
+  hostNum = 1, 
+  transaction_count = 1, 
+  retry_count = 0, 
+  n_ddlstmt = 108, 
+  n_begin = 1, 
+  n_commit = 0, 
+  n_rollback = 0, 
+  n_insert = 0, 
+  n_update = 7, 
+  n_delete = 0
+}
+(gdb) set Host_Tbl_Begin->transaction_count=0
+(gdb) c
+Continuing.
+[New Thread 0x408d2940 (LWP 24082)]
+[Thread 0x408d2940 (LWP 24082) exited]
+[New Thread 0x408d2940 (LWP 24085)]
+[Thread 0x408d2940 (LWP 24085) exited]
+
+On slave node, it will first hang at below msgs:
+Start in recovery mode!
+Please wait until a data synchronization finishes from Master DB...
+1st recovery step of [global] directory...Warning: Permanently added 'auto3-130a-001,10.32.109.102' (RSA) to the list of known hosts.^M
+OK
+1st recovery step of [base] directory...OK
+1st recovery step of [pg_clog] directory...OK
+1st recovery step of [pg_xlog] directory...OK
+1st sync_table_space OK
+=====================================================
+
+After master change transaction to ZERO and continue, slave node will contine the recovery process and everything works well!
+2nd recovery step of [global] directory...OK
+2nd recovery step of [base] directory...OK
+2nd recovery step of [pg_clog] directory...OK
+2nd recovery step of [pg_xlog] directory...OK
+2nd sync_table_space OK
+2nd recovery successed
+2009-10-28 15:22:18 UTC    1  LOG:  PGR_Do_Master_Main(): PGR_Create_Socket_Bind succeeded
+
+2. Client keep transaction too long and during this time, slave node reboot master node and it will cause both slave recover and db client hangs:
+Troubleshooting:
+From master node /var/log/message/, we can get below db restart time and information:
+
+local7.notice<189>: Oct 28 06:15:50 localhost postgresql: etc -l & startup succeeded
+user.notice<13>: Oct 28 06:15:54 localhost mmon[24452]: monitor "pgreplicate[24301]" via "/srv/pgsql/8.2/etc/pgreplicate.pid" interval "10" seconds restart "service postgresql restart pgreplicate"
+local7.notice<189>: Oct 28 06:15:55 localhost postgresql: data' -o '-i' start & startup succeeded
+
+From master node DB log /srv/pgsql/8.2/log/postgresql-2009-10-28.log, we can see below transaction not finished:
+
+2009-10-28 06:16:21 UTC trunk4A-004(34067) rmg.db 4ae7e1b5.655d 2 authentication LOG:  connection authorized: user=postgres database=rmg.db
+2009-10-28 06:16:21 UTC trunk4A-004(34067) rmg.db 4ae7e1b5.655d 3 SET LOG:  duration: 0.656 ms  statement: SET DATESTYLE TO 'ISO'
+2009-10-28 06:16:21 UTC trunk4A-004(34067) rmg.db 4ae7e1b5.655d 4 SHOW LOG:  duration: 0.259 ms  statement: SHOW client_encoding
+2009-10-28 06:16:21 UTC trunk4A-004(34067) rmg.db 4ae7e1b5.655d 5 SHOW LOG:  duration: 0.069 ms  statement: SHOW default_transaction_isolation
+2009-10-28 06:16:21 UTC trunk4A-004(34067) rmg.db 4ae7e1b5.655d 6 SET LOG:  duration: 0.307 ms  statement: BEGIN; SET TRANSACTION ISOLATION LEVEL READ COMMITTED
+2009-10-28 06:16:21 UTC trunk4A-004(34067) rmg.db 4ae7e1b5.655d 7 SELECT LOG:  duration: 0.000 ms  statement: SELECT * FROM tasks WHERE scope=E'Node' and scopeuuid=E'502CC302-83FE-5CFE-CEED-B13A55819393' and call=E'update_fs_info'
+2009-10-28 06:16:21 UTC trunk4A-004(34067) rmg.db 4ae7e1b5.655d 8 INSERT LOG:  duration: 0.000 ms  statement: INSERT INTO tasks (uuid, scopeuuid, tasktype, scope, call, starttime, status, scheduled, interval) VALUES (E'fa687c69-ecc7-4aea-bb70-342f357caa14',E'502CC302-83FE-5CFE-CEED-B13A55819393',E'0',E'Node',E'update_fs_info','2009-10-28T06:16:43.790859',E'0',E'1',E'3600')
+
+[root@trunk4A-001 ~]# ps axf | grep transaction
+17425 pts/2    S+     0:00          \_ grep transaction
+25949 ?        Ss     0:00  \_ postgres: postgres rmg.db trunk4A-004(34067) idle in transaction
+26590 ?        Ss     0:00  \_ postgres: postgres rmg.db trunk4A-003(56757) idle in transaction
+
+From the client node side we can see below command hold the transaction:
+[root@trunk4A-004 ~]# ps -ef | grep cos
+root     11535  3974  0 06:15 ?        00:00:00 /usr/bin/python2.4 /usr/local/maui/provision/cosprovision partition --cmd=create
+root     17413 17299  0 06:55 pts/0    00:00:00 grep cos
+[root@trunk4A-004 ~]# netstat -anpt | grep 5432
+tcp        0      0 10.32.182.200:54219         10.32.182.197:5432          TIME_WAIT   -                   
+tcp        0      0 10.32.182.200:34065         10.32.182.197:5432          ESTABLISHED 11535/python2.4     
+tcp        0      0 10.32.182.200:54231         10.32.182.197:5432          TIME_WAIT   -                   
+tcp        0      0 10.32.182.200:54242         10.32.182.197:5432          TIME_WAIT   -                   
+tcp        0      0 10.32.182.200:34067         10.32.182.197:5432          ESTABLISHED 11535/python2.4     
+tcp        0      0 10.32.182.200:54237         10.32.182.197:5432          TIME_WAIT   -                   
+tcp        0      0 10.32.182.200:54230         10.32.182.197:5432          TIME_WAIT   -                   
+
+Solution:
+1. Reduce client db connection and operation time and close the connection asap.
+2. Fix cybercluster issue on check transaction count. However, this may make slave data lost for some transactions.
+
+
+** Tea session potential topics
+1. life lesson learn topics?
+2. technical related, expericed engineer recommend technical books, everyone read one session and share with other, writing code experience - Yubo
+3. technical fundunmental improvement, write good code, good format, has good slides - Yubo
+4. tea session need slides, one topic has several owners, writing notes when reading books - Yubo
+5. not only improve code quality, but also improve everyone quality
+6. seven habits
+7. refine existing module architecture
+8. cannot get attraction with too many food if talking about technical topics
+9. a series of workshop with some specific topics
+10. programming thought, e.g. design pattern, SEDA(Jiang)
+11. introduction to Huawei, eBay, IBM quality assure process - by Yubo, Lizhong, Xin, Hongbin
+12. Caihua film introduction, weekend books interested
+13. team senior people introduct coding experience
+14. home introduction, tradition
+15. prepare slides and organise all information in twiki
+16. tea session feedback collection and post brainstorming
+17. review past session experience - session postmortem
+18. how to manage bug and maintain?
+19. how to collect and organize information?
+20. other products introduction - feature, design, architecture analyze
+21. invite other team members to hear others opinion
+** Atmos 1.3 cycle 
+*** Atmos capacity reporting mechanisms
+
+#!/usr/bin/python2.4
+
+import os
+i
+mport statvfs
+st = os.statvfs("/mauimds-db/mds-1fbce6f0-2f6d-4320-a615-916848b05a4c")
+blocksize = st[statvfs.F_BSIZE]
+total_block = st[statvfs.F_BLOCKS]
+free_block = st[statvfs.F_BFREE]
+avail_block = st[statvfs.F_BAVAIL]
+
+print blocksize
+
+print total_block
+
+print free_block
+
+print avail_block
+
+print total_block * blocksize /1024/1024/1024
+
+print free_block * blocksize /1024/1024/1024
+
+print avail_block * blocksize /1024/1024/1024
+
+*** Release management
+1. Branch merge
+2. Smoke test results and bug fixing
+3. Load testing
+4. Go through high risk projects
+
+*** DONE DB new deployment upgrade
+	 CLOSED: [2009-09-02 Wed 13:11]
+Assumption:
+1. Cannot add node during upgrade
+
+
+Refine:
+1. Migrate alert data in postSystem stage
+2. Move node schedule tasks in postUpgrade stage
+3. Will CM reload the same UUID task twice?
+4. Configure postgresql/pgreplicate in preSystem stage
+5. MDS remote replication upgrade consideration. how to check previous remote mds replication? - Karthik clarify
+6. SNMP upgrade - Chunjie 3 days
+7. Subtenant NAS - Caihua ? days
+8. Document mgmt db operations are not allowed during upgrade
+*** DONE build RPM package for CLI tools
+	 CLOSED: [2009-09-02 Wed 13:11]
+*** DONE detail test scope and target -- need to confirm with Arun
+	 CLOSED: [2009-07-21 Tue 20:17]
+scope: 4 RMG 200 nodes or even 6-8 RMG 300 nodes
+
+understand exist issues and limitation: db size, db load, response time, 
+
+focus on these issues and simulate similar testbed to get test data
+
+**** Test db availability during pgcluster data recovery process
+Remind Xin about his improvement in pgpool
+*** DONE Remove Compression+Dedup support in GUI/CLI installation -> To Chunjie
+	 CLOSED: [2009-08-11 Tue 12:59]
+
+* Daily work 														   :WORK:
+<2010-01-03 21:53>
+
+** TODO update db wiki about impact areas (files, comments?)
+** TODO refine installation troubleshooting structure in wiki
+
+
+
+
+
+** ------------------------------- spliter -------------------------------
+
+** TODO Check whether updateNodeInfo has update clusteruuid in nodes table. Currently if we restart mauicm and db doesn't contain the record, this will cause clusteruuid empty.
+** TODO Refine setNodeInfo to two API: addNodeInfo, updateNodeInfo
+** TODO Add IPADDR check in postgresql script. 
+if eth1 use DHCP get IP, ifcfg-eth1 IPADDR maybe empty and postgresql cannot be initialized
+** TODO Refine installation design wiki to latest status
+** TODO Config DRAC and auto deployment physical testbed
+** TODO Seven habits share session prepare
+** DONE Db log shipping planning mail to Rich
+   CLOSED: [2010-02-11 Thu 15:12]
+** DONE sysmgmt plan discuss with Yubo
+   CLOSED: [2010-02-11 Thu 15:12]
+** DONE Check with team in log copy collection process. This tool should collect enough information for us to debug if there has a issue in customer side.
+   CLOSED: [2009-12-24 Thu 23:20]
+** DONE Add retry on provision tool script especially on failure cases
+   CLOSED: [2009-12-24 Thu 23:20]
+** DONE Fix bug# 5078 graceful shut down feature - assign to Jiang...
+   CLOSED: [2009-12-24 Thu 23:20]
+** Upgrade discussion with Ming
+- What load should we have in 1.3? 
+- Limitations here for management operations during upgrade?
+  - one limitation is during upgrade process, but not limit for same version in whole system
+  - upgrade just one rmg/segment, then need to run mgmt commands or data CRUD
+- Let other components developer should first test their changes in mixed version platform
+- Enhance upgrade framework to check current system status, can we check current system status and resume error point from last failure
+- Review all scripts to eliminate simple errors during upgrade
+  - This cannot fix all the problems, e.g. script scope hasn't covered the related functionalities
+  - Review can fix some simple quality problems, like re-entrant, db changes and access during upgrade process
+  - You should hold to review the code logic but not the script developer
+- Can we deploy rBuilder server in SH?
+- Can we build appliance from local sandbox?
+- Put more resources on upgrade feature
+- Use exist testing suite during upgrade, e.g. LTP testing
+- Allocate more meetings with other feature leaders and discuss with them to understand feature better
+- Record all trouble shooting process and knowledge to enable TS engineers
+  - Cover all test cases before release, like tenant creation
+  - Enhance mauiverify to better tracking root cause and issues to check current system problem
+  - Try to cover more test cases in mauiverify
+- I need to know what you have done. After I know what you've done, I'll know what you haven't done. Then I'll know what I should do.
+- Upgrade experience from Ming
+  - Consider the communication protocol early and consider most for future use to avioid protocal upgrade frequently
+  - Use Linux from scratch to add package, library to deploy package
+- Two ways to reduce upgrade time - Ming's proposal
+  - Have two root file system, when upgrade, don't stop service, after new package to one root system, restart service and use the new root file system
+  - Put upgrade packages to another path of system, after copy finished, restart the services and rename all the packages
+
+- Deploy maui in several small packages
+  - Reduce service down time 
+
+Short term action plan
+- Review scripts and discuss with other team leads
+- Enhance mauiverify to generate report and send to others, cover more cases that mauits cannot
+- Document troubleshooting process to enable TS step by step
+** DONE Collect db data in logcopy. get whole /srv/pgsql/8.2 directory.
+   CLOSED: [2009-12-24 Thu 23:20]
+
+** DONE HTTP PXE boot 1.3
+   CLOSED: [2009-12-24 Thu 23:20]
+** DONE Review PITR disruptive test
+   CLOSED: [2009-12-01 Tue 16:38]
+1. postgresql service down
+   - If slave down, how to handle disk full?
+   - Any monitoring mechanism to recover, pgmon, reporting, ganglia metrics?
+2. node down
+   - the same question on disk full
+3. service crash
+   - how to simulate this?
+   - how to detect and determine data lost or destoryed?
+   - on primary node, change from master to slave not mean failback.
+   - what's the case for standby node out of disk space? too many mgmt data? if we have pgdbclean, still the same problem?
+   - how to failback standby node
+4. node crash
+   - internal disk failure?
+5. data lost in crash
+   - what's possibility of data lost for service crash? how to simulate and check data lost?
+6. Conclusion
+** DONE Remove restart master node when configure slave node DB
+   CLOSED: [2009-10-19 Mon 18:22]
+** CANCELED Start draft cm task module design page and send out mail to US team members
+   CLOSED: [2009-10-19 Mon 18:22]
+** Discussion with Rossen/Greg/Robin
+Eight functional areas:
+
+Shared services	(Lead: Paul B/Frank Wang)
+- Added capabilities beyond Atmos which needs to be deployed in datacenter environment
+- Monitoring, reporting (this is not the focus)
+- Billing, metering, portal(mainly for customer)
+- Portal will include Atmos online, Atmos and even CaaS in the long term
+- User mgmt (mainly include services related or customer side. Sysmgmt should handle internal mgmt functional user mgmt)
+
+Distributed systems	(Lead: Rossen/Junius Luo)
+- Client, ClaaS
+- MDS
+- MDLS
+
+Storage	services (Lead: Arun/Chen Wang)
+- SS, JS, CC
+- CommStage protocols
+
+Web Services (Lead: Ray A/Oliver Zhou)
+- Include data/metadata/mgmt
+- Presentation layer services for Atmos and Atmos online
+- System mgmt API
+
+File System Access	(Lead: Miru/Randy Xu)
+- NAS access
+- NFS/CIFS
+- mauifs
+- Future: kernal module for VFS to replace FUSE
+
+System Mgmt	(Lead: Patrick/Jason Chen)
+- RBAC Role based account mgmt
+- Getwell
+- Installation/configuration
+- Tenant/Subtenant/Policy mgmt
+- A new coherent model definition for system mgmt
+- Based on above, think about policy/mgmt API
+- Database/replication/distribution tech inside system mgmt
+- spread to 20 sites
+- Upgrade (1. protocols version, 2. software upgrade framework and procedure)
+- Hardware compatibility
+
+Provisioning, Monitoring, Alerting	(Lead: Andrea Heyda/Yubo Zhao)
+- RMS
+- Serviceability
+- Hardware compatibility
+- SYR/connectEMC integration
+- ESRS: CS remote log in to the system(similar to webEx)
+
+Search and Indexing	(Lead: Jurgen/Hongbin Yin)
+- Powerful search capabilities with different options
+- Evaluate existing database/index techs: Lucene, Hadoop, XML-base tech (X-Hive)
+- Collaboration with MDS, file system, policy mgmt
+
+Quality of services:
+1. Security
+- Code secrurity across all func areas
+- Service related security, mainly for operational purpose
+- Value add to all service components
+
+2. Performance
+- I/O, data stream
+
+MISC:
+Hardware
+- new DELL R610 model start from Q3
+
+** DONE Add timestamp into mauiconfig logs - To Xin
+   CLOSED: [2009-10-19 Mon 18:22]
+** DONE Talk with Xin about db restart issue troubleshooting and solution. 
+   CLOSED: [2009-10-19 Mon 18:20]
+1. How we find out restart master failed during configure slave pg db?
+2. If restart master failed, how to handle continous installation and system mgmt since we have removed db auto failover?
+
+solution: 
+1. add log to mauiconfig to find more information about the error root cause
+** DONE Test installation parallel procedure proposed by Rossen
+   CLOSED: [2009-09-27 Sun 12:07]
+
+
+** DONE Review engineer response and clarify with Arun about PDS 1351
+   CLOSED: [2009-09-19 Sat 16:58]
+** DONE Use Fortify to check code
+   CLOSED: [2009-09-19 Sat 16:58]
+** DONE Add wiki link for all team books
+   CLOSED: [2009-09-19 Sat 16:58]
+
+** DONE Review mgmtdb test and installation getwell plan.
+   CLOSED: [2009-08-16 Sun 21:54]
+
+** DONE Add book list wiki link
+   CLOSED: [2009-09-19 Sat 16:58]
+** DONE Add engineer response for CLI RPM package
+   CLOSED: [2009-09-19 Sat 16:58]
+** DONE Add system mgmt category in wiki
+   CLOSED: [2009-08-31 Mon 22:48]
+** DONE Refine issue list in scale mgmtdb and notify Jiang to fix one by one
+   CLOSED: [2009-08-31 Mon 22:48]
+** DONE Check db restart issue. Only restart db server if this node is a new master node for non-first RMG
+   CLOSED: [2009-08-27 Thu 18:14]
+** DONE Confirm subtenant root alias deliver date - with Yi/Tom
+   CLOSED: [2009-08-24 Mon 17:03]
+** DONE Fix bug [[https://tvg01.lss.emc.com/bugzilla/show_bug.cgi%3Fid%3D7121][7121]]
+   CLOSED: [2009-08-21 Fri 17:04]
+** DONE Q3 MBO
+   CLOSED: [2009-08-21 Fri 17:04]
+** DONE TC subteam meeting
+   CLOSED: [2009-08-21 Fri 17:04]
+
+** DONE Track all CLI changes in 1.3 and notify Yubo
+   CLOSED: [2009-08-16 Sun 21:54]
+** DONE Clarify with Ritesh about subtenant root dir alias.
+   CLOSED: [2009-08-16 Sun 21:54]
+
+** DONE New rails version impact to all mgmt controller (Caihua)
+   CLOSED: [2009-08-16 Sun 21:54]
+** DONE Clarify 1.2.4 document about installation and serviceability
+   CLOSED: [2009-08-16 Sun 21:54]
+** DONE Send out subteam meeting request 
+   CLOSED: [2009-08-16 Sun 21:53]
+
+** DONE Add status/powerstatus to heartbeat stage and GUI status show - Jiang/Lizhong
+   CLOSED: [2009-08-03 Mon 14:28]
+** DONE Prepare installation discussion slide with Rossen
+   CLOSED: [2009-07-28 Tue 13:13]
+** DONE Response to Rossen about mgmtdb works
+   CLOSED: [2009-07-28 Tue 13:13]
+** DONE Plan for GUI installation getwell works
+   CLOSED: [2009-07-21 Tue 20:19]
+** DONE Review management database testing plan and results
+   CLOSED: [2009-07-20 Mon 15:17]
+** DONE Add mgmt db testing tools to the installation stage
+   CLOSED: [2009-07-20 Mon 15:17]
+** DONE Find installation related document to Chunjie for review
+   CLOSED: [2009-07-17 Fri 14:52]
+** DONE Check with Chunjie about this week's plan and current status for get-well plan/document/1.2.4 verify/bugzilla update
+   CLOSED: [2009-07-17 Fri 11:50]
+** DONE Long term plan installation put to roadmap -> Chunjie
+   CLOSED: [2009-07-14 Tue 14:10]
+** DONE Short term get-well plan organized in wiki and let others know clearly about our get-well plan -> Chunjie
+   CLOSED: [2009-07-13 Mon 13:44]
+** DONE Follow up subtenant root directory alias support in 1.2.5 --> To Tom
+	 CLOSED: [2009-07-13 Mon 22:12]
+** DONE Think about setup connection with CS people to get more customer feedbacks
+	 CLOSED: [2009-07-13 Mon 22:12]
+Idea from Stephen Hu. 
+Setup regular meeting with CS people about feedbacks / customer requirements and smooth collaboration process.
+** DONE partition failed bug# 6220/6250
+	 CLOSED: [2009-07-10 Fri 20:48]
+** DONE Review 1.3 works and make related update if there needs
+	 CLOSED: [2009-06-25 Thu 20:13]
+** DONE Discuss async tenant/policy creation time wait for QA
+	 CLOSED: [2009-06-18 Thu 15:21]
+** DONE Setup PIT and mauits testbed for mgmtdb integration test
+	 CLOSED: [2009-06-24 Wed 10:19]
+** DONE add recovery fstab/service restart in recovercfg
+	 CLOSED: [2009-06-17 Wed 16:46]
+
+** CANCELED Send Xin about coverity binary
+This will go against with CORP policy
+	 CLOSED: [2009-06-19 Fri 17:49]*
+** DONE send Denny mail about TO
+   SCHEDULED: <2009-06-24 Wed> CLOSED: [2009-06-18 Thu 23:10]
+   
+** DONE Send out Goldman's CS case study and file related bugs to track issue
+   CLOSED: [2009-07-13 Mon 22:06]
+** DONE Send out node replacement status for eBay using
+   CLOSED: [2009-07-13 Mon 21:26]
+   
+* Technical
+** Emacs tips														  :EMACS:
+*** emacs中的自动换行
+# 不嫌烦的，每次M-x toggle-truncate-lines切换换行与不换行
+# 一劳永逸的，M-x customize-option，输入truncate-partial-width-windows，将出来的设置页面中的参数改为off，然后保存(Save for future sessions)
+# 另外说一句，M-x auto-fill-mode也是切换换行模式
+
+** Interest soft focus
+*** DONE see version control soft "Mercurial"
+	 CLOSED: [2009-09-02 Wed 13:14]
+
+** Good cluster management solution
+*** [[http://reductivelabs.com/products/puppet/][Puppet]] - Puppet helps accomplish the goal of a hands-off, automated infrastructure. 
+The benefits of automated infrastructure go beyond policy-enforced consistency and auditing.  The impact of hardware failure and other disaster scenarios can be mitigated, as services can be quickly restored by Puppet.
+
+
+*** [[http://www.hyperic.com/products/applications-monitoring.html][Hyperic IQ/UQ]] - a Java-based platform for monitoring and managing software resources, required by SpringSource(Vmware)
+
+
+*** [[http://msdn.microsoft.com/en-us/library/ms952401.aspx][MSCS]] - Microsoft clustering services
+Some good concept and design which is very similar as our CM:
+Microsoft Cluster Service is comprised of three key components: the Cluster Service, Resource Monitor and Resource DLLs. Additionally, Cluster Administrator allows for the production of Extension DLLs for management capability.
+
+*The Cluster Service* is the core component and runs as a high-priority system service. The Cluster Service controls cluster activities and performs such tasks as coordinating event notification, facilitating communication between cluster components, handling failover operations and managing the configuration. Each cluster node runs its own Cluster Service.
+
+*The Resource Monitor* is an interface between the Cluster Service and the cluster resources, and runs as an independent process. The Cluster Service uses the Resource Monitor to communicate with the resource DLLs. The DLL handles all communication with the resource, so hosting the DLL in a Resource Monitor shields the Cluster Service from resources that misbehave or stop functioning. Multiple copies of the Resource Monitor can be running on a single node, thereby providing a means by which unpredictable resources can be isolated from other resources.
+
+When the Cluster Service needs to perform an operation on a resource, it sends the request to the Resource Monitor assigned to that resource. If the Resource Monitor does not have a DLL in its process that can handle that type of resource, it uses the registration information to load the DLL associated with that resource type. It then passes the Cluster Service's request to one of the DLL's entry point functions. The resource DLL handles the details of the operation so as to meet the specific needs of the resource.
+
+** Windows
+*** cygwin + rxvt
+Change cygwin.bat with following configuration:
+------------------------------- spliter -------------------------------
+@echo off
+C:
+chdir C:\cygwin\bin
+set HOME=C:\Jason\home
+set EDITOR=vim
+set VISUAL=vim
+set CYGWIN=tty title glob binmode
+rxvt -sr -sl 2500 -sb -geometry 90x30 -tn rxvt -fn "Consolas-20" -e bash --login -i
+------------------------------- spliter -------------------------------
+
+*** Make windows usable with Linux tools
+[[http://www.burningcutlery.com/derek/winsetup/#cygwin]]
+
+** Cloud storage products
+*** [[http://aws.Amazon.com/S3][Amazon S3]]
+*** [[http://www.bluewolf.com/on-demand-solutions/salesforce-solutions/Arcade][Bluewolf Arcade]]
+*** [[http://www.Bycast.com][Bycast StorageGrid]]
+*** [[http://www.caringo.com][Caringo的CAStor和CloudFolder]]
+*** [[http://www.ibm.com/ibm/cloud/cloudburst][IBM CloudBurst]]
+*** [[http://www.nirvanix.com][Nirvanix SDN]]
+*** [[http://www.parascale.com/index.Php/solutions/overview][ParaScale Cloud Storage]]
+*** [[http://www.seanodes.com][Seanodes的Shared Internal Storage]]
+*** [[http://www.zetta.net][Zetta的Enterprise Cloud Storage On Demand]]
+
+** Linux tips and good tools
+*** autofs and automount
+
+Good tool to control mount point in network environment.
+
+Used by netinstall from Matt. (http://tvgbj.lss.emc.com/netinstall)
+
+*** screen utility
+
+Simple tool to share screen in 
+
+*** linux如何修改主机名 - change hostname
+
+第一步： 
+#hostname new-hostname
+第二步： 
+修改/etc/sysconfig/network中的hostname 
+第三步： 
+修改/etc/hosts文件
+
+*** Change datatime and timezone
+[root@Shanghai_Dev_PIT ~]# vi /etc/sysconfig/clock 
+[root@Shanghai_Dev_PIT ~]# date
+Wed Sep 30 00:08:30 CST 2009
+[root@Shanghai_Dev_PIT ~]# date 09291653
+Tue Sep 29 16:53:00 CST 2009
+[root@Shanghai_Dev_PIT ~]# date
+Tue Sep 29 16:53:03 CST 2009
+
+Summary
+1. /etc/sysconfig/clock sets whether the hardware clock is stored as UTC or local time.
+2. Symlink /etc/localtime to /usr/share/zoneinfo/... to set your timezone.
+3. Run ``date MMDDhhmm'' to set the current system date/time.
+4. Type ``/sbin/hwclock --systohc [--utc]'' to set the hardware clock.
+
+
+*** Creating a custom Kickstart CD for Red Hat
+http://junktrap.naihl.net/doku.php?id=redhat:kickstartbootcd
+
+Instructions
+
+1. Place Disk 1 of the Red Hat Enterprise Linux CD set into the CDROM drive.
+
+2. Navigate to the /images directory on the CD.
+
+3. Locate the boot.iso file and copy it to your hard drive.
+
+4. Mount the boot.iso file using the following command:
+
+mount -o loop -t iso9660 boot.iso /mnt/iso
+
+If the /mnt/iso directory does not already exist you will need to create it. You also may need to be the root user to mount the boot.iso file.
+
+5. Change to the /mnt/iso directory and copy the contents to another location (we are using /home/jeff in this example):
+
+cd /mnt/iso
+cp -R isolinux /home/jeff
+
+6. Copy the Kickstart ks.cfg file to the new directory (this presumes ks.cfg is already located in /home/jeff):
+
+cd /home/jeff
+cp ks.cfg ./isolinux
+
+7. Change to the /isolinux directory:
+
+cd isolinux
+
+8. Run the following command to create a new .iso file:
+
+mkisofs -r -T -J -V "RedHatKSBoot" -b isolinux.bin -c boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -v -o /home/jeff/redhat_ks_boot.iso .
+
+This will create a file named redhat_ks_boot.iso located in /home/jeff. It will be the same as the original boot.iso file we started with, with the exception of the ks.cfg file that was added.
+
+9. Burn the redhat_ks_boot.iso file to a CD. 
+
+*** Configure auto login for different machines
+Use SSH keys to configure auto login: 
+
+Use case description: I want to auto login to node 10.32.109.16 as my dev machine.
+
+1. Create a public ssh key: ssh-keygen -t rsa
+2. Make sure your .ssh dir is 700: chmod 700 ~/.ssh
+3. Get your public ssh key on the server you want to login automatically: e.g. scp ~/.ssh/id_rsa.pub cheny7@10.32.109.16:.
+4. Login to the target machine which you want to auto login (e.g. 10.32.109.16): cat id_rsa.pub >> .ssh/authorized_keys
+
+Done!
+
+*** find out which process using the harddrive
+echo 1 > /proc/sys/vm/block_dump
+dmesg -c > log (-c mean clear)
+
+** COLU architecture
+Upgrade process: (From management station client to trigger)
+1. Get catalog
+2. Download package
+3. Upload package to SP
+4. Run rules (Precheck / Health check based on different rules and suggestion)
+5. Non-disruptive upgrade (NDU) call
+6. Post tasks to recover to previous environment
+
+* Reading
+** 活法
+树立正确的人生态度并始终贯彻执行，这是现在对我们每一个人的最大的要求。
+
+思考至关重要。
+-- 有些事情是没有标准答案或正确答案的，关键是要认识到自己的目标并坚持的去思考正确的方法去解决。要有“誓不罢休”的决心！
+
+当你确定了想要的，剩下的就是把它坚强的信念，并把它提高到一个强烈的愿望，直到你能“看得见”成功的意象。
+-- 其实这是进一步的思考的进化，直到有了一个可以自己看的见的结果。
+
+乐观地设想、悲观地计划、愉快地执行
+-- 乐观的设想是要有一个好的vision或者愿景，觉得自己一定能够做好并做出来
+-- 悲观的计划要设想到任何可能遇到的困难，能够让自己做好充分的准备并意识到里面的风险，谨慎的制定并推敲计划
+-- 愉快的实行就是实现自己的想法，愉快过程的是一个对自己和团队的享受
+
+对于细小的事情，想方设法进行改良的人和没有这样做的人，从长远地看，将产生惊人的差距。在昨日努力的基础上再稍加改良，今日要比昨日有进步，即使只有一小步。这种从不懈怠、坚持到底的态度，将终会与他人拉开巨大的差距。决不走同一条路，是走向成功的秘诀。
+
+简单是做人和做事的最佳原则。我们往往倾向于把事情考虑得过于复杂化，其实事情本质是很单纯的。
+
+明知吃亏也要遵守的哲学，明知有苦也要承受的觉悟，我们是否心存这些？这才是是否能够度过真正充实完满的人生，是否能够收获成功果实的分水岭。人类原本是脆弱的存在，若不是特别有意识地约束自己，就终将无法抗拒欲望和诱惑，这是事实。
+-- 自我感觉这个是非常难做到的一点，所谓大智若愚，不能斤斤计较让眼前的利益迷失了自己的方向和做人的原则。
+** 时间的玫瑰
+投资和性格是紧密结合的。
+
+坚持价值投资
+
+坚持
+
+** 杜拉拉2
+怎么样才算判断力好？
+-- 能先于他人识别机会和风险，并采取行动把握先机和防范风险（快）。
+-- 能复杂困难的情况下，能快速抓住问题的关键（准）。
+-- 正确解读他人的动机和欲望，对方要的是什么，他在乎的是什么，你都得有个正确的判断。
+
+一个卓越的领导者，他应该拥有他人的信任。而要做到这一点，领导者必须展示让他人认为值得信任的言行，其中之一，就是拥有清晰明确的立场和态度！换言之，含含糊糊让周围的人搞不明白他的观点，让人家去猜他的意思，这不是卓越领导者的行为。
+
+拉拉道：“这有点奇怪，论说李坤把自己的经验都毫无保留地拿出来和大家分享了，为什么反而他的威望不如姚杨呢？难道大家不心怀感激吗？”
+
+陈丰笑道：“就是我刚才说的，他不够大气，有时候会过于纠缠细节，没有姚杨会做人吧。人呢，不是都那么理智的，很多时候，你明明帮了一个人，但是只要你去责怪限制他某些不那么妥当的地方，他就会不高兴了，而把你对他的帮助抛到脑后。同理，有的人其实没干什么，只是嘴甜，也招大家欢迎。”
+
+“那我出道题考考你IQ，给你三根火柴，随你搭，可以是符号，可以是数字，也可以是字母，总之，搭出来的东西代表‘小于四大于三’，你说这搭出的是啥？”
+
+是π呀，够笨的。
+
+最后一条，其实就是沟通的问题，一个是要有沟通的意识，二是要有沟通的‘诚意’。沟通一是说一是听，是双向的。你们不妨也在小组会上讨论一个小组事务的沟通制度。我以前的老板李斯特和我说起过，他自己遇到问题就很愿意问问下属有什么主意，因为下属在其负责的范围，有可能比老板更高明；另一方面，经理是管理者，他需要做决定，否则他就不配做这个经理。”
+
+陈丰表扬道：“主持得好，堪称会议的经典之作，0PEN（开场白），CLARIFY（澄清观点），DEVELOP（展开讨论），FA CILITATE（推动达成一致），到CLOSE（总结），非常完整。”
+
+拉拉便说：“这事情得跟陈丰和李坤讨论一下，看他们是否同意，理论上是可行的——不管换不换，姚杨你为了自己都要好好干活，别和李坤闹僵，如果让别的小区经理觉得你这人不好合作，那谁还敢接收你呢？当员工和经理合不来，而尝试内部换岗，甚至出去找新工作的时候，我通常会劝他们不要在面试中讲现任经理的坏话，因为新经理很可能会担心，你和现在的主管闹得这么僵，说不定以后和我的合作也成问题，最后遭受损失的还是员工本人，姚杨你说是吧？”
+
+拉拉笑道：“谢谢信任。通常情况下，比如你去找陈丰谈话，甚至和级别更高的老板谈话，最好避免想到什么问什么，对方能给你多少时间，你打算谈哪些问题，最好事先有个考虑。这样，谈起来能抓住重点，避免遗漏，也不会不必要地占用对方的时间。”
+
+所以呢，我有两点建议给你，一是管理好时间，除非不得已尽量不占用同事的下班时间谈公事，即使对方是你的下级，否则别人会不高兴的；另一点，谈话或者开会要有一个明确的主题，避免话题发散或者时间失控。”
+
+拉拉提醒说：“是的。所以，不排除你的团队中有人已经在考虑跳槽，也许现在他们在观望这次会议后的变化。我给你两个建议：一个是认真考虑管理上哪些地方应该授权；二是给自己的下属排排队，看看哪些人是你一定要保留的，哪些人的离开是你可以承受的——那些关键队员你得注意和他们的及时沟通，了解他们的动向，知道他们需要什么，不满意什么。比如这次他们的行动，你刚才说是突然袭击，说明你事先毫无察觉，直到卢秋白和你通气，这算得上是一个有分量的失控了。”
+
+授权有哪些依据呢？建议从三方面考虑：
+1. ——员工的能力：包括他的技巧、判断力、经验等。能力强的可以更多地授权；
+2. ——员工的人品：包括他是否值得信赖、他的责任心如何，比如我们有时候会说这个难题可以交给某某，他肯定能搞定，而且他嘴严靠得住，这个‘嘴严靠得住’，就是关于人品的评价。又比如你提到你怀疑有的人根本没把钱用到客户身上，这样的人你自然不愿意授权，而想盯得紧一点；
+3. ——风险的大小：对经理而言，这件事情有多重要？成本有多大？比如我们会听到做经理的说，这事儿还是我自己来跟吧，这个季度我们组就指望这张单子救命了。经理为什么要自己跟呢，因为这个单子对他来说分量很重，他把宝都押在这张单子上了，输不起。又比如200元的请客费用就可以授权，因为成本不高，就算完全花错地方了，不过是区区200元。
+
+再说一说授权的程度，我们都有这样的体验：
+1. 最被动最没有经验的员工是坐在那里，等主管吩咐他干什么他才去干什么，有点像我们说的算盘珠子拨一拨动一动，有的甚至还想着往外推活，这是主动性等级最低的级别；
+2. 好一点的员工，看到主管很忙，或者组里别的员工碰到困难了，会主动问主管，我能干些什么？我怎样做能帮到别的同事？这是高级一点的主动性级别，当低级别的员工比如一个小助理能做到这一点，算得上态度较好，观念尚可；
+3. 再有点想法的员工，会在请示怎么办的时候，提出自己的建议和看法，老板我想到了两个办法您看哪一个更好，这样老板能更省心，因为员工是让他做选择题而不是问答题了，员工也因而更容易以最快的速度得到老板的指示，这个主动性级别就更高了；
+4. 继续往上走，员工看到问题，会采取行动去解决，并及时主动汇报，让主管知道发生了什么、怎么处理的、结果如何；
+5. 最高级别的授权是通过最高级别的主动性表现的，员工遇到问题，他可以自己直接采取行动无需报告。当老板觉得某某特别信得过，就会对他说这类事情你自己看着办，不用请示报告了，老板甚至会对别的员工说，以后这类事情，你们不用来找我，让某某决定就行了。
+
+会议控制：
+开会要有明确目的、最终要落实一个解决问题的方案，这都不需要提醒了，估计主要需要注意的地方就是怎么控制好会议过程，特别是当对方和你意见不一致的时候，怎么去说服人家接受你的观点、跟你合作。
+
+会议目的：“——做任何事情都要有一个目的，所以开会的时候，开场白就要把会议的目的说清楚，让大家围绕这个主题展开讨论，以免跑题，这是游戏规则。打算花多长时间，解决哪些问题，这都是要预先讲明白的。
+会议流程：“——然后，主持人需要提出流程建议，来推动会议的进程。比如昨天我提议用头脑风暴的方式，让每个人都写出三条自己认为最主要的问题，然后圈定其中重叠最多的三条以便集中讨论，不然大家你一言我一语，会就开不完了。这方面的设计，主持人最好在会前就先想好。
+观点澄清：“——在讨论过程中，主持人需要不断地去澄清并确认各方的观点，比如昨天的会上，当我们收集完大家的纸条，列出最重要的三个问题后，我就问大家是否同意这是最重要的三条？
+达成协议：“——当大家意见僵持不下，或者众说纷纭的时候，主持人要推动各方达成协议，比如昨天会上讲到费用，你希望由你来决定最低额度，而苏浅唱则希望通过小组讨论来决定，最后陈丰做了个主，不需要到小组会上讨论了，就由小区经理决定。
+会议总结：“——最后，主持人要做出总结，主要是一个SMART的解决方案，我们今天的会议做了什么决定，在这个决定中，每个人的任务是什么，其中要有下一次的跟进计划。
+** 影响力
+1. 
+2. 
+3. 
+4. 社会认同感
+5. 
+6. 
+
+** from WSJ
+*** [[http://chinese.wsj.com/gb/20090518/eoe135707.asp%3Fsource%3Darticle][what should manager do?]]
+德鲁克将管理者的工作分成了五项基本任务。他写道，管理者应该：
+
+1) 确定目标。管理者为团队制定目标，决定需要做哪些工作来实现目标。
+
+2) 组织协调。管理者将工作分成可管理的各个活动，并选择人员来完成所需的任务。
+
+3) 激励与沟通。管理者通过薪酬、安排和提升等决策手段，通过他与团队的沟通交流，从手下人中创建出一个团队。德鲁克还将这点称为是管理者的“整合”功能。
+
+4) 进行衡量。管理者确定适当的目标和标准，然后分析、评估和诠释业绩。
+
+5) 发展人员。随着知识工作者的增加，这个任务变得越来越重要。在知识经济中，人才是公司最为重要的资产，而开发这一资产则是管理者的职责。
+
+** Showstopper! The-Breakneck-Race-To-Create-Windows-Nt-And-The-Next-Generation-At-Microsoft
+The conflict stemmed from the differing priorities of the two sides.  Intent on refining their general model, programmers didn't want to distract themselves by fixing bugs.  Meanwhile, testers wanted to test.  This was a pointless activity when they saw the same bugs week after week. (p. 257)
+
+　　1、开发OS是烧钱的事情，NT开发接近5年，每年的花费据说在5000万美刀，那可是在90年代初期，换算成现在更是天文数字。从另一个侧面也说明了 linux系统的伟大。开发一个这么烧钱的玩意，如果没有管理层的强力支持，那么不是被砍掉，就是遭遇流产的命运，幸运的是NT团队得到了盖茨的鼎力支持，大概也只有他能这么烧钱了。Dave Culter从DEC辞职的原因也是因为管理层砍掉了他的团队。盖茨另一个做法是不干涉NT团队的开发工作，他只提出目标和期望，然后就偶尔过来看看，不对不知道的东西指手画脚，这点可不容易。
+　　
+　　2、每日构建非常重要，NT团队的构建实验室一开始是每周构建，后来做到了每日构建。只有每日构建，持续集成，才能帮你掌控产品质量，及时发现潜在的问题。我们现在的项目使用了hudson，比CC容易配置一点，效果还不错。
+　　
+　　3、测试极其重要，专业的测试团队对于大型项目来说尤其重要。除了测试人员之外，开发人员需要做自测，需要对自己check-in的代码负责，如果你签入的代码导致构建失败，那么Dave culter可能冲破墙壁进来，拍着桌子冲你咆哮。对check in必须做严格控制和跟踪，如果在项目的最后冲击阶段，除了showstopper级别的修正代码允许签入之外，其他的修改都不被接受。开发者和测试人员很容易存在对立，检讨自己，我对测试人员也存在偏见和某种程度上的轻视和厌烦，如果从就事论事和都是为一个目标努力的角度来说，测试和开发并不对立，两者是相辅相成，甚至于测试人员更为至关重要。
+　　
+　　4、在一个长期而复杂的项目中，如何保持团队成员的士气也是个难事儿。软件开发归根到底是的因素是人，而非工具或者其他，关注人，其实就是在关注你的软件。鼓励士气的常见做法就是设定里程碑，在这个里程碑上发布一个重要版本，让大家看到希望，但是对于OS这样的巨型项目来说，里程碑不是那么容易设定，这从书中项目的不断延期可以看到。另外就是宽松的工作环境和假期，微软的工作环境有目共睹，能做到每个员工独立一个办公室的国内企业还没有吧。国外的开发者似乎很会玩，赛车、滑雪、空手道，其实不是我们不会玩，是我们玩不起，国内的待遇和生活压力让你想玩也玩不起。
+　　 可是就算是再好的物质待遇，其实也换不来美好生活，书中充斥着开发者对家庭和婚姻的困惑和痛苦，为了NT,他们也失去了很多，对工作过度投入的后果就是失去平衡的家庭生活，再次验证上帝是公平的，有得必有失，就看你看重的是什么。
+　　
+　　5、开发者的效率差异是惊人的，在《人月神话》里已经说明了这一点，开发者之间的效率差异可以达到惊人的10倍，在NT这样的团队里也再次验证了这一结论。
+　　
+　　6、投入越多的人力，并不能带来效率的提升，当NTFS文件系统的进度拖慢的时候，微软的经理们考虑添加人手，但是经过慎重的考虑还是没有加人，因为文件系统是技术活，新人很难马上投入开发，而需要老手的带领和培训，引入了更多的沟通成本和培训成本。
+　　
+　　7、优秀的代码无法通过行数来衡量，软件某种程度上还真是魔法的产物。
+　　
+　　8、NT的一个教训是，应该及早设定你的性能目标，并在适当时候开始关注并优化系统。NT团队后期的很大部分工作都是在优化系统性能，并缩小尺寸。
+　　
+　　9、设定Deadline常常是不靠谱的事情，对软件开发的时间估计也常常是不靠谱的事情，这一点从NT的一次又一次的延期可以看出。延期失望的不仅仅是客户，也会打击你的团队成员，遥遥无期的开发过程容易让人崩溃。
+　　
+　　10、NT的开发贯穿了对市场的需求的考虑，有个牛X的产品经理还是相当重要的。当然，没有开发者喜欢添加新功能，特别是在已经完成一个新功能的情况下，以至发展到NT的开发者看到产品经理就不由得拿起球棒击墙的地步：） 
+
+这绝对是一本能让你(如果你现在或曾经是名程序员)产生强烈共鸣的书！刚看了几章以后，我意识到我期待这本书已经很多年了，03年那本《Borland 传奇》曾让我着迷，反复看了几遍，不止一次地向身边的人推荐那本书。对于像我一样的没有完整经历过从Dos到Windows的革命变迁过程的新生代程序员来说，那段历史似乎很遥远(其实没几年)和而且充满神秘色彩，《Borland》正好填补了这块空白，现在想想，真是爱死那本书了！依稀记得，每次看那本书的时候，心里都十分期待：“如果能有一本像《Borland》一样描述Windows的开发历史细节的书就好了！”。对于绝大部分做应用开发的程序员来说，可能实际工作中真正接触到Windows底层的机会都很有限，总是感觉微软的程序员都很了不起，他们是怎么样从无到有创建了Windows这个所有应用程序 (window平台)的庞大地基的呢？有时想想，这样的成就，用开天辟地来形如也不为过吧！这本书很好地填补了《Borland》留下的空白，或者更合理的说法应该是《Borland》填补了《show stopper!》的空白，毕竟这本书的英文版已经出版15年了，今天我才看到，确实感觉自己以前有些孤陋寡闻！如果03年就知道它，肯定当时就读了！后来的程序人生肯定会少走很多弯路！
+　　
+　　这本书主要讲的就是NT从无到有的过程，没有涉及到太多的技术细节，更多的说的是NT的创建者们，他们的现在和过去、也有一些将来！这绝对不能算是一本专业技术书籍，而应该算是一本历史上最优秀的一批程序员的职业生涯回忆录。从他们身上，我们应该能学习到很多东西，关于工作、生活、做人、做事，其实NT是个伟大的产品毋庸置疑，但是如果没有这些伟大的程序员，也许就没有NT，没有伟大的微软公司，也可能不会有NT，起码不会那么早就有吧！作为一名程序员，一名想成就一番事业的程序员，我们都应该是拒绝平庸的，从这本书里，我们应该能发现一些程序人生路上的共同点：
+　　 首先，如果不是自己创业，那么你就应该去找一个伟大的公司，只有伟大的公司才能做出伟大的产品，当然，世界上伟大的公司很多，不见得只有微软；
+　　 其次，在NT团队中，可谓人才济济，如何在这样的环境中成就不平凡的事业，答案就是天助自助者，作为一名优秀的程序员，独立解决“观止”问题的能力非常重要，关键时刻，没人靠得住，只有自己，所以我们应该时刻培养、锻炼自己的独立生存能力；
+　　最后，再伟大的公司，也有混乱的时候，就像NT团队一开始创立，直到发布预览版，都是在紧张的混乱的环境中熬过来的，大家一开始都不知道做什么的时候，新成员进来根本没人管的时候，那是何等的混乱，可以说NT从无到有的创新过程，真的是很痛苦，历尽百般磨难。所以要求一名优秀的程序员，不能浮躁，不能受周围的人与事干扰，任何时候只要努力提高自己就好了，事情总是在往好的方向发展，有时能推动我们向前的只有我们的信念； 
+
+　　这本书的意义在于，它告诉我们，软件开发中的混乱和无序、曲折和不平，我们所面临的挫折感和无力感，并不是说我们现在处于一个错误的舞台，也不意味着这是一个没有前途的项目，这个就是大规模软件开发的必经过程。
+　　
+　　在这样一个混乱和变革为主调的行业中，保持希望和信心是非常重要的，激励自己激励他人。
+　　
+　　所以，这种时候，当老大的，就要对小弟们说:“这个是正常的，想当年NT就是这样搞出来的，咱们比他们做的还好呢。" 当小弟的，也要学习老大们是怎么思考和行动的，混了这么久的人，总是有好几把刷子的。
+
+　感想之二： Culter具有惊人的领袖魅力，DEC有那么多人跟着他来到了微软；如此暴燥的脾气，居然没有赶跑合作者；无数次的项目延期，却保持了不可想象的团队激情；在牛人无数的team中，受到众多牛人的崇拜；而我最佩服的，是他对于目标极度的坚持，这是一切成为可能的基础。
+　　
+　　　　感想之三： 尽可能早的开始“吃狗粮”，我认为是NT项目成功的重要原因之一，也许是最重要的开发管理措施。这不仅仅有助于NT尽早面对真实的用户；也有助于开发者形成对于自身产品的热爱与投入；当然，也更高的促成了每日建构的严格执行。
+　　
+　　　　感想之四： 项目延期，很重要的一个原因，其实是战略方向的调整，NT原本与OS/2有很多说不清的暧昧关系，等到全面转向Windows，就顺畅多了。如此说来，之所以花了5年的时间，其实最大的浪费，是来之于项目之外的原因，当然，这也是最难控制的风险。
+　　
+　　　　感想之五：图形界面当初用C++来写，就是一大错误，要是整个NT全由c来写，只怕会更好一些。当然，之所以会选择C++，跟盖茨的一时喜好有关，这也可以算是盖茨错误干扰NT开发的仅有的几个问题了。总的来说，他已经做得很好了。
+　　
+　　　　感想之六： Culter从一开始不愿意管很多很多的事情，到最后负责多个团队的管理，对他而言，同样是巨大的成长挑战。如果没有这样的架构整合，NT的成功是不可能的。但是，如何帮助这样的牛人，面对这样巨大的挑战，书中并没有详述，可惜了。
+　　
+　　　　感想之七： 看完《观止》，我们会相信，开发OS需要极大的人力、物力的投入，而且即便如此，NT的成就也堪称奇迹。那么，linux何以能够成功呢？如果NT是奇迹，那么linux又是怎样的奇迹呢？ 
+
+       感想之八： 书中讲了很多工作压力导致员工心理变态、家庭破裂、沉溺于购物之类的例子，从一个普通的角度来说，自然是望而却步。但是从老板的角度来看，该是何等的羡慕啊。
+　　
+　　　　感想之九： 这本书，非常适合与《梦断代码》对读，当然，如果有人能够写出一本书，横向比较N个操作系统的开发故事，比如NT、Windows、DOS、Linux、MacOS等等，相信会更加精彩吧。
+　　
+　　　　感想之十： 有些项目，注定会在技术复杂度与功能复杂度两个方面，都惊人的高，大团队是不可避免的，尤其会变成高智商、强个性、多冲突的团队，如何管理是一个巨大的挑战。这个方面，不知道目前有没有专著。
+　　
+　　　　结语：《观止》讲的是一个超人，如何将一群聪明人都变成超人的故事。但是，我始终愿意相信，可以有另外一种方式，来管理一个中上等水平的团队，不是靠小宇宙爆发，而是靠更好的节奏感与控制力，来完成同样复杂的项目。
+* Learning															  :THINK:
+
+
+** !!!Five minutes!!!
+*** <2010-02-05 22:41>
+I talk too much in today's dinner. some talk i cannot very confidence to that and /say it not clearly/ and rapidly. This would make others not fully understanding my ideas. this is not good especially to a wide audience. this will make me not very confidence and become nervous.
+*** <2010-02-06 23:25>
+1. sometimes I cannot *Control my temper* very well. like today when do haircut, i waste some time to argur with the barber without any meaning. 
+2. I should _do one thing at one time_ but not distract myself into several things and switch among these things. 
+
+*** <2010-02-08 21:23>
+Today, from Ming's RCA session, i found there is one good practice on asking right questions (5 why)
+From Kenny Chen's career talk, i have most impression is working hard is prerequisite. 
+i found my time is not enough and i have many tasks need to context switch, i should learn back from GTD working habits...
+*** <2010-02-09 21:17>
+I always have many comments during other colleage's design review, sometimes a little aggressive. I think I should be not too criticize on others defects. 
+From today 1on1 with Ming, he gave me many good suggestions. here i list some of them:
+- think about more initiative on how to improve working efficiency, like meeting, code review, ???
+- enlarge my responsibility not only to installation/db, but to whole system mgmt area to contribute more
+- Reading->practice->reading->practice  a iterative improvement process
+
+
+*** <2010-02-10 22:30>
+Discuss with Ming about installation recovery tool implementation and task module redesign, have some learnings.
+how can we make the refactor better? 
+- try to reduce each commit change
+- have a regular review
+- set up review process to be more effective
+- use refactor tools
+- also think about support more failure cases or features during refactor, can start thinking about and discussing
+- core issue to task module: not implementatino ways, but the cleaner loose couple design of task engine. should seperate task engine from task specific operations
+
+** Year 2010
+*** Daily plan
+坚持！
+<2010-01-01 17:50>
+- 每天俯卧撑30个, 如有一天没做，下一天做60个
+- 继续养成好的读书习惯，每天晚上至少读书一小时
+- 每天自己反省思考10分钟，想一下今天的收获和需要提高的地方
+- write a daily for 5 minutes and just write about yourself today -- improve leadership skills
+*** Year Goal
+1. Job
+  - Be a supervisor and 20w year package
+2. Family
+
+** My learning plan
+Record what I need to learn and improve for my self. (Internal motivated.)<2009-12-13 21:05>
+
+
+*** Technical
+- Programming language
+  - C++
+  - STL
+  - Python
+- Design
+  - Design pattern
+  - Large system design
+
+*** Management
+
+
+
+*** Softskill
+
+
+** Design and programming
+*** FSM 
+In what areas of programming would I use a state machine?
+
+Use a state machine to represent a (real or logical) object that can exist in a limited number of conditions ("states") and progresses from one state to the next according to a fixed set of rules.
+
+Why would I use a state machine?
+
+A state machine is often a very compact way to represent a set of complex rules and conditions, and to process various inputs. You'll see state machines in embedded devices that have limited memory. Implemented well, a state machine is self-documenting because each logical state represents a physical condition. A state machine can be embodied in a tiny amount of code in comparison to its procedural equivalent and runs extremely efficiently. Moreover, the rules that govern state changes can often be stored as data in a table, providing a compact representation that can be easily maintained.
+
+How can I implement one?
+
+Trivial example:
+
+enum states {      // Define the states in the state machine.
+  NO_PIZZA,        // Exit state machine.
+  COUNT_PEOPLE,    // Ask user for # of people.
+  COUNT_SLICES,    // Ask user for # slices.
+  SERVE_PIZZA,     // Validate and serve.
+  EAT_PIZZA        // Task is complete.
+} STATE;
+
+STATE state = COUNT_PEOPLE;
+int nPeople, nSlices, nSlicesPerPerson;
+
+// Serve slices of pizza to people, so that each person gets
+/// the same number of slices.   
+while (state != NO_PIZZA)  {
+   switch (state)  {
+   case COUNT_PEOPLE:  
+       if (promptForPeople(&nPeople))  // If input is valid..
+           state = COUNT_SLICES;       // .. go to next state..
+       break;                          // .. else remain in this state.
+   case COUNT_SLICES:  
+       if (promptForSlices(&nSlices))
+          state = SERVE_PIZZA;
+        break;
+   case SERVE_PIZZA:
+       if (nSlices % nPeople != 0)    // Can't divide the pizza evenly.
+       {                             
+           getMorePizzaOrFriends();   // Do something about it.
+           state = COUNT_PEOPLE;      // Start over.
+       }
+       else
+       {
+           nSlicesPerPerson = nSlices/nPeople;
+           state = EAT_PIZZA;
+       }
+       break;
+   case EAT_PIZZA:
+       // etc...
+       state = NO_PIZZA;  // Exit the state machine.
+       break;
+   } // switch
+} // while
+
+
+** About jobs
+[[http://edu.sina.com.cn/j/2009-11-13/1325181092.shtml][标  题: 职场人跳槽要遵守的11条守则]]
+
+　　跳槽，几乎是一般人的职业生涯中都要经历的事情。正确的跳槽，会将你带入职业成长的快车道，而错误的跳槽，则将你带往职业生涯的停车场。下面是关于跳槽的11条建议。
+
+　　1.保持职业发展的连续性
+
+　　现实中有些人几乎是在不断地跳槽，而且往往跨行业跳槽，或者跨职位跳槽。这次是快速消费品行业，下次是服务业，这次做销售，下次做行政。这种跳法，十有八九到最后一事无成，一把年纪还要跟后辈去人才市场竞争。正确的做法是进入职场几年内，就要选定自己的发展方向，在一个行业内、一种职能岗位上坚持做下去，力争成为专家。跳槽可以，但却绝不轻意换行业。
+
+　　2.永远不要单纯为了薪水而跳槽
+
+　　哪怕你面临很大的经济压力。当你想换工作时，要对两份工作所能提供的总体价值进行比较。除薪酬外，还有企业实力、个人发展机会、工作环境等很多方面的内容。对于年轻人来说，个人的发展机会是其中最重要的，因为它意味着你未来的薪酬。
+
+　　3.不要单纯因为不满而跳槽
+
+　　有些问题是企业的共性，不管在哪个企业，都有可能碰到相同的问题。人们往往会因对目前工作不满而巴不得尽快逃离，殊不知，新工作上手以后老问题又会浮现出来。那时你怎么办呢？再跳槽吗？仅仅因为一些客观的因素限制而没有慎重思考就跳槽其实是一种逃避。所以，对现在工作的某方面不满而决定跳槽的朋友，一定要扪心自问：“换一份工作能否真的解决我现在工作中遇到的问题？”成熟的人，会尽力找到目前工作的问题所在，尽力改善，逐渐拓展自己的职业生存空间。
+
+　　4.不要因为攀比而跳槽
+
+　　职业发展就像跑马拉松，短时间的比较没有意义。年轻人容易和别人去比，总想着找一份更高薪的工作让同学刮目相看。事实上，最初薪水高的人在未来的发展未必比起点低的人好。更重要的是，不同行业，不同职能岗位，没有什么可比性，盲目地与周围同学朋友比较，只会让自己心态失衡，跳槽失误。
+
+　　5.跳槽要符合自己的职业规划
+
+　　职业发展过程中，职场人士需要通过个人职业能力、资源、素养等的不断提升来使自己增值，这就意味着，界定一次跳槽是否成功的标准在于，新的岗位是否表明自身职业价值的提升、新的平台能否为自身职业价值的增值提供保障。用职场专家赵培勇先生的话讲：跳槽不是“转学”而是“升学”，跳槽要符合自己的职业规划，有利于自己的职业增值，要尽可能减少同水平跳槽。所谓同水平跳槽就是新的工作和你原来的工作基本处在同一个水平线上，既没有让你增加多少的薪水，也没有让你去承担更大范围的责任，你的职业技能水平也没有本质上的提高。
+
+　　6.每次跳槽最好间隔三年以上
+
+　　你至少应该有在某一个还不错的公司里工作3年以上的经历，因为只有这样你才能够适当地积累起某一领域里的专业知识、经验和技能，才能获得真正的职业竞争力。同时，三到五年一次跳槽，让你的简历也不会难看。
+
+　　7.缺少发展空间可以跳槽
+
+　　在我们职业发展的过程中，最理想的当然是我们和公司一起成长，公司的规模越来越大，运营越来越健康，我们的责任越来越重，职位越来越高，回报也越来越高。但身处发展比较稳定的企业的朋友，如果企业没有新的业务拓展，很难有新的晋升机会。或者有些朋友的地位因公司内部变动而边缘化，这时，或许跳槽是比较理想的解决手段。
+
+　　8.技能上很难有提高时可以跳槽
+
+　　如果你的技能明显超过工作所需，工作没有挑战性，自己也不尽心，甚至感到压抑，根本无法发挥能力时，应该通过内部转岗找到合适的位置，否则，跳槽或许是唯一的解决方案。
+
+　　9.你的公司落后，而你又无力改变公司时，可以跳槽
+
+　　泰坦尼克号上的每个人都是失败者——你再能干也阻止不了巨轮的沉没，此时逃生是唯一的选择。所以，当你的企业在市场竞争中半死不活，而你个人又无法改变时，最好的选择就是跳槽，换一个更能发挥你作用的平台。
+
+　　10.在成功的时候跳槽
+
+　　与一般人不同，成功人士的跳槽往往不是在职业的低潮期(这时他们往往会咬牙扛过去)，而是在自身职业的春天来临之时，反而会跳槽，这样他们就能得到新东家更好的条件，令自己更上层楼。
+
+　　11.下定决心就要早做准备当机立断
+
+　　职场专家认为，职业发展比较好的模式，是“T”型发展，即在职业生涯初期，先在一个相对狭窄的领域做深，写好那一竖，成为这个领域的专家。然后再写那一横，培养自己广博的知识和全面的技能，使自己具备成为高级管理人员的素质。
+
+　　而当你已经具备足够实力时，跳槽要当机立断，不要犹豫不决，宁可冒点风险早作改变，不要踌躇不定错失良机。当你真的决定跳槽了，那就尽快进行相应的准备。成功的跳槽至少需要2个月至3个月左右的准备时间。不要把跳槽仅仅当成换一个简单的工作，而是要把它当做自己职业生涯中的一个重要环节。利用这样的契机加深对自己的认识和了解，加深对自己职业目标的评估。
+
+** Good Habit													  :IMPORTANT:
+*** Be active and proactive
+积极主动的生活和工作
+
+*** Clear Goal
+如果你仍不明白如果明确目标，那就把它作为你的首要目标。一辈子不清楚自己到底想要什么是对时间的巨大浪费。大多数人长久的沉迷于“我不知道做什么”的状态中。他们等着外力使自己目标明确，殊不知明确是自身创造的。一切在等着你动手，没有别的办法，它会一直等待直到你下定决心。等待明确的目标就像一位雕塑家注视着一块大理石，等待里面的雕像可以抛开不需要的碎屑自动出现。不要指望目标会自动明确起来——拿起凿子动手吧！
+
+*** Do one thing at one time
+一时一事
+这个简单的习惯为我节约了大量时间。首先，它使我对每项任务全神贯注，做起来效率就很高。转换任务会浪费很多时间，因为你不得不重新了解和熟悉它们。单独处理使得切换任务所耗费的时间最小化。实际上，如果可能我会把某一特定主题的任务集中在一起，然后一次完成它们。所以我一次性连续做完我的数学作业。然后去做所有的编程作业。然后去做综合作业。这样，我使我的大脑处于数学思维，编程思维，写作思维，还有艺术思维的状态，并且保持尽可能长时间的保持单一的模式。第二，我觉得这个习惯使我没有拘束也没有压力，我的思维不会因为过多要做的东西而混乱。这种每次只做一件事的习惯，让我忘掉现在任务之外的所有东西。
+
+
+*** 能够迅速进入专注状态，以及能够长期保持专注状态，是高效学习的两个最重要习惯。
+
+** Lessons learn from others 										  :THINK:
+*** From Ming
+1. when new member join the team, have 1on1 session to understand each other and communication prefer ways. also discuss about ideas on the project design and ideas.
+
+
+**** RCA - root cause analyse<2010-02-07 00:01>
+The criticism on 5-why method is that performance of 5-why is highly depends on people. The quality of "why" question is essential to the success. Usually it start with
+
+- someone describe shortly the symptom WITHOUT explaining any why
+- 1st question usually is "why this error happen?"
+- be sure to give DIRECT answer to the question, WITHOUT jump.
+- convert each answer to a question.
+- keep going
+
+One easy-to-make error is jump right to the "assumed" root cause and even "assumed" solutions without middle steps. This will skip some of the branches and possible combinations. Especially will skip those "near miss" issues.
+
+For example, we lose data in atmos. Why? Drive went bad AND  2 sync copy in same drive or 1 sync in another drive is not up-to-date yet. Then why drive went bad? Why 2 sync on same drive? And why 1sync is not in sync?
+
+Only by this way we can try to catch most, if not all, causes. I believe all of us need some practice to really master the tool.
+
+*Attendee:* Ming, Yubo, Jason, Hang, Wei, Lizhong, Denny, Caihua
+
+*RCA process for bug 4742:*
+
+Ask 5 why: 
+1.	why status is not correct? – non-first master didn’t update
+2.	why master node, not slave node? – non-first master node has a different installation process
+3.	why master node has different task tree? – non-first master node needs to update other node profiles
+4.	why error happen? caused by code? – it is caused by code, the file hasn’t been updated correctly
+5.	why code not handle this error at first time? caused by a unclear spec? – the spec process is clear. But the code implementation at this logic is complicated because of too tight coupled with task module
+6.	why task module is not easy to change? – task module requirement has changed a lot and many features depend on task module which made task module complex and difficult to maintain
+7.	why many component use task module? task module interface not good? – task module interface should be fine at first, but as requirement changes, like parent-child relation, dependency, reloadable, different scope… during design process, we prefer to use existing module to handle operations, task module is a good choice for executing tasks in different nodes. 
+
+stop here and find out root cause is task module is complex and not easy to extend
+
+*More about RCA:*
+-	We should do RCA for all other bugs and check statistics to see what's the 主要矛盾 to fix with highest priority
+-	The purpose is put most of our efforts on the weakest points with current limitation on time and resource
+-	Ask why should focus on problem itself, not people
+-	Not stay on the 表面原因, but on 深层原因
+
+Action plan:
+1.	ALL - Add comment about root cause analyze and improvement when close a bug 
+2.	ALL - stop to analyze bug and think about improvements after like 4 working weeks to review regularly
+3.	ALL - not only send out patch diff but also needs to include root cause analyze and what have been done in the patch (Good example: Denny’s review mail)
+4.	ALL - add meeting agenda before meeting to be more effective
+5.	Ming – Ask Greg/Vinita about bugzilla improvement again ;)
+
+
+*** From Yubo
+1. how to motivate people? (e.g. if move Caihua to do another high priority thing and suspend current ongoing projects, caihua may have concern, what are good points to motivate?)
+   - This is a good oppotunity for you to involve more components and bring your ideas to the team. If you have any good suggestion to the framework, then bring these out and let others know your opioion. We may not fix this in short term due to resource or other high priority things, but this would let others know your value in the team and would consider give you more oppotunity and responsibility if there has any good place. 
+   - This is also a good chance for you to involve design discussion and think about improvements, a good practice chance
+   - This is also good for you to learn from others during the daily upgrade review status meeting. Learn from Yubo how to organize and analyze existing issues and make a clear day by day. 
+
+*** About project and people management
+1. More communication to understand each group's progress and issues
+2. Work as fewer projects as possible to avoid switch too many
+3. Feel ownership and became the component expert
+BTW, if we need make any improvement, please track it in bugzilla and update the “fix plan in” field with proper value, otherwise we’ll lost it. 
+
+Think jump out of box - e.g. refine task module or think about another simple solution like state machine to solve
+
+*** Management style from Bobby
+Recently there have many 1on1 discussion and meeting with Bobby, here are some thoughts which I think are very good habits and ideas:
+1. transparent management for the group, no secret on the people promotion, level
+2. reduce communication noise. simplify email communication channel and consolidate related information into one mail. e.g. release information, personel information, etc.
+3. When people leave the organization, it’s important to acknowledge the event in a positive manner.  This allows the management team to assure everyone that everything is going according to plan, and that events and schedules are in control.  Because sooner or later, people always find out that individuals have left/resigned.  (And then if there was no management acknowledgement, then employees might start having negative thoughts and ask questions.) As the team grows, we will definitely see departures. This is a norm. And as management, our job is to manage this well, so that people are treated with respect, and that our employees can know that we are open and honest with everyone.
+4. When leave the team, we should be resiponsiable for the last working day.
+
+*** Management style from Rich
+Here are some notes collection from Rich's mail and concall:
+*** How to manage senior people:
+1. They know their worth
+2. They are organizationally savvy
+3. They ignore corporate hierarchy
+   - If you seek to motivate clever people with titles or promotion, you will probably be met with cold distain. But don’t assume this means they don’t care about status.
+4. They expect instant access
+5. They are well connected
+   - Clever people are usually plugged into highly developed knowledge network; who they know is often as important as what they know. These networks both increase their value to the organization and make them more of a flight risk. MSDN Community for example is a community of highly skilled people with computer application development background. 
+6. They have low boredom threshold
+7. They won’t thank you
+   - Even when you’re leading them well, clever people will be unwilling to recognize your leadership. Remember, these creative individuals feel that they don’t need to be led. Measure your success by your ability to remain on the fringes of their radar.
+   - Clever people want a high degree of organizational protection and recognition that their job and idea are important. They also demand the freedom to explore and fail. They expect their leaders to be intellectually on their plan – but they do not want the leader’s talent outshine their own. Clearly the physiological relationship that leader will have with their clever people is different from the one they have with traditional follower.
+
+To lead a team of clever people first of all we need to gain their trust on us and on what we believe in. To build this team the best type of team building we can use is interpersonal process type of team building. In this process, all team members will learn to continually manage constructively their relationship with each other, solve conflict and work on weakness of other team member.
+
+a. Position, people follow because they have to.
+b. Permission, people follow because they want to.
+c. Production, people follow because what had you done to the organization.
+d. People Development, people follow because what you had done for them.
+e. Personhood, people follow because who you are.
+
+1. Keep the rules & procedures simple
+2. Keep them informed to key development of the organizations & its business
+3. Sincere appreciation to their jobs and talent
+4. Let them take the initiative
+5. Show them your credibility
+
+One thing that I remember is leadership is like a jigsaw puzzle, every one of us got all the part we need. The problem is how we can arrange them into the complete picture of our leadership
+
+we all see the problems, but you may not know the whole story
+the company or product success or fail doesn't mean your success or fail, find out your learning point and value is important for you
+what do you want to get from the team? any interesting area you want to do? It's not easy to do these things correct.
+it's hard to do job transfer in current situation.
+
+*** 潘正磊谈微软研发团队管理之道 
+先给我们介绍一下你自己和你自己现在所做的事情吧？
+我是在1992年大学一毕业就参加了微软，一开始是做开发程序员，就是Developer，最开始开发的项目是Microsoft Access，现在也是微软卖的很好的一款产品。在Access开发了几年之后，我转做另外一个产品叫Visual Interdev，那是我们微软第一款针对网络Web做的开发工具；那之后我在Visual Basic团队做Developer Manager，就是开发经理的职位，当时我们整个从VB6到VB.NET 转型，所以跟.NET做平台开发，是一个非常艰苦的项目。之后还在Visual Studio里做了一系列的职务，包括开发总监，包括我们Visual Studio Team Architect的产品总经理，包括Visual Basic的产品总经理。现在是Visual Studio Applications的产品总经理，像我们刚才所说的，主要我们这个团队做的是针对企业的开发工具。
+你是从一个基层的开发人员一直走到现在，那我想，在你整个过程中应该是有很多的感触，特别是从一个开发人员然后到一个管理职位，在整个过程中有没有什么比较难忘的事情？
+因为已经工作十几年了，所以说，确实有很多故事了，我觉得比较难忘的几个故事，还是跟我们最高层打交道的时候比较有趣。我们在做Visual Interdev的时候，那是我们第一款针对Web的产品，当时微软对Web的定义、对Internet的战略不是非常清晰。记得我们跟Bill Gates在做产品Review时候，他一开始对我们这个产品是有些意见的。他说，你这个产品做出来以后，对Windows有什么好处或者是坏处。这是一个挺尖锐的问题，让我们所有人回去都要好好想一想。
+
+还有最近我们在做另外一款产品Review的时候，也是跟我们Steve Ballmer，我们的CEO，跑上来我就要给他做一个演示Demo，我们的CEO就说现在所有演示都不要做，他叫我们最资深的副总裁，“你就到黑板上面去，把你们这个产品要做出来的三个目标先给我写上去，写完以后我们再做演示，看你这演示有没有达到你这三个目标”，这个跟Steve Ballmer做Review常常会碰到这种情况。
+他会直接帮你梳理你的产品目标？
+他会用你很意料不到的方法来问你，因为一般我们去做这种总裁Review都是有准备好一套PowerPoint，有一套我们自己的思路，他就会从你的思路之外问一些问题，保证你确实能够解释出来你为什么要做这个东西，然后你的思路是什么，你的战略是什么，这是一些蛮有挑战性的东西。
+在你的个人从开发人员到一个团队管理的过程中，在做团队管理的时候有没有遇到一些困难、一些比较难忘的事情？
+做团队管理的时候，因为团队管理最主要的是几大块：第一，你要造就一个非常强的团队。这中间有很多（差异），你这团队是你自己接手的，还是这个团队是你自己一个一个雇佣进来，这个完全是不同的。还有和你的Partner（合作）团队，因为微软很多项目需要好多几个团队来一起合做才能做好，那跟你Partner的这个运行过程中也有很多的这种Interaction（互动），有的时候如果大家的战略目标不一样，就会造成很多各种各样的问题，那所以这都是有很多故事的。我现在一下想不出来一个特别好的、最有挑战的。因为从组建团队中，这么多年走过来，基本上什么场景都碰到过了，所以我还真一下想不出来一个最好的故事，或者是说最有挑战性的故事。
+其实我也了解到在你整个的发展过程中，到最后成为全球微软有两千多个总经理，你是为数不多的华人，那么从整个阶段来看，你是如何去总结自己的这段历史？
+我觉得微软现在华人的总经理比较少，但是我觉得从长远来说肯定会越来越多，这实际上是我们在九几年有大量的大学毕业生开始出国，然后开始在美国，或者这种（国外的）地方开始就业有关。我相对来说出国比较早一些，所以我进微软也很早。那像九几年之后，95、96，包括90年代末期，有大批的中国员工进入微软，所以我相信这以后的华人工程师或者华人总经理，各方面只会越来越多。那另一方面，在微软或者是在很多大企业里，自己的一步一步都是要慢慢走过来，然后都是要脚踏实地，最主要的是要想到说你对这个团队有什么贡献，你对你的客户有什么贡献，如果能够比较的专注于某方面工作的话，那我觉得在成长中是很有好处的。
+进入微软的华人很多，工程师也很多，但我想也淘汰了很多，最终可能会有一个人冒上来，而且这个人就是你，我想问一个比较直接的问题，你觉得为什么会是你走到今天这个位置？
+我觉得每个人的长处是不太一样的，我觉得我自己的长处，第一是技术方面还不错，因为一开始在做工程师，如果你技术上面做不好，是不可能往上走的。另一方面，我觉得我对资源整合这一方面是比较强的，我的一个强项是我很快就能看出我下面的员工他们最适合什么，他们不太适合什么，那把他们放在最适合于他们的工作岗位上。这样第一能够是最大的调动他们的积极性，第二整个团队可以成一个非常高效的团队。
+
+而且我在管理人员方面，很多跟我做了很多年的员工，愿意跟我做很多年，所以这也是作为一个领导者应该比较重要的素质。
+
+我觉得是这些是可以学的，但有些可能有的人就会比较容易一些，比较自然一些，有的人可能就是要学的更多一些。
+但是我想在你的团队里面应该也有一些能力非常强的，比如说他的存在会让你有所威胁，那么在这种情况之下，你是如何和他们相处的？
+你看，我这个考虑思路跟你完全不一样，我不会觉得我团队里面有谁对我是有所威胁的，我的出发点就是我希望能够培养一批人才，如果有一天我能够不用去上班了，而且我的团队还可以执行得非常好，这才是我的目标，所以我是希望有人能够来代替我。
+
+因为微软里面包括很多公司是这样的，有挑战性的工作是非常多的，如果我这个工作做完了，如果我下面培养出一批人才，能够取代于我的话，那还有更加具有挑战性的工作在等着我去做，所以这个思路不是说有这个人会对我造成危险性，而是我如果有一天能够找到一个，或者请到一个比我更强的员工，这是一个非常高兴的事情，非常令人振奋的事情。
+
+实际上在我的职业生涯中也确实有过这样的经历，我那时候在做Visual Basic开发经理的时候怀孕了，我知道会休蛮长的产假，而且一度还动过可能不回来上班的想法，做全职妈妈的这种心思，所以我那时候就把我下面的一个开发主管，一个开发主管一直培养他，而且当时就是培养他到最后，我去休假之前，说那这个团队就交给你了。等我五个月休完产假回来之后一看，那个团队虽然是我打造的，交给他之后他还是管理的非常好。我说太好了，那你就来做开发经理。那个时候我就去做了我们Division另外一个工作，整个部门的开发总监。
+
+就像我说的，这世界需要能人的事情非常的多，所以你是一个能干的人你不要有这种危险感，因为需要你的地方是非常多的。
+所以我想，一个人的自信对于他的整个的成长是非常有帮助的？
+实际上我觉得如果在微软来说，如果你没有自信，那你可能很难从一个开发工程师往上走非常的远。因为在微软我们招的都是，真的是世界上英文词叫“cream of the crop”，都是最最顶尖的大学生，或者是外面有经验的人。在这样一种环境中，你怎么样能够跟大家交流，怎么样可以说服大家同意你的观点，怎么样听取别人的反馈，自信心实际上是一个非常基本的素质。如果你没有这个素质，就是作为一般的开发工程师也不会走的太远的。
+另外我比较好奇的一点，比如说在你整个的几个阶段里面：有基本的开发人员，然后到一个比如说项目经理、一个产品的带头人，然后再成为一个产品的总监，最后成为总经理，那么这几个段它有什么特别的不同吗，除了你管理的人越来越多？
+那是有非常大的不同的。作为一个开发工程师来说，你最主要的是要把你的代码写得越快越多越好。因为你对产品的贡献是鉴于你代码的数量，你写代码数量直接就反映成你对这个产品功能多少的体现，你的代码行写得多，那这个功能才增加得多，你写的代码行是最难的那部分，那才说明你对这个产品最主要的核心部分有贡献，这是作为开发工程师。
+
+作为一个开发主管来说，就是我们叫Development Lead，第一方面，作为管理者，你对这个团队的价值，不仅仅是说你自己写了多少行代码，这相对来说是比较少的，最主要是你这个团队对整个产品的贡献是什么，那还是基于你这个开发的功能有多少，然后你这个功能是不是做得好，你架构是不是做得好，但是你的核心价值是把你这些资源都组合起来，然后能够帮助你团队的员工扫平障碍，让他们非常顺利地开发。
+
+像我最开始做管理的时候，我只管理了三个员工，有一个员工如果做得慢一点，那我最多周末去加一加班，他没有做完帮他补做完就完成了，我觉得相当简单的一件事情。等我那个团队长到10个人的时候，你就发现，第一，不可能我周末再来加班，也不可能把10个人里面有两三个人可能要做的慢一点，如果按同样的比例来说，我不可能把这两三个人要做的东西都做完了。那这个时候你要做，就是我们从这个Skill来说，如果要整个团队都能够非常顺利高效，你就要想“我怎么样让这十个人互相之间能够（协调好）”，就是很多程序是有顺序的问题，把顺序问题安排好，有些东西可能要需要一些决定，尽早的把决定做好，下面的架构可以做好，跟其他团队的关系要搞好，因为他们可能有些东西要拿来，他们先做完之后我们才能做，所以有很多东西Dependency Management，这些东西全部都要管理好，就像造房子，管理一个项目一样。这样管理好你这十个人才能都是马不停蹄、非常高效地把这个东西做好。
+
+等你做开发经理的时候，开发经理因为不是一个第一线的管理者，而是第二线的管理者，这个时候最最有挑战性可能是，你很多东西要通过你第一线的开发主管传达到下面去，如果你开发主管对你说的话不认可，那你的观念、决定不一定真正能够传达到最下面的开发人员。而且你下面的开发主管可能每个人都还要管一摊不同的东西，你怎么样让他们之间能够互相配合、互相合作，从一个大局上面来看你整个这个开发团队缺什么，有的时候他们开发主管在那里面做，他不一定会知道说，我实际上比较缺一个真正能帮我把这个架构搞在一起的人，或者一个特别懂客户的人，那要把这个全部都想清楚，真正打造一个非常强的团队，这又是另外一套的艺术，我觉得。
+
+在微软如果你不懂这产品（技术），你是没有办法做一个合格管理者的，你不仅要做人员的管理者，你还要做这个产品的定义，而且还要跟你的团队交流，什么地方是应该做的，什么地方是不应该做的。
+是多重角色了？
+对，因为从开发经理来说，我在美国喜欢说三个P，你要管理产品（Product），你要管理人员（People），你还要管理流程（Process），这三样东西都要抓起来，你才能作为一个合格的开发经理，然后让整个团队都能高效地运行。
+他和现在的总经理有很大的区别吗？
+非常大的区别，因为从开发经理来说，他还只是主要是管开发团队的。开发团队总的来说只是占了可能是1/3。总经理跟产品经理是两个不同的概念，产品经理是说你管一个产品，那总经理你是管多种产品，像我刚才所说的，实际上我现在这个组里面有三种不同的产品。
+
+那这三种不同产品很多时候会有不同的进度表，发布时间会不一样。怎么样把里面相同的东西能够整合出来，让大家最有效地利用，而且还要针对每一个产品有他特别的开发。怎么样管理这一套产品线，而且跟我们的市场部，跟我们的营销部，跟我们的DPE（开发工具及平台事业部），那些合作都是在这个层面上面是完全不同的。而且在这上面你就更要想说，这几个产品，就像我们叫Portfolio（投资组合），就好像如果你要是投资，你可能有些放风险基金，有些放银行存款，有些是放外汇，你还要再从比较高的角度上，看你每一个产品到底里面放多少的资源进去，为什么这个产品放这么多资源，而且要看你成功的定义是什么。
+
+而做一个产品的开发经理，这么多资源实际上已经分配给你的，你在这个资源的基础上面把它做到最大最好，所以这还是不同的概念。
+更加强调统筹的作用，那我们回到技术层面来讲，在你的身上可以看到一个，我认为他是微软一个研发团队的技术变迁史，或者一个缩影。那么我想问的问题是，在你的理解当中，从你进入微软研发团队一直到现在，在整个的产品的开发过程中，主要经历了哪几个比较重大的阶段？
+我觉得这个问题非常好，因为你让我回想了一下。确实有几个非常大的不同（阶段）。
+
+在我进微软的时候还是微软比较新，很多产品还是刚刚第一代，像我那时候做Microsoft Access，现在已经无穷代了。那时候刚刚是第一版，当时发布时非常振奋人心的。如果打一个比喻，就比较像我们80年代刚刚开放的时候，那时候商品比较少，用计算机的人数少，相对来说需求也少。所以那个时候从微软来说，只要发布产品就会有很多的用户来使用。因为我们有很多很基本的需求，而市场上却都没有。那我们发布的产品只要大面上不错的话，就可以非常容易地满足用户的需求。从Word第一版开始发行的时候，前面几版你可以想有很多很多基本的功能是，现在觉得都是肯定是应该有的，但是当时都是很新的东西。
+
+但是产品在做了时间久了之后，等你发布第五版、第六版、第七版、第八版的时候，这时有很多基本的用户需求已经满足了，在那个前提上怎么样把你的产品更上一层楼，这实际上就变成一个相对来说比较困难的问题。很多时候，像我们的Office团队最大竞争者不是别人，是前面一个版本的Office。所以在一开始我觉得我们在微软里边定义产品的时候，比方说90年代初，跟客户沟通之后我们就是用一个Waterfall（瀑布式开发模式）这种Model，因为我们觉得我们知道这个产品应该做什么，我们就把它做完了，然后放在外面市场上，相对来说一定是卖得不错的，卖得很好的，所以这是我们比较成功的一个模式。
+自己可以主导？
+当然我们还是要跟客户有反馈，一开始要跟客户研究，但是我觉得相对来说做得少，而且相对来说比较容易满足客户的需求。因为那时候大家的基本需求有很多都没有满足。等到我觉得差不多就是99年、2000年，就是差不多那个阶段，我们那时候很多产品已经开发了好几代了，等到那个时候我们就有一个危机，因为我记得是差不多是2000年的时候，那时候客户对我们的满意度相对来说比较低，而且我们跟合作伙伴的关系相对来说比较僵一点，在美国还有很多的诉讼案，那个时候我觉得实际上是微软处于一个比较低潮的阶段。但是从那之后，我们确实就开始转型了，我觉得一个最基本的理念，我自己有这个感受，一开始就觉得说我们可以定义这个产品，定义了以后就做，做完以后卖，这是我们最开始的运营模式。
+
+大概是2000年之后，我们就发现对用户反馈的需求变得非常多，而且一个版本一开始跟用户反馈一次是远远不够的。从开发模式来说，开始时我知道什么是对的，我知道用户需要什么，我只要开发什么，这是我们本来的模式。在那之后，我们的模式时我不太确定用户确实需要的是什么，我们可能要先做一些 prototype，试验品出来，让用户去体验一下，体验完了以后再给我们反馈，这是不是他们确实要的，我们在这个反馈基础上再更改。所以你可以看出来整个流程，一开始的想法跟后来想法是不太一样的，而且我们在2000年以后，在后面的开发中，对用户的反馈的需求比以前是大大增加了，而且我们 fundamental mindset（最基本的理念），从一开始我绝对知道什么样是一个对的产品，到我不太确定，那我需要跟用户多次反馈，才能知道真正什么是对的产品，那这两个其实是非常不一样的开发模式。我们之后开始用这种开发模式之后，因为微软作为一个很大的团队，确实也碰到很多的挑战，因为很多时候你要想改一点东西实际上是非常难的。
+涉及到方方面面。
+方方面面，我就喜欢说，像你要是自己想在家里后院造一个小房子，你怎么改都没有关系。但是你要想造金茂大厦，造到一半想改一点什么东西，那你可以想到有很多的东西要配合。你如果要改一点东西，那对你的电梯、电路、楼层、重量，都有很多的考虑因素在里面。
+
+那作为一个大的开发团队，你怎么样能够同时满足客户的需求，又能够在你的架构基础上能够做这种改动。因为最后你的产品还是要满足客户需求，才能够有卖点。你怎么样做这么一个调整，这也是我们在前七、八年中慢慢转型的过程。那相反过来，你如果看，拿我们Visual Studio作为一个例子，从08年，我们前面几个例子看到我们开始大量的出我们叫CTP（Community Technology Preview，社区技术预览版），而且跟我们的客户、开发人员的交流变得非常的透明，很多时候我们很早就把我们想做什么，愿意做什么，有的时候把我们写的Spec，就是产品定义放在网上，给我们的MVP（微软最有价值专家）先让他们反馈，我们现在做很多这样的工作，在这之前都是没有的。
+对于你们内部的开发团队来讲，产品的设计方面是有很大的挑战，也是一种很大的转型。那么你们在自己做开发的过程中是不是也有一些分为几个阶段来呢？
+对！如果是按以前的开发模式，那你可以想到我们更多的是这种，我们现在决定要做这些feature（功能），这些功能需要这样这样，那就是一条线做下来，最后把它发布就可以了。
+就像瀑布模型一样的？
+对。如果你要是想象做的功能可能需要在做的过程中调整的话，你中间的每一个开发阶段，就要设计一个跟用户反馈的过程，然后真正把那反馈拿回来，然后在下面一个过程中做调整。同时你还不能把你的那个发布日期改动的太多，所以你就可以看到这个难度实际上是增加了很多。
+在每一个改变的环节上，根据刚才我们的交流，他应该是客户来进行推动的。那还有一个问题是，在什么时候你们认为这是一个改变的时机，认为这个开发模式应该改变了，这个产品设计的模式应该改变了，你们做决定的时候，有没有某一个观点来刺激着你们去做这种改变呢？
+没有，因为微软很多事情不是Top-Down，不是从上面这么Drive（推动）下来的。第一，从管理层来说，我们比较注重抓的是用户的满意度，看他的满意度如何，就能体现我们跟他一开始交流的够不够。另一方面，比方说我们这个产品真正是有多少用户反馈，而且是把这些反馈做到了产品里面去，这也是我们可以衡量的、量化的。而且很多时候微软有一个团队开始做一个比较好的模式，那其他团队会说，这个模式不错，他也开始借鉴。所以我们这个转型也是慢慢转型，不是说一下子，整个全部团队开始转型，不是这么一个过程。
+可能是某一个团队他先采用了某一种方法，然后其他团队开始慢慢的效仿，应该从底下往上推？然后从小到大这么一种方式？
+说的非常对，因为我们不是Top-Down。从上面管理来说，你要抓的是最后的那个结果，你想看到的结果是什么，那么你鼓励下面团队去实验不同的方法能够达到这个结果，有的试验可能比较成功，有的试验可能不是很成功，那么你再把成功的这种方法，然后再在其他团队里面推广，一般多半都是使用这种模式比较多。
+微软的高层他不会认为就是，OK了，所有的开发团队应该采用这么一种统一的开发方法来去做，他没有这么一种强制的要求吗？
+绝对没有，因为微软的产品线非常的长，有各种各样的产品。开发方式实际上就是我们说的Process（流程），很多时候根据你这个产品不一样，各方面会不一样的。那我对Process理解是这样，就说Process是应该帮助你的开发更有效、更快，很多时候我们觉得Process非常烦琐，时间上会让你慢下来，实际上这个不是它的（目的），它就是没有达到要求。用另外一个比喻，其实像我们来的路上都是有很多红绿灯，有的地方是有那种转盘。像美国还有一种就是叫Four-Way Stop（四向停车），就是你到那边停下来看看左边、右边有没有车，没有车就可以通过。那他实际上都是不同的管理交通方式，管理这个车流量的一种方法，根据不同的地点，你要选择最适合地点的一种方法，有的地方如果车流量不是很大，用这个Four-Way Stop就可以了，有的地方可能有六、七个不同的出口，那用转盘是最合理的。有的地方，在美国比方说有的地方你停了电，本来有红绿灯的地方，你停了电就变成了Four-Way Stop，那时这个地方一定是堵车堵得不得了，因为红绿灯可以帮助流量的增加。
+
+开发的管理方法也是非常类似的，根据不同的项目你要选择对你来说比较合适的方法。如果是一个比较小的项目，你用一个heavy weight(重量级)的方法那就是不合适的。这是为什么微软不会从上面说你一定要用什么样的方法，他考核得是你最后那刻做出来的结果，你的结果是怎么样，能不能在你所承诺的时间里面把东西做出来，你做出来东西用户是不是认可，你做出来的东西后面是不是有很多质量问题，还是说很好用。你在做下面一个版本的时候，就可以反映出你前面做的架构好不好。如果你前面做架构延伸性非常差，你第二个版本相对来说就会多花时间，因为要把前面重新（改造）。
+遇到很多兼容性的问题？
+对，所以这种才是比较硬性的考核标准，那下面用什么样的方式，你自己应该去选一个对你团队来说最合适的方式。
+那我们再具体一点，就是你作为一个开发团队的负责人，肯定在整个的团队管理生涯当中，采用了很多新的技术，很多的新的开发方法，那你是有一种什么样的观点来评估这个技术、这个方法是不是应该用在自己的团队里面？
+一般还是看结果。我本人是比较愿意去试验新的方法，我会让一个feature crew (功能小组)去试验这个方法。然后给他一段时间，他来给我反馈，这个不管是方法还是新的工具，他有什么优点，他有什么缺点，因为很多时候你想是想不出来，你还一定要去试，试了之后才知道它到底是好用还是不好用，它什么地方好，什么地方不好，就跟车一样，你得要去试开一下。然后在这之后，根据他的好处跟坏处，你还再可以跟现有的方法再看，再评估一下，你是把它全盘拿过来呢，还是把它改动之后再引用，或者有没有什么办法把它好的地方能够结合到现有的方法之中，不好的地方把它抛开不用。
+
+你每换一个开发工具，或者是每换一个开发流程，尤其是团队大了，相对来说实际上是一个比较难的事情。因为你对整个开发、测试，还有工程师，你都要进行一个训练的过程。所以一般来说，我并不鼓励有什么是最热门的，我们都来试一下，因为这个是不太可能达到效果的。很多时候如果一个新的办法在推行之中，大家对这个方法不熟悉，很多时候员工也会有抵触情绪。因为我本来这个用的很好，我也知道怎么用，它里面好的、坏的我都知道了。那现在你如果是一个新的东西，我对它第一不知道，第二没有感觉，然后第三现在我就是不知道怎么跟大家合作，那一开始可能会有生产效率的这种降低。所以从这种方面来说你都要考虑进去，尤其是团队大的话，有的时候是在现有方法之上，说哪些是一定要改动的，哪些是不能改动的，那很重要一方面就是把这个理念，你为什么要改，你不是教你这个团队方法，你要把你想最关键解决的这个问题，为什么你要做这个改动，你现有方法你觉得最最不好的问题是什么，你要把这个问题跟团队讲清楚。那团队在理解了这个东西而且他也认可的情况下，比方说我们以前的开发方法是假设我们知道用户需要什么的，我们现在开发方法是假设我们并不完全知道用户需要什么的。这是一个非常基本的理念不同，你把这个要跟团队讲清楚，那他真正能够明白体会了这个问题之后，那再接下来他会和你一起改进他的工作方法。
+
+工作方法不是我来改进的，是我的团队来改进的。因为他在日常工作（开发、测试）中发现了问题，发现什么是更好的解决方案，他要有这种主观能动性，他要明白我想解决的问题是什么，他才能够主动帮我来想更好的解决方法。那想出解决方法之后，我们大家再分享，一般都是这样。
+很多可能都是从底下往上冒出来的？
+绝大多数。因为我每天不在那里做开发，我不可能知道什么是最好的解决方案，确实要每天在做的人才会在他做的过程中发现说，我们这个地方好像浪费了很多时间，我们有没有什么好的方法把它给解决一下。他如果是这个涉及比较广，他会跟我们有一个汇报的过程，因为他可能会问我要资源，或者要其他的东西，那在这个时候我会给一些比较方向性的东西：这个问题我早就知道了，但是我现在决定不解决，因为可能有其他的方方面面的原因，所以我不解决；或者说这个想法非常好，我给你资源，你去给我做一个试验原型出来，然后我们再来看一下，这是非常常见的。
+那我想作为一个比较成功的技术研发团队的管理者，给我们其他团队的负责人，如果提三点建议有没有什么好的建议？
+我觉得对中国团队来说，有些是不是适合国情我就不知道了，但是我先说一下三点建议：
+
+第一，就是真正的要有这种自信心，要去培养你的接班人。而且是不仅是你要培养你的接班人，每一个重要的职位下面都要有一个接班人，而且这个需要和你重要职位的人一起在培养，因为这是打造一个长久的成功的团队非常重要的一点。因为你没有这种传帮带的话，那你这个团队也许是现在可以把这个产品做出来，如果你们有重要人员离职之后，你还能不能是一个成功的团队，这是一个非常重要一点。
+
+第二点，你怎么样能够调动员工最大的积极性，而且我觉得有的时候中国的员工不够主动，你让他做他会做得非常好，但是你不跟他说的事情，他也许就不做。这个我看得比较多，不管在美国和中国的华人员工里面都是比较常见的一个问题。作为一个管理者，你怎么样能够让他能够非常主动把问题告诉你，而且把解决方案也告诉你，这个是从微软文化上面来说是非常重要的一件事情。
+
+第三个方面，从微软来说是人脑加电脑，从我们做IT来说是人脑加电脑，那实际上最主要的还是人脑，那你是不是真的培养员工，真正是让员工在你团队里的重要性充分的发挥了出来，只有在这个时候员工才认可你的管理的方式，才能认可他是这个团队的一员，才能想到怎么样在这个团队里面发挥最大的重要的作用，那这也是我觉得开发管理者应该多思考的问题，和多做的事情。
+还有没有其他想和我们读者做分享的呢？
+我觉得我们中国IT员工，从IQ上面来说非常的高。而且尤其从钻研角度来说，也是非常（努力），真的是。我们在微软自己就觉得我们在中国招的大学生素质，比我们在美国招的大学生素质要高，真的是从那个IQ上面来说。
+
+但是，我觉得有一些可能文化上面的东西，可能会限制这些员工的发展。我看到比较多的是，有的时候员工他们碰到一个问题，我觉得可能是考试考太多了，他们看到一个问题，他们不太会去跟旁边的人，一起跟周围的团队里面的人，或者跟美国团队人一起交流，一起想最好的解决方案，能够把大家不同的观点整合起来。很多的时候看到他们自己在非常辛苦地在干。那苦干之后真的是做出来成果就说，你有没有考虑到一二三四五六，那你有没有跟这个人这个人去谈过，好像这方面做得相对来说比较差一点。因为我觉得我们考试的模式就说你不能问别人，你都要自己解决。
+
+我们在工作中都是，你不可能一个人把方方面面都考虑全，这是不可能的。所以你一定要跟你团队里面的人搞好关系，一定要把团队里面帮你一起想这个问题，还有什么其他的观点，而且能够非常坦然的把这个观点结合到你的解决方案中去，那我觉得这方面相对来说就是相对弱一点。而且就是这种主动性比较差，如果你没有跟他说要做什么事情，你交代的我都做好了就完了。那这两方面我觉得中国员工需要想一想怎么样加强的地方。
+** Year 2009
+*** Summary from outlook
+.
+* Personal															   :LIFE:
+*** 买房
+-- 明确目标
+1. 总价
+2. 地段
+3. 周围环境，学校，生活设施
+
+-- 看房
+1. 多看多比较
+2. 确定
+-- 中介上家交互
+1. 不要和上家做沟通，简单问下即可
+2. 和上家的所有其他事项都通过中介来沟通，比如说交房时间，交房验收，家具等等
+
+-- 交钱
+1. 意向金是没必要给中介的，只会让自己被动，但是要让中介知道你的底线
+2. 第一笔首付2~3成即可，其他的都留到过户的时候一起给
+3. 尾款可以先给中介，做为对上家的制约(尾款最好还是自己拿着，先给一部分中介费，等全部手续办好再给剩余的中介费)
+4. 中介费可以打折，最好最后手续全部结清再给，分批给也可以，但是不能在手续没办好时一次全给完
+* Wisdom															  :THINK:
+** Good Words
+通过规划利用好现有的能力远比挖掘所谓的潜能更重要。
+
+你必须自己开始。假如你自己不以积极的爱去深入生存，假如你不以自己的方式去为自己揭示生存的意义，那么对你来说，生存就将依然是没有意义的。
+
+俞敏洪 -- 坚持下去不是因为我很坚强，而是因为我别无选择。
+
+先让自己潜下去,只有潜下去之后,才可能更好的浮上来;勇于面对所有的问题,感谢所有给你挫折感的事情和人.当你解决一个又一个问题之后,就是你真正提升和能力拓展之时,然后再去体会.才会有可能感觉到成就感.但是过程一定会有痛苦,而痛苦的程度取决于你的态度,还会影响你修练的成果与境界.....
+
+要勇于创新，不走常规的大多数的道路越有成功的可能性。
+
+** Good Story
+*** [[http://www.chou-yinshi.com/shownews.asp%3FID%3D2736][七个顶级心理寓言]] [2009-12-13 Sun 15:28]
+　　（一）成长的寓言：做一棵永远成长的苹果树
+
+　　一棵苹果树，终于结果了。
+
+　　第一年，它结了10个苹果，9个被拿走，自己得到1个。对此，苹果树愤愤不平，于是自断经脉，拒绝成长。第二年，它结了5个苹果，4个被拿走，自己得到1个。“哈哈，去年我得到了10％，今年得到20％！翻了一番。”这棵苹果树心理平衡了。
+
+　　但是，它还可以这样：继续成长。譬如，第二年，它结了100个果子，被拿走90个，自己得到10个。
+
+　　很可能，它被拿走99个，自己得到1个。但没关系，它还可以继续成长，第三年结1000个果子……
+
+　　其实，得到多少果子不是最重要的。最重要的是，苹果树在成长！等苹果树长成参天大树的时候，那些曾阻碍它成长的力量都会微弱到可以忽略。真的，不要太在乎果子，成长是最重要的。
+
+　　【心理点评】你是不是一个已自断经脉的打工族？
+
+　　刚开始工作的时候，你才华横溢，意气风发，相信“天生我才必有用”。但现实很快敲了你几个闷棍，或许，你为单位做了大贡献没人重视；或许，只得到口头重视但却得不到实惠；或许……总之，你觉得就像那棵苹果树，结出的果子自己只享受到了很小一部分，与你的期望相差甚远。
+
+　　于是，你愤怒、你懊恼、你牢骚满腹……最终，你决定不再那么努力，让自己的所做去匹配自己的所得。几年过去后，你一反省，发现现在的你，已经没有刚工作时的激情和才华了。
+
+　　“老了，成熟了。”我们习惯这样自嘲。但实质是，你已停止成长了。
+
+　　这样的故事，在我们身边比比皆是。
+
+　　之所以犯这种错误，是因为我们忘记生命是一个历程，是一个整体，我们觉得自己已经成长过了，现在是到该结果子的时候了。我们太过于在乎一时的得失，而忘记了成长才是最重要的。
+
+　　好在，这不是金庸小说里的自断经脉。我们随时可以放弃这样做，继续走向成长之路。
+
+　　切记：如果你是一个打工族，遇到了不懂管理、野蛮管理或错误管理的上司或企业文化，那么，提醒自己一下，千万不要因为激愤和满腹牢骚而自断经脉。不论遇到什么事情，都要做一棵永远成长的苹果树，因为你的成长永远比每个月拿多少钱重要。
+
+　　（二）动机的寓言：孩子在为谁而玩
+
+　　一群孩子在一位老人家门前嬉闹，叫声连天。几天过去，老人难以忍受。
+
+　　于是，他出来给了每个孩子25美分，对他们说：“你们让这儿变得很热闹，我觉得自己年轻了不少，这点钱表示谢意。”
+
+　　孩子们很高兴，第二天仍然来了，一如既往地嬉闹。老人再出来，给了每个孩子15美分。他解释说，自己没有收入，只能少给一些。15美分也还可以吧，孩子仍然兴高采烈地走了。
+
+　　第三天，老人只给了每个孩子5美分。
+
+　　孩子们勃然大怒，“一天才5美分，知不知道我们多辛苦！”他们向老人发誓，他们再也不会为他玩了！
+
+　　【心理点评】你在为谁而“玩”
+
+　　这个寓言是苹果树寓言的更深一层的答案：苹果树为什么会自断经脉，因为它不是为自己而“玩”。
+
+　　人的动机分两种：内部动机和外部动机。如果按照内部动机去行动，我们就是自己的主人。如果驱使我们的是外部动机，我们就会被外部因素所左右，成为它的奴隶。
+
+　　在这个寓言中，老人的算计很简单，他将孩子们的内部动机“为自己快乐而玩”变成了外部动机“为得到美分而玩”，而他操纵着美分这个外部因素，所以也操纵了孩子们的行为。寓言中的老人，像不像是你的老板、上司？而美分，像不像是你的工资、奖金等各种各样的外部奖励？
+
+　　如将外部评价当作参考坐标，我们的情绪就很容易出现波动。因为，外部因素我们控制不了，它很容易偏离我们的内部期望，让我们不满，让我们牢骚满腹。不满和牢骚等负性情绪让我们痛苦，为了减少痛苦，我们就只好降低内部期望，最常见的方法就是减少工作的努力程度。
+
+　　一个人之所以会形成外部评价体系，最主要的原因是父母喜欢控制他。父母太喜欢使用口头奖惩、物质奖惩等控制孩子，而不去理会孩子自己的动机。久而久之，孩子就忘记了自己的原初动机，做什么都很在乎外部的评价。上学时，他忘记了学习的原初动机———好奇心和学习的快乐；工作后，他又忘记了工作的原初动机———成长的快乐，上司的评价和收入的起伏成了他工作的最大快乐和痛苦的源头。
+
+　　切记：外部评价系统经常是一种家族遗传，但你完全可以打破它，从现在开始培育自己的内部评价体系，让学习和工作变成“为自己而玩”。
+
+　　（三）规划的寓言：把一张纸折叠51次
+
+　　想象一下，你手里有一张足够大的白纸。现在，你的任务是，把它折叠51次。那么，它有多高？
+
+　　一个冰箱？一层楼？或者一栋摩天大厦那么高？不是，差太多了，这个厚度超过了地球和太阳之间的距离。
+
+　　【心理点评】
+
+　　到现在，我拿这个寓言问过十几个人了，只有两个人说，这可能是一个想象不到的高度，而其他人想到的最高的高度也就是一栋摩天大厦那么高。
+
+　　折叠51次的高度如此恐怖，但如果仅仅是将51张白纸叠在一起呢？
+
+　　这个对比让不少人感到震撼。因为没有方向、缺乏规划的人生，就像是将51张白纸简单叠在一起。今天做做这个，明天做做那个，每次努力之间并没有一个联系。这样一来，哪怕每个工作都做得非常出色，它们对你的整个人生来说也不过是简单的叠加而已。
+
+　　当然，人生比这个寓言更复杂一些。有些人，一生认定一个简单的方向而坚定地做下去，他们的人生最后达到了别人不可企及的高度。譬如，我一个朋友的人生方向是英语，他花了十数年努力，仅单词的记忆量就达到了十几万之多，在这一点上达到了一般人无法企及的高度。
+
+　　也有些人，他们的人生方向也很明确，譬如开公司做老板，这样，他们就需要很多技能———专业技能、管理技能、沟通技能、决策技能等等。他们可能会在一开始尝试做做这个，又尝试做做那个，没有一样是特别精通的，但最后，开公司做老板的这个方向将以前的这些看似零散的努力统合到一起，这也是一种复杂的人生折叠，而不是简单的叠加。
+
+　　切记：看得见的力量比看不见的力量更有用。
+
+　　现在，流行从看不见的地方寻找答案，譬如潜能开发，譬如成功学，以为我们的人生要靠一些奇迹才能得救。但是，在我看来，东莞恒缘心理咨询中心的咨询师毛正强说得更正确，“通过规划利用好现有的能力远比挖掘所谓的潜能更重要。”
+
+　　（四）逃避的寓言：小猫逃开影子的招数
+
+　　“影子真讨厌！”小猫汤姆和托比都这样想，“我们一定要摆脱它。”
+
+　　然而，无论走到哪里，汤姆和托比发现，只要一出现阳光，它们就会看到令它们抓狂的自己的影子。
+
+　　不过，汤姆和托比最后终于都找到了各自的解决办法。汤姆的方法是，永远闭着眼睛。托比的办法则是，永远待在其他东西的阴影里。
+
+　　【心理点评】
+
+　　这个寓言说明，一个小的心理问题是如何变成更大的心理问题的。
+
+　　可以说，一切心理问题都源自对事实的扭曲。什么事实呢？主要就是那些令我们痛苦的负性事件。
+
+　　因为痛苦的体验，我们不愿意去面对这个负性事件。但是，一旦发生过，这样的负性事件就注定要伴随我们一生，我们能做的，最多不过是将它们压抑到潜意识中去，这就是所谓的忘记。
+
+　　但是，它们在潜意识中仍然会一如既往地发挥作用。并且，哪怕我们对事实遗忘得再厉害，这些事实所伴随的痛苦仍然会袭击我们，让我们莫名其妙地伤心难过，而且无法抑制。这种疼痛让我们进一步努力去逃避。
+
+　　发展到最后，通常的解决办法就是这两个：要么，我们像小猫汤姆一样，彻底扭曲自己的体验，对生命中所有重要的负性事实都视而不见；要么，我们像小猫托比一样，干脆投靠痛苦，把自己的所有事情都搞得非常糟糕，既然一切都那么糟糕，那个让自己最伤心的原初事件就不是那么疼了。
+
+　　白云心理医院的咨询师李凌说，99％的吸毒者有过痛苦的遭遇。他们之所以吸毒，是为了让自己逃避这些痛苦。这就像是躲进阴影里，痛苦的事实是一个魔鬼，为了躲避这个魔鬼，干脆把自己卖给更大的魔鬼。
+
+　　还有很多酗酒的成人，他们有过一个酗酒而暴虐的老爸，挨过老爸的不少折磨。为了忘记这个痛苦，他们学会了同样的方法。
+
+　　除了这些看得见的错误方法外，我们人类还发明了无数种形形色色的方法去逃避痛苦，弗洛伊德将这些方式称为心理防御机制。太痛苦的时候，这些防御机制是必要的，但糟糕的是，如果心理防御机制对事实扭曲得太厉害，它会带出更多的心理问题，譬如强迫症、社交焦虑症、多重人格，甚至精神分裂症等。
+
+　　真正抵达健康的方法只有一个———直面痛苦。直面痛苦的人会从痛苦中得到许多意想不到的收获，它们最终会变成当事人的生命财富。
+
+　　切记：阴影和光明一样，都是人生的财富。
+
+　　一个最重要的心理规律是，无论多么痛苦的事情，你都是逃不掉的。你只能去勇敢地面对它，化解它，超越它，最后和它达成和解。如果你自己暂时缺乏力量，你可以寻找帮助，寻找亲友的帮助，或寻找专业的帮助，让你信任的人陪着你一起去面对这些痛苦的事情。
+
+　　美国心理学家罗杰斯曾是最孤独的人，但当他面对这个事实并化解后，他成了真正的人际关系大师；美国心理学家弗兰克有一个暴虐而酗酒的继父和一个糟糕的母亲，但当他挑战这个事实并最终从心中原谅了父母后，他成了治疗这方面问题的专家；日本心理学家森田正马曾是严重的神经症患者，但他通过挑战这个事实并最终发明出了森田疗法……他们生命中最痛苦的事实最后都变成了他们最重要的财富。你，一样也可以做到。
+
+　　（五）行动的寓言———螃蟹、猫头鹰和蝙蝠
+
+　　螃蟹、猫头鹰和蝙蝠去上恶习补习班。数年过后，它们都顺利毕业并获得博士学位。不过，螃蟹仍横行，猫头鹰仍白天睡觉晚上活动，蝙蝠仍倒悬。
+
+　　【心理点评】
+
+　　这是黄永玉大师的一个寓言故事，它的寓意很简单：行动比知识重要。
+
+　　用到心理健康中，这个寓言也发人深省。
+
+　　心理学的知识堪称博大精深。但是，再多再好的心理学知识也不能自动帮助一个人变得更健康。其实，我知道的一些学过多年心理学的人士，他们学心理学的目的之一就是要治自己，但学了这么多年以后，他们的问题依旧。
+
+　　之所以出现这种情况，一个很重要的原因是，他们没有身体力行，那样知识就只是遥远的知识，知识并没有化成他们自己的生命体验。
+
+　　我的一个喜欢心理学的朋友，曾被多名心理学人士认为不敏感，不适合学心理学。但事实证明，这种揣测并不正确。他是不够敏感，但他有一个非常大的优点：知道一个好知识，就立即在自己的生命中去执行。这样一来，那些遥远的知识就变成了真切的生命体验，他不必“懂”太多，就可以帮助自己，并帮助很多人。
+
+　　如果说，高敏感度是一种天才素质，那么高行动力是更重要的天才素质。
+
+　　这个寓言还可以引申出另一种含义：不要太指望神秘的心理治疗的魔力。最重要的力量永远在你自己的身上，奥秘的知识、玄妙的潜能开发、炫目的成功学等等，都远不如你自己身上已有的力量重要。我们习惯去外面寻找答案，去别人那里寻找力量，结果忘记了力量就在自己身上。
+
+　　切记：别人的知识不能自动地拯救你。
+
+　　如果一些连珠的妙语打动了你，如果一些文字或新信条启发了你。那么，这些别人的文字和经验都只是一个开始，更重要的是，你把你以为好的知识真正运用到你自己的生命中去。
+
+　　犹太哲学家马丁?布伯的这句话，我一直认为是最重要的：
+
+　　你必须自己开始。假如你自己不以积极的爱去深入生存，假如你不以自己的方式去为自己揭示生存的意义，那么对你来说，生存就将依然是没有意义的。
+
+　　（六）放弃的寓言：蜜蜂与鲜花
+
+　　玫瑰花枯萎了，蜜蜂仍拼命吮吸，因为它以前从这朵花上吮吸过甜蜜。但是，现在在这朵花上，蜜蜂吮吸的是毒汁。
+
+　　蜜蜂知道这一点，因为毒汁苦涩，与以前的味道是天壤之别。于是，蜜蜂愤不过，它吸一口就抬起头来向整个世界抱怨，为什么味道变了？！
+
+　　终于有一天，不知道是什么原因，蜜蜂振动翅膀，飞高了一点。这时，它发现，枯萎的玫瑰花周围，处处是鲜花。
+
+　　【心理点评】
+
+　　这是 关于爱情的寓言，是一位年轻的语文老师的真实感悟。
+
+　　有一段时间，她失恋了，很痛苦，一直想约我聊聊，希望我的心理学知识能给她一些帮助。我们一直约时间，但快两个月过去了，两人的时间总不能碰巧凑在一起。
+
+　　最后一次约她，她说：“谢谢！不用了，我想明白了。”
+
+　　原来，她刚从九寨沟回来。失恋的痛苦仍在纠缠她，让她神情恍惚，不能享受九寨沟的美丽。不经意的时候，她留意到一只小蜜蜂正在一朵鲜花上采蜜。那一刹那间，她脑子里电闪雷鸣般地出现了一句话：“枯萎的鲜花上，蜜蜂只能吮吸到毒汁。”
+
+　　当然，大自然中的小蜜蜂不会这么做，只有人类才这么傻，她这句话里的蜜蜂当然指她自己。这一刹那，她顿悟出了放弃的道理。以前，她想让我帮她走出来，但翅膀其实就长在她自己身上，她想飞就能飞。
+
+　　放弃并不容易，爱情中的放弃尤其令人痛苦。因为，爱情是对我们幼小时候的亲子关系的复制。幼小的孩子，无论从哪个方面看，都离不开爸爸妈妈。如果爸爸妈妈完全否定他，那对他来说就意味着死亡，这是终极的伤害和恐惧。我们多多少少都曾体验过被爸爸妈妈否定的痛苦和恐惧，所以，当爱情———这个亲子关系的复制品再一次让我们体验这种痛苦和恐惧时，我们的情绪很容易变得非常糟糕。
+
+　　不过，爱情和亲子关系相比，有一个巨大的差别：小时候，我们无能为力，一切都是父母说了算；但现在，我们长大了，我们有力量自己去选择自己的命运。可以说，童年时，我们是没有翅膀的小蜜蜂，但现在，我们有了一双强有力的翅膀了。
+
+　　但是，当深深地陷入爱情时，我们会回归童年，我们会忘记自己有一双可以飞翔的翅膀。等我们自己悟出这一点后，爱情就不再会是对亲子关系的自动复制，我们的爱情就获得了自由，就有了放弃的力量。
+
+　　切记：爱情是两个人的事情，两个完全平等的、有独立人格的人的事情。你可以努力，但不是说，你努力了就一定会有效果，因为另一个人，你并不能左右。
+
+　　所以，无论你多么在乎一次爱情，如果另一个人坚决要离开你，请尊重他的选择。
+
+　　并且，还要记得，你不再是童年，只能听凭痛苦的折磨。你已成人，你有一双强有力的翅膀，你完全可以飞出一个已经变成毒药的关系。
+
+　　（七）亲密的寓言：独一无二的玫瑰
+
+　　小王子有一个小小的星球，星球上忽然绽放了一朵娇艳的玫瑰花。以前，这个星球上只有一些无名的小花，小王子从来没有见过这么美丽的花，他爱上这朵玫瑰，细心地呵护她。
+
+　　那一段日子，他以为，这是一朵人世间唯一的花，只有他的星球上才有，其他的地方都不存在。
+
+　　然而，等他来到地球上，发现仅仅一个花园里就有5000朵完全一样的这种花朵。这时，他才知道，他有的只是一朵普通的花。
+
+　　一开始，这个发现，让小王子非常伤心。但最后，小王子明白，尽管世界上有无数朵玫瑰花，但他的星球上那朵，仍然是独一无二的，因为那朵玫瑰花，他浇灌过，给她罩过花罩，用屏风保护过，除过她身上的毛虫，还倾听过她的怨艾和自诩，聆听过她的沉默……一句话，他驯服了她，她也驯服了他，她是他独一无二的玫瑰。
+
+　　“正因为你为你的玫瑰花费了时间，这才使你的玫瑰变得如此重要。”一只被小王子驯服的狐狸对他说。
+
+　　【心理点评】
+
+　　这是法国名著《小王子》中一个有名的寓言故事，我曾读过十数遍，但仍然是直到2005年才明白这一点。
+
+　　面对着5000朵玫瑰花，小王子说：“你们很美，但你们是空虚的，没有人能为你们去死。”
+
+　　只有倾注了爱，亲密关系才有意义。但是，现在我们越来越流行空虚的“亲密关系”，最典型的就是因网络而泛滥的一夜情。
+
+　　我们急着去拥有。仿佛是，每多拥有过一朵玫瑰，自己的生命价值就多了一分。网络时代，拥有过数十名情人，已不再是太罕见的事情。但我所了解的这些滥情者，没有一个是不空虚的。他们并不享受关系，他们只享受征服。
+
+　　“征服欲望越强的人，对于关系的亲密度越没有兴趣。”广州白云心理医院的咨询师荣玮龄说，“没有拥有前，他们会想尽一切办法拉近关系的距离。但一旦拥有后，他们会迅速丧失对这个亲密关系的兴趣。征服欲望越强，丧失的速度越快。”
+
+　　对于这样的人，一个玫瑰园比起一朵独一无二的玫瑰花来，更有吸引力。
+
+　　然而，关系的美，正在乎两人的投入程度和被驯服程度。当两个人都自然而然地去投入，自然而然地被驯服后，关系就会变成人生养料，让一个人的生命变得更充盈、更美好。
+
+　　但是，无论多么亲密。小王子仍是小王子，玫瑰仍是玫瑰，他们仍然是两个个体。如果玫瑰不让小王子旅行，或者小王子旅行时非将玫瑰花带在身上，两者一定要黏在一起，关系就不再是享受，而会变成一个累赘。
+
+　　切记：一个既亲密而又相互独立的关系，胜于一千个一般的关系。这样的关系，会把我们从不可救药的孤独感中拯救出来，是我们生命中最重要的一种救赎。
+
+　　如果不曾体验过，你就无法知道这种关系的美。
+
+*** 十个启迪故事 <2010-01-25 15:06>
+1：井底的驴 
+
+一天，一个农民的驴子掉到了枯井里。那可怜的驴子在井里凄惨地叫了好几个钟头，农民在井口急得团团转，就是没办法把它救起来。最后，他断然认定：驴子已经老了，这口枯井也该填起来了，不值得花这么大的精力去救驴子。 
+农民把所有的邻居都请来帮他填井。大家抓起铁锹，开始往井里填土。 
+驴子很快就意识到发生了什么事，起初，它只是在井里恐慌地大声哭叫。不一会儿，令大家都很不解的是，它居然安静下来。几锹土过后，农民终于忍不住朝井下看，眼前的情景让他惊呆了。 
+每一铲砸到驴子背上的土，它都作了出人意料的处理：迅速地抖落下来，然后狠很地用脚踩紧。就这样，没过多久，驴子竟把自己升到了井口。它纵身跳了出来，快步跑开了。在场的每一个人都惊诧不已。 
+
+启示:其实，生活也是如此。各种各样的困难和挫折，会如尘土一般落到我们的头上，要想从这苦难的枯井里脱身逃出来，走向人生的成功与辉煌，办法只有一个，那就是：将它们统统都抖落在地，重重地踩在脚下。因为，生活中我们遇到的每一个困难，每一次失败，其实都是人生历程中的一块垫脚石。 
+
+2：爱左看右 
+
+当年在挖掘特洛伊古城的时候一位英国考古学家发现了一面古铜镜，铜镜背后雕刻了一段古怪难懂的铭文，他穷尽毕生精力，请教了不少古希腊文专家，都无法破译其中的奥妙。考古学家逝世后，这面镜子就静静地躺在大英博物馆里，直到20年后，有一天，博物馆里来了一个英俊的年轻人，在博物馆馆长的陪同下，他径直走到古镜的面前，在工作人员的协助的下打开玻璃柜，小心翼翼地取出铜镜，翻过来放在一块红色天鹅绒上。古镜背后的铭文在红色的背景上反射着冷冷的金色光泽 
+年轻人从背囊里拿了一面普通的镜子出来，照着古铜镜上的铭文，转过头去，微笑着对博物馆馆长说：“看，这面古镜背后的铭文其实并不难解，只是将普通的古希腊文按着镜像后的文字图案雕刻上去的。”博物馆馆长也是一位古希腊文专家，他扶着鼻架上的老花镜，将脸凑过去，仔细辨析镜子反照后的文字，缓缓地，一字一字读道：“致我最亲爱的人：当所有的人认为你向左时，我知道你一直向右。”。 
+年轻人抬起头，叹了口气说：“真可惜！我祖父花了毕生的精力，也没能破解文字中的奥妙，却不知道他一直在浪费着时间，结果竟然是这么简单！”博物馆馆长沉默了一会儿，淡淡地说：“或许你以为他一直向左，其实他一直在向右。”年轻人神色一动，陷入了沉思。 
+我们已经无法得知，这段文字是否就是当年美丽的海伦写给她那苦命情人的，但铭文中包含着的那种对爱人无限支持的精神，直到今天仍然令人动情不已。在古代许多国度的习俗中，都有左卑右尊的观念，看来史前的特洛伊古城也是这样。我们从古镜的铭文中可以看到，作者的情人或许正被他人视作不断堕落，即将陷入四面楚歌的困境，而在这种困境之下，那甜蜜的人儿，却用这段话表明了对爱人的无比信任，相信他的努力必然会达到一个正确的目标。这种信任对于一个身陷困境的人来说，该是多么宝贵的鼓励啊！ 
+那位考古学家没能揭开谜团，不一定是他做错了，只能说明他没有足够的运气发现真相，外人或许认为他向左了，但其实他一直在向右。作为考古学家的继承人，他的孙子需要明白这一点，并尊敬祖父的这种不懈的努力，以告慰他那锲而不舍、死而后已的崇高精神。这或许就是博物馆馆长话语中的含义。 
+当所有人都认为你所爱的人向左时，你不妨对他大喊一声：“我知道你一直向右！”这或许就是对爱的最好表达。 
+启示：每个人都会遇到困境，对于一个身陷困境的人来说，他是多么需要爱人的宝贵的鼓励和支持。当所有人都认为你所爱的人向左时，你不妨对他大喊一声：“我知道你一直向右！”这或许就是对爱的最好表达，它表明了对爱人的无比信任，相信他的努力必然会达到一个正确的目标。 
+
+
+3：痛苦和盐 
+
+印度有一个师傅对于徒弟不停地抱怨这抱怨那感到非常厌烦，于是有一天早上派徒弟去取一些盐回来。 
+当徒弟很不情愿地把盐取回来后，师傅让徒弟把盐倒进水杯里喝下去，然后问他味道如何。 
+徒弟吐了出来，说：“很苦。” 
+师傅笑着让徒弟带着一些盐和自己一起去湖边。 
+他们一路上没有说话。 
+来到湖边后，师傅让徒弟把盐撒进湖水里，然后对徒弟说：“现在你喝点湖水。” 
+徒弟喝了口湖水。师傅问：“有什么味道？” 
+徒弟回答：“很清凉。” 
+师傅问：“尝到咸味了吗？”徒弟说：“没有。” 
+然后，师傅坐在这个总爱怨天尤人的徒弟身边，握着他的手说：“人生的苦痛如同这些盐有一定数量，既不会多也不会少。我们承受痛苦的容积的大小决定痛苦的程度。所以当你感到痛苦的时候，就把你的承受的容积放大些，不是一杯水，而是一个湖。” 
+启示：人生的苦痛如同这些盐有一定数量，既不会多也不会少。我们承受痛苦的容积的大小决定痛苦的程度。所以当你感到痛苦的时候，就把你的承受的容积放大些，不是一杯水，而是一个湖。 
+
+
+4：黑木炭白衬衫 
+
+    8岁的帕科放学以后气冲冲地回到家里，进门以后使劲地跺脚。他的父亲正在院子里干活，看到帕科生气的样子，就把他叫了过来，想和他聊聊。 
+帕科不情愿得走到父亲身边，气呼呼地说：“爸爸，我现在非常生气。华金以后甭想再得意了。” 
+帕科的父亲一面干活，一面静静地听儿子诉说。帕科说：“华金让我在朋友面前丢脸，我现在特别希望他遇上几件倒霉的事情。” 
+他父亲走到墙角，找到一袋木炭，对帕科说：“儿子，你把前面挂在绳子上的那件白衬衫当作华金，把这个塑料袋里的木炭当作你想象中的倒霉事情。你用木炭去砸白衬衫，每砸中一块，就象征着华金遇到一件倒霉的事情。我们看看你把木炭砸完了以后，会是什么样子。”帕科觉得这个游戏很好玩，他拿起木炭就往衬衫上砸去。可是衬衫挂在比较远的绳子上，他把木炭扔完了，也没有几块扔到衬衫上。 
+父亲问帕科：“你现在觉得怎么样？” 
+他说：“累死我了，但我很开心，因为我扔中了好几块木炭，白衬衫上有好几个黑印子了。” 
+父亲看到儿子没有明白他的用意，于是便让帕科去照照镜子。帕科在一面大镜子里看到自己满身都是黑炭，从脸上只能看到牙齿是白的。 
+父亲这时说道：“你看，白衬衫并没有变得特别脏，而你自己却成了一个\\ 黑人\\ 。你想在别人身上发生很多倒霉事情，结果最倒霉的事却落到自己身上了。有时候，我们的坏念头虽然在别人身上兑现了一部分，别人倒霉了，但是他们也同样在我们身上留下了难以消除的污迹。” 
+启示：你想在别人身上发生很多倒霉事情，结果最倒霉的事却落到自己身上了。有时候，我们的坏念头虽然在别人身上兑现了一部分，别人倒霉了，但是他们也同样在我们身上留下了难以消除的污迹。 
+
+
+5：宽大 
+
+这是一个来自越战归来的士兵的故事。他从旧金山打电话给他的父母，告诉他们：「爸妈，我回来了，可是我有个不情之请。我想带一个朋友同我一起回家。」「当然好啊！」他们回答「我们会很高兴见到的。」 
+不过儿子又继续下去「可是有件事我想先告诉你们，他在越战里受了重伤，少了一条胳臂和一只脚，他现在走投无路，我想请他回来和我们一起生活。 
+儿子，我很遗撼，不过或许我们可以帮他找个安身之处。」父亲又接着说「儿子，你不知道自己在说些什么。像他这样残障的人会对我们的生活造成很大的负担。我们还有自己的生活要过，不能就让他这样破坏了。我建议你先回家然后忘了他，他会找到自己的一片天空的。」就在此时儿子挂上了电话，他的父母再也没有他的消息了。 
+几天后，这对父母接到了来自旧金山警局的电话，告诉他们亲爱的儿子已经坠楼身亡了。警方相信这只是单纯的自杀案件。于是他们伤心欲绝地飞往旧金山，并在警方带领之下到停尸间去辨认儿子的遗体。那的确是他们的儿子没错，但惊讶的是儿子居然，只有一条胳臂和一条腿。 
+故事中的父母就和我们大多数人一样。要去喜爱面貌姣好或谈吐风趣的人很容易，但是要喜欢那些造成我们不便和不快的人却太难了。我们总是宁愿和那些不如我们健康，美丽或聪明的人保持距离。 
+启示：大多数人要去喜爱面貌姣好或谈吐风趣的人很容易，但是要喜欢那些造成我们不便和不快的人却太难了。我们总是宁愿和那些不如我们健康，美丽或聪明的人保持距离。放下你的残酷吧，请无怨无悔地爱，无怨无悔地去接纳。每个人的心里都藏着一种神奇的东西称为「友情」，你不知道它究竟是如何发生何时发生，但你却知道它总会带给我们特殊的礼物。 
+
+6：且慢下手 
+
+大多数的同仁都很兴奋，因为单位里调来一位新主管，据说是个能人，专门被派来整顿业务；可是日一天天过去，新主管却毫无作为，每天彬彬有礼进办公室，便躲在里面难得出门，那些本来紧张得要死的坏份子，现在反而更猖獗了。 
+他那里是个能人嘛！根本是个老好人，比以前的主管更容易唬！ 
+四个月过去，就在真正努力为新主管感到失望时，新主管却发威了－－坏份子一律开革，能人则获得晋升。下手之快，断事之准，与四月表现保守的他，简直像是全然换个人。 
+年终聚餐时，新主管在酒过三巡之后致词：「相信大家对我新到任期间的表现，和后来的大刀阔斧，一定感到不解，现在听我说个故事，各位就明白了：「我有位朋友，买了栋带着大院的房子，他一搬进去，就将那院子全面整顿，杂草树一律清除，改种自己新买的花卉，某日原先的屋主往访，进门大吃一惊的问：『那最名贵的牡丹哪里去了？』我这位朋友才发现，他竟然把牡丹当草给铲了。 
+后来他又买了一栋房子，虽然院子更是杂乱，他却是按兵不动，果然冬天以为是杂树的植物，春天里开了繁花；春天以为是野草的，夏天里成了锦蔟；半年都没有动静的小树，秋天居然红了叶。直到暮秋，它才真正认清哪些是无用的植物，而大力铲除，并使所有珍贵的草木得以保存。」说到这儿，主管举起杯来：「让我敬在座的每一位，因为如果这办公室是个花园，你们就都是其间的珍木，珍木不可能一年到头开花结果，只有经过长期的观察才认得出啊！ 
+启示：世间的珍木，不可能一年到头开花结果，只有经过长期的观察才认得出。在你做一项抉择的同时，也请慢下手，仔细观察后再做决定，别让后悔找上自己。 
+
+
+7：误会 
+
+早年在美国阿拉斯加地方，有一对年轻人结婚，婚后生育，他的太太因难产而死，遗下一孩子。 
+他忙生活，又忙于看家，因没有人帮忙看孩子，就训练一只狗，那狗聪明听话，能照顾小孩，咬着奶瓶喂奶给孩子喝，抚养孩子。有一天，主人出门去了，叫它照顾孩子。 
+他到了别的乡村，因遇大雪，当日不能回来。第二天才赶回家，狗立即闻声出来迎接主人。他把房门开一看，到处是血，抬头一望，床上也是血，孩子不见了，狗在身边，满口也是血，主人发现这种情形，以为狗性发作，把孩子吃掉了，大怒之下，拿起刀来向着狗头一劈，把狗杀死了。 
+之后，忽然听到孩子的声音，又见他从床下爬了出来，于是抱起孩子；虽然身上有血，但并未受伤。 
+他很奇怪，不知究竟是怎么一回事，再看看狗身，腿上的肉没有了，旁边有一只狼，口里还咬着狗的肉；狗救了小主人，却被主人误杀了，这真是天下最令人惊奇的误会。 
+启示：误会的事，是人往往在不了解、无理智、无耐心、缺少思考、未能多方体谅对方，反省自己，感情极为冲动的情况之下所发生。误会一开始，即一直只想到对方的千错万错；因此，会使误会越陷越深，弄到不可收拾的地步。在对别人有所决定与判断之前，首先，请想想这是否是一个“误会”。 
+
+
+8：心愿 
+
+有一个老母亲她一共有三个孩子，两个女儿特别能干孝顺，一个儿子有些窝囊无能。两个女儿常常塞钱给老母亲让她买好吃的，可老母亲又特别疼小孙子，于是常常把女儿给的钱又去塞给了儿子，让他给小孙子买吃的。 
+邻居气不过就去把这个秘密告诉了大女儿，大女儿说她给妈妈钱就是为了让妈妈高兴，她愿意怎么花就怎么花，如果妈妈把钱省给儿子和孙子能够换来她的开心和尊严的话，那这个钱就算花得值得。老母亲听了大女儿的话特别高兴，她说看着孙子吃比自己吃香多了。 
+过了一个月，二女儿回来了，她知道了这个秘密后非常生气，于是她天天守在家里教训开导老母亲，规定她给自己买吃的买喝的，而且非要看着她吃下去不可，老母亲气得什么都吃不下，最后抑郁而死。” 
+一个人拥有他想拥有的是最开心的，在人生的所有事情中人的心愿是最重要的。 
+启示：人的一生中什么最重要？当一个人做一件好事的时候，旁人考虑的可能是他这样做值不值得，这种付出有没有回报？然而这些都不重要，一个人拥有他想拥有的是最开心的，在人生的所有事情中人的心愿是最重要的。 
+
+
+9：生活到底是什么 
+
+一位满脸愁容的生意人来到智慧老人的面前。 
+“先生，我急需您的帮助。虽然我很富有，但人人都对我横眉冷对。生活真像一场充满尔虞我诈的厮杀。” 
+“那你就停止厮杀呗。”老人回答他。 
+生意人对这样的告诫感到无所适从，他带着失望离开了老人。在接下来的几个月里，他情绪变得糟糕透了，与身边每一个人争吵斗殴，由此结下了不少冤家。一年以后，他变得心力交瘁，再也无力与人一争长短了。 
+“哎，先生，现在我不想跟人家斗了。但是，生活还是如此沉重———它真是一副重重的担子呀。” 
+“那你就把担子卸掉呗。”老人回答。 
+生意人对这样的回答很气愤，怒气冲冲地走了。在接下来的一年当中，他的生意遭遇了挫折，并最终丧失了所有的家当。妻子带着孩子离他而去，他变得一贫如洗，孤立无援，于是他再一次向这位老人讨教。 
+“先生，我现在已经两手空空，一无所有，生活里只剩下了悲伤。” 
+“那就不要悲伤呗。”生意人似乎已经预料到会有这样的回答，这一次他既没有失望也没有生气，而是选择呆在老人居住的那个山的一个角落。 
+有一天他突然悲从中来，伤心地号啕大哭了起来———几天，几个星期，乃至几个月地流泪。 
+最后，他的眼泪哭干了。他抬起头，早晨温煦的阳光正普照着大地。他于是又来到了老人那里。 
+“先生，生活到底是什么呢？” 
+老人抬头看了看天，微笑着回答道：“一觉醒来又是新的一天，你没看见那每日都照常升起的太阳吗？” 
+启示：生活到底是沉重的？还是轻松的？这全依赖于我们怎么去看待它。生活中会遇到各种烦恼，如果你摆脱不了它，那它就会如影随形地伴随在你左右，生活就成了一副重重的担子。“一觉醒来又是新的一天，太阳不是每日都照常升起吗？”放下烦恼和忧愁，生活原来可以如此简单。 
+
+
+10：钉子 
+
+　　有一个男孩有着很坏的脾气，于是他的父亲就给了他一袋钉子；并且告诉他，每当他发脾气的时候就钉一根钉子在后院的围篱上。 
+第一天，这个男孩钉下了37根钉子。慢慢地每天钉下的数量减少了。他发现控制自己的脾气要比钉下那些钉子来得容易些。 
+终于有一天这个男孩再也不会失去耐性乱发脾气，他告诉他的父亲这件事，父亲告诉他，现在开始每当他能控制自己的脾气的时候，就拔出一根钉子。 
+一天天地过去了，最后男孩告诉他的父亲，他终于把所有钉子都拔出来了。 
+父亲握着他的手来到后院说：你做得很好，我的好孩子。但是看看那些围篱上的洞，这些围篱将永远不能回复成从前。你生气的时候说的话将像这些钉子一样留下疤痕。如果你拿刀子捅别人一刀，不管你说了多少次对不起，那个伤口将永远存在。话语的伤痛就像真实的伤痛一样令人无法承受。 
+启示：人与人之间常常因为一些彼此无法释怀的坚持，而造成永远的伤害。如果我们都能从自己做起，开始宽容地看待他人，相信你(你)一定能收到许多意想不到的结果....帮别人开启一扇窗，也就是让自己看到更完整的天空....
+
+
+* Out-of-date
+  :PROPERTIES:
+  :ORDERED:  t
+  :END:
+** Thinking															  :THINK:
+*** Understand your truly self
+*** FeelGood List
+1. Communication well with people and learn from others
+2. Think into details and solving problems by analyse
+3. Analyze people personality and how to manage and deal with people well
+4. 
+*** Idea list
+** Menu for my wife
+   CLOCK: [2010-02-07 Sun 00:53]
+   CLOCK: [2010-02-07 Sun 00:53]--[2010-02-07 Sun 00:53] =>  0:00
+青椒肉丝
+蘑菇油菜
+西葫芦炒鸡蛋
+肉炒茄丝和青椒丝
+辣子白
+肉炒蒜薹
+干煸豆角
+清炒生菜
+烧油菜
+小炒肉炖豆腐
+清炒豆腐
+洋葱炒鸡蛋
+木耳炒油菜
+香菇冬瓜
+清炒油麦菜
+韭菜炒鸡蛋
+长山药黑木耳
+宫保鸡丁
+大盘鸡
+土豆炖牛肉
+红烧带鱼
+清蒸鲈鱼
+青椒木耳炒鸡丝
+过油肉
+
+** Test emacs orgmode sandbox
+
+0:00:28 0:00:2 *9* 0:00:31 0u:01:09 
+- 0:01:12 :: 
+- 0:01:16 :: 
+- 0:01:19 :: /0:01:25 0:01:27 0:01/:2 *8 * ,0:01:34 0:01:34 0:01:34 -0:00:24 -0:00:24 -0:00:22 -0:00:21 
+
+=asdf= _asdfaasdf_ a *sdfsdf* *sdfa*
+_asdfasdf_ adfas
+
+
+aaa bbb ccc
+* temp
+** TODO Attend ming's RCA meeting								  :IMPORTANT:
+   DEADLINE: <2010-02-09 Tue> 
+- Book a room
+- call phone
+- take notes
+** DONE Try pit  <2010-02-08 13:13>
+   CLOSED: [2010-02-08 Mon 13:12]
+
+** TODO Send meeting request for Hang
+   DEADLINE: <2010-02-07 Sun>

@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="gb18030"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+               "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+lang="en" xml:lang="en">
+<head>
+<title>Reviewboard setup notes in Ubuntu</title>
+<meta http-equiv="Content-Type" content="text/html;charset=gb18030"/>
+<meta name="generator" content="Org-mode"/>
+<meta name="generated" content="2010-02-04 16:20:27 "/>
+<meta name="author" content="Jason Chen"/>
+<meta name="description" content=""/>
+<meta name="keywords" content=""/>
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  html { font-family: Times, serif; font-size: 12pt; }
+  .title  { text-align: center; }
+  .todo   { color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #add8e6; font-weight:normal }
+  .target { }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  p.verse { margin-left: 3% }
+  pre {
+	border: 1pt solid #AEBDCC;
+	background-color: #F3F5F7;
+	padding: 5pt;
+	font-family: courier, monospace;
+        font-size: 90%;
+        overflow:auto;
+  }
+  table { border-collapse: collapse; }
+  td, th { vertical-align: top; }
+  dt { font-weight: bold; }
+  div.figure { padding: 0.5em; }
+  div.figure p { text-align: center; }
+  .linenr { font-size:smaller }
+  .code-highlighted {background-color:#ffff00;}
+  .org-info-js_info-navigation { border-style:none; }
+  #org-info-js_console-label { font-size:10px; font-weight:bold;
+                               white-space:nowrap; }
+  .org-info-js_search-highlight {background-color:#ffff00; color:#000000;
+                                 font-weight:bold; }
+  /*]]>*/-->
+</style><style type="text/css">
+  html { font-family: Times, serif; font-size: 13pt; }
+  .title  { text-align: center; }
+  .todo   { color: red; }
+  .done   { color: green; }
+  .tag    { background-color:lightblue; font-weight:normal }
+  .target { }
+  .timestamp { color: grey }
+  .timestamp-kwd { color: CadetBlue }
+  p.verse { margin-left: 3% }
+  pre {
+	border: 1pt solid #AEBDCC;
+	background-color: #F3F5F7;
+	padding: 5pt;
+	font-family: courier, monospace;
+        font-size: 90%;
+        overflow:auto;
+  }
+  table { border-collapse: collapse; }
+  td, th { vertical-align: top; }
+  dt { font-weight: bold; }
+</style>
+<script type="text/javascript">
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">Reviewboard setup notes in Ubuntu</h1>
+
+<ol>
+<li>
+Package setup follow instructions in <a href="http://www.reviewboard.org/docs/manual/1.0/admin/installation/linux/">RB site</a><br/>
+<ul>
+<li>
+# sudo apt-get install python-setuptools libapache2-mod-python<br/>
+</li>
+<li>
+# sudo apt-get install memcached libmemcache-dev patch<br/>
+</li>
+<li>
+# easy<sub>install</sub> ReviewBoard<br/>
+</li>
+<li>
+# sudo apt-get install subversion python-svn<br/>
+</li>
+<li>
+# easy<sub>install</sub> nose Sphinx<br/>
+</li>
+</ul>
+</li>
+<li>
+Configuration changes in <a href="http://www.reviewboard.org/docs/manual/1.0/admin/sites/creating-sites/#creatingsites">RB site</a><br/>
+<ul>
+<li>
+# rb-site install /var/www/&lt;site<sub>name&gt</sub>; - input local IP as Domain Name, just follow prompt to finish the wizard. DO remember the admin's password which will be used later<br/>
+</li>
+<li>
+# chown -R www-data:www-data /var/www/&lt;site-name&gt;<br/>
+</li>
+<li>
+# cd /etc/apache2/sites-available<br/>
+</li>
+<li>
+# cp /var/www/&lt;site<sub>name&gt</sub>;/conf/apache-modpython.conf &lt;site<sub>name&gt</sub>;.conf<br/>
+</li>
+<li>
+# cd ../sites-enabled<br/>
+</li>
+<li>
+# ln -s ../sites-available/&lt;site<sub>name&gt</sub>;.conf .<br/>
+</li>
+<li>
+# rm 000-default<br/>
+</li>
+<li>
+Restart apache (# apache2ctl restart)<br/>
+</li>
+</ul>
+</li>
+<li>
+Need one patch for Atmos subversion since it's use HTTPS &ndash; Avoid HTTPS svn repository certificate issue.<br/>
+<ul>
+<li>
+Modify file /usr/local/lib/python2.6/dist-packages/ReviewBoard-1.0.5.1-py2.6.egg/reviewboard/scmtools/svn.py<br/>
+</li>
+</ul>
+
+<p>47         SCMTool._<sub>init</sub>_<sub>(self, repository)</sub><br/>
+48    <br/>
+49         # Modified by Jason<br/>
+50         # Add this function to avoid callback ssl trust check<br/>
+51         def ssl<sub>server</sub><sub>trust</sub><sub>prompt</sub>(trust<sub>dict</sub>):<br/>
+52             return True, 1, True<br/>
+53         <br/>
+54         import pysvn<br/>
+55         self.client = pysvn.Client()<br/>
+56         self.client.callback<sub>ssl</sub><sub>server</sub><sub>trust</sub><sub>prompt</sub> = ssl<sub>server</sub><sub>trust</sub><sub>prompt</sub><br/>
+57         <br/>
+</p></li>
+<li>
+Manage RB<br/>
+<ol>
+<li>
+Login management GUI console: <a href="http://">http://</a>&lt;local IP&gt;/admin (admin is the user you created in rb-site command)<br/>
+</li>
+<li>
+After login Review Board administration GUI, you can add groups, reviewer, repository in your desired way. The most important setting is repository settings. Click repository and then click add repositoy in the right top side. Here is one typical Atmos trunk repository setting.<br/>
+<ul>
+<li>
+Name: Atmos trunk<br/>
+</li>
+<li>
+Path: <a href="https://tvg01.lss.emc.com/svn/maui/trunk">https://tvg01.lss.emc.com/svn/maui/trunk</a><br/>
+</li>
+<li>
+Repository Type: Choose Subversion<br/>
+</li>
+<li>
+Bug tracker URL: <a href="https://tvg01.lss.emc.com/bugzilla/show_bug.cgi?id=%s">https://tvg01.lss.emc.com/bugzilla/show<sub>bug</sub>.cgi?id=%s</a><br/>
+</li>
+<li>
+Authentication: input your UNIX account information for SVN login<br/>
+</li>
+</ul>
+</li>
+</ol>
+</li>
+<li>
+Use RB<br/>
+<ol>
+<li>
+Login RB GUI dashboard <a href="http://">http://</a>&lt;local IP&gt;/<br/>
+</li>
+<li>
+Register one user with password and email address<br/>
+</li>
+<li>
+Then you can see all review requests in RB and your incoming review<br/>
+</li>
+<li>
+Other usage are relatively straight forward. You can take a few minutes to take a look at offical <a href="http://www.reviewboard.org/docs/manual/1.0/users/#usersguide">user guide</a><br/>
+
+<p><br/>
+</p></li>
+</ol>
+</li>
+</ol>
+
+<p>Another RB install on FC9: <a href="http://notes.tela-web.com/install_review_board_on_fedora">RB install on FC9</a><br/>
+</p><div id="postamble">
+<p class="author"> Author: Jason Chen
+<a href="mailto:chen_jason@emc.com">&lt;chen_jason@emc.com&gt;</a>
+</p>
+<p class="date"> Date: 2010-02-04 16:20:27 </p>
+<p class="creator">HTML generated by org-mode 6.27a in emacs 23</p>
+</div>
+</div>
+</body>
+</html>

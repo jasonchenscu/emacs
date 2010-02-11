@@ -1,0 +1,27 @@
+ence.
+
+1996-10-26  Eric M. Ludlam  <zappo@gnu.org>
+
+	* speedbar.el:
+	Changed comments and doc strings, and several small bugs.
+
+1996-10-24  Eric M. Ludlam  <zappo@gnu.org>
+
+	* speedbar.el: Made major revisions listed under 0.3 in comments.
+
+1996-10-01  Eric M. Ludlam  <zappo@gnu.org>
+
+	* speedbar.el: Fixed some comments, and changed a color value.
+
+	* speedbar.el:
+	Fixed many bugs: x-pointer messing up new frames, speedbar-buffer
+	accidentally settings itself as default, taging problems.
+	Added new stuff: imenu use, directory stuff upgrade.
+	See docs in file.
+
+1996-09-27  Eric M. Ludlam  <zappo@gnu.org>
+
+	* speedbar.el: Moved a definition
+
+	* speedbar.el: New file.
+

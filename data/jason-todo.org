@@ -38,7 +38,8 @@ Design consideration:
 2. Think more in a large scale
 
 *** Postgresql changes
-**** TODO initDB -  --no-locale --encoding=EUC_JP
+**** DONE initDB -  --no-locale --encoding=EUC_JP
+	 CLOSED: [2010-02-12 Fri 10:15]
 
 *** setup autostart
 [root@Jason-130A-001 bin]# export FT_DIR=/etc/autostart/EAS_5.3SP3.patch/Linux/bin
@@ -992,9 +993,11 @@ Short term
 
 
 ** Mgmt DB roadmap TODO list
-*** TODO Think about divide db data and log to different disks which we can leverage external DAE disks
+*** CANCELED Think about divide db data and log to different disks which we can leverage external DAE disks
+	 CLOSED: [2010-02-12 Fri 11:24]
 
-*** TODO Prepare testing use cases
+*** DONE Prepare testing use cases
+	 CLOSED: [2010-02-12 Fri 11:24]
 Performance:
 - Target:
   1. UID creation time less than 3 seconds, even overall system has big load in databases
@@ -1013,12 +1016,18 @@ Scalability:
 - Test cases:
 
 Upgrade:
-*** TODO Integrate pgdbdump with logcopy
-*** TODO Investigate put db log files to SS disks
-*** TODO Investigate pgreplicate hold too many connections after a long time
-*** TODO Investigate postgresql data size too large after a long time
-*** TODO Compare with dump/restore and autovaccum impact to the database size and performance
-*** TODO Can we consider add more postgresql nodes to pgcluster to improve availability
+*** DONE Integrate pgdbdump with logcopy
+	 CLOSED: [2010-02-12 Fri 11:24]
+*** DONE Investigate put db log files to SS disks
+	 CLOSED: [2010-02-12 Fri 11:24]
+*** CANCELED Investigate pgreplicate hold too many connections after a long time
+	 CLOSED: [2010-02-12 Fri 11:22]
+*** CANCELED Investigate postgresql data size too large after a long time
+	 CLOSED: [2010-02-12 Fri 11:22]
+*** DONE Compare with dump/restore and autovaccum impact to the database size and performance
+	 CLOSED: [2010-02-12 Fri 11:22]
+*** CANCELED Can we consider add more postgresql nodes to pgcluster to improve availability
+	 CLOSED: [2010-02-12 Fri 11:22]
 
 
 ** Upgrade develop and check process
@@ -1841,22 +1850,20 @@ Remind Xin about his improvement in pgpool
 * Daily work 														   :WORK:
 <2010-01-03 21:53>
 
-** TODO update db wiki about impact areas (files, comments?)
+** CANCELED update db wiki about impact areas (files, comments?)
+   CLOSED: [2010-02-12 Fri 11:23]
 ** TODO refine installation troubleshooting structure in wiki
 
-
-
-
-
-** ------------------------------- spliter -------------------------------
-
-** TODO Check whether updateNodeInfo has update clusteruuid in nodes table. Currently if we restart mauicm and db doesn't contain the record, this will cause clusteruuid empty.
-** TODO Refine setNodeInfo to two API: addNodeInfo, updateNodeInfo
-** TODO Add IPADDR check in postgresql script. 
+** CANCELED Refine setNodeInfo to two API: addNodeInfo, updateNodeInfo
+   CLOSED: [2010-02-12 Fri 11:23]
+** CANCELED Add IPADDR check in postgresql script. 
+   CLOSED: [2010-02-12 Fri 11:23]
 if eth1 use DHCP get IP, ifcfg-eth1 IPADDR maybe empty and postgresql cannot be initialized
-** TODO Refine installation design wiki to latest status
-** TODO Config DRAC and auto deployment physical testbed
-** TODO Seven habits share session prepare
+** INPROGRESS Refine installation design wiki to latest status
+** CANCELED Config DRAC and auto deployment physical testbed
+   CLOSED: [2010-02-12 Fri 11:25]
+** CANCELED Seven habits share session prepare
+   CLOSED: [2010-02-12 Fri 16:01]
 ** DONE Db log shipping planning mail to Rich
    CLOSED: [2010-02-11 Thu 15:12]
 ** DONE sysmgmt plan discuss with Yubo
@@ -2105,6 +2112,29 @@ This will go against with CORP policy
 # 一劳永逸的，M-x customize-option，输入truncate-partial-width-windows，将出来的设置页面中的参数改为off，然后保存(Save for future sessions)
 # 另外说一句，M-x auto-fill-mode也是切换换行模式
 
+*** emacs拼写检查
+1 DONE 查看ispell的数据库默认位置:~/.ispell_english
+####################################################
+      CLOSED: [2009-05-09 星期六 16:24]
+
+2 DONE 使用flyspell-mode模式
+#############################
+      CLOSED: [2009-05-09 星期六 16:24]
+     M-$: correct words (using Ispell).
+     M-TAB: automatically correct word.
+
+3 useful link
+##############
+[http://www.emacswiki.org/cgi-bin/wiki/GettingIspellWorkinginEmacsForWindows]
+GettingIspellWorkinginEmacsForWindows
+[http://www.lasr.cs.ucla.edu/geoff/tars/ispell-3.3.02.tar.gz]
+ispell 3.3.02
+[http://www.lasr.cs.ucla.edu/geoff/ispell.html]
+International Ispell
+[http://tindorafarms.com/index.php?hl=f5&q=uggc%3A%2F%2Fmxjney.oybtfcbg.pbz%2F2007%2F01%2Frznpf-gvc-vafgnyy-vfcryy-ba-jvaqbjf.ugzy]
+Emacs Tip: Install Ispell on Windows
+
+
 ** Interest soft focus
 *** DONE see version control soft "Mercurial"
 	 CLOSED: [2009-09-02 Wed 13:14]
@@ -2126,6 +2156,14 @@ Microsoft Cluster Service is comprised of three key components: the Cluster Serv
 *The Resource Monitor* is an interface between the Cluster Service and the cluster resources, and runs as an independent process. The Cluster Service uses the Resource Monitor to communicate with the resource DLLs. The DLL handles all communication with the resource, so hosting the DLL in a Resource Monitor shields the Cluster Service from resources that misbehave or stop functioning. Multiple copies of the Resource Monitor can be running on a single node, thereby providing a means by which unpredictable resources can be isolated from other resources.
 
 When the Cluster Service needs to perform an operation on a resource, it sends the request to the Resource Monitor assigned to that resource. If the Resource Monitor does not have a DLL in its process that can handle that type of resource, it uses the registration information to load the DLL associated with that resource type. It then passes the Cluster Service's request to one of the DLL's entry point functions. The resource DLL handles the details of the operation so as to meet the specific needs of the resource.
+
+
+*** DONE Cluster task system by python
+	 SCHEDULED: <2010-02-21 Sun> DEADLINE: <2010-02-24 Wed>
+http://pypi.python.org/pypi/celery/1.0.0
+http://www.aditam.org/
+
+
 
 ** Windows
 *** cygwin + rxvt
@@ -2161,6 +2199,20 @@ rxvt -sr -sl 2500 -sb -geometry 90x30 -tn rxvt -fn "Consolas-20" -e bash --login
 Good tool to control mount point in network environment.
 
 Used by netinstall from Matt. (http://tvgbj.lss.emc.com/netinstall)
+
+------------------------------- spliter -------------------------------
+Setup and usage
+
+get autofs package and install. 
+
+modify /etc/auto.master and comment out below two lines
+
+- /net    /etc/auto.net
+- /misc   /etc/auto.misc --timeout=60
+
+sudo /etc/init.d/autofs start
+
+Then can access nfs by /net/10.32.109.45/
 
 *** screen utility
 
@@ -2410,8 +2462,6 @@ The conflict stemmed from the differing priorities of the two sides.  Intent on 
 　　
 　　　　结语：《观止》讲的是一个超人，如何将一群聪明人都变成超人的故事。但是，我始终愿意相信，可以有另外一种方式，来管理一个中上等水平的团队，不是靠小宇宙爆发，而是靠更好的节奏感与控制力，来完成同样复杂的项目。
 * Learning															  :THINK:
-
-
 ** !!!Five minutes!!!
 *** <2010-02-05 22:41>
 I talk too much in today's dinner. some talk i cannot very confidence to that and /say it not clearly/ and rapidly. This would make others not fully understanding my ideas. this is not good especially to a wide audience. this will make me not very confidence and become nervous.
@@ -2430,7 +2480,6 @@ From today 1on1 with Ming, he gave me many good suggestions. here i list some of
 - enlarge my responsibility not only to installation/db, but to whole system mgmt area to contribute more
 - Reading->practice->reading->practice  a iterative improvement process
 
-
 *** <2010-02-10 22:30>
 Discuss with Ming about installation recovery tool implementation and task module redesign, have some learnings.
 how can we make the refactor better? 
@@ -2440,6 +2489,14 @@ how can we make the refactor better?
 - use refactor tools
 - also think about support more failure cases or features during refactor, can start thinking about and discussing
 - core issue to task module: not implementatino ways, but the cleaner loose couple design of task engine. should seperate task engine from task specific operations
+
+*** <2010-02-11 21:39>
+i found my work is not effective today. I don't know what I have done today and whether it's correct and useful things. 时间管理是个永远的话题，很多时候也在学习一些有效利用的时间的方法但是感觉过一段时间后自己的时间还是不能很好利用。我想每天还是要养成一个好的习惯，每天早晨5分钟想清楚今天的priority，晚上下班前5分钟总结一下今天的事情和收获，哪些事情还没有做完，为什么没有做完，是plan还是efficiency？我需要坚持这个习惯！
+
+
+*** <2010-02-12 23:13>
+
+
 
 ** Year 2010
 *** Daily plan
@@ -3207,13 +3264,19 @@ _asdfasdf_ adfas
 
 aaa bbb ccc
 * temp
-** TODO Attend ming's RCA meeting								  :IMPORTANT:
-   DEADLINE: <2010-02-09 Tue> 
-- Book a room
+** DONE Attend ming's RCA meeting								  :IMPORTANT:
+   DEADLINE: <2010-02-09 Tue> CLOSED: [2010-02-12 Fri 10:15]
+   CLOCK: [2010-02-12 Fri 16:49]
+   - Note taken on [2010-02-12 Fri 16:46] \\
+     i'm done
+   - Note taken on [2010-02-12 Fri 16:46] \\
+     hehe
+[2010-02-13 Sat]- Book a room
 - call phone
 - take notes
 ** DONE Try pit  <2010-02-08 13:13>
    CLOSED: [2010-02-08 Mon 13:12]
 
-** TODO Send meeting request for Hang
-   DEADLINE: <2010-02-07 Sun>
+** DONE Send meeting request for Hang
+   DEADLINE: <2010-02-07 Sun> CLOSED: [2010-02-12 Fri 10:13]
+   

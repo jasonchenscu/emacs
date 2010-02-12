@@ -92,7 +92,7 @@
 ;;----------------------------------------------------------------------------
 ;;diary
 (global-set-key [f4] 'calendar)
-(setq diary-file "~/myemacs/data/diary")
+(setq diary-file "~/myemacs/data/jason-todo.org")
 ;;----------------------------------------------------------------------------
 ;;折叠功能 hide and show code block
 ;;(add-hook 'c-mode-common-hook 'hs-minor-mode)
@@ -199,7 +199,7 @@ With argument, do this that many times."
   (insert "*** basic use\n")
   )
 ;;----------------------------------------------------------------------------
-;;插入字符串: ** ------------------------------- spliter -------------------------------
+;;插入字符串: ------------------------------- spliter -------------------------------
 (global-set-key [(meta p)(s)] 'my-insert-spliter)
 (defun my-insert-spliter()
   (interactive)
@@ -218,7 +218,7 @@ With argument, do this that many times."
     (if (string= curbuf buf) nil (kill-buffer buf))
     )
   )
-(global-set-key [(meta p)(k)] 'kill-other-buffers)
+(global-set-keppy [(meta p)(k)] 'kill-other-buffers)
 ;;----------------------------------------------------------------------------
 (define-key global-map  (kbd "M-p <return>")   'view-mode)
 ;;打开文件时,除少量文件外,其它都使用view-mode模式

@@ -84,7 +84,7 @@
 (setq org-export-html-style
 "<style type=\"text/css\">
   html { font-family: Times, serif; font-size: 13pt; }
-  .title  { text-align: center; }
+  .title  { text-align: left; }
   .todo   { color: red; }
   .done   { color: green; }
   .tag    { background-color:lightblue; font-weight:normal }

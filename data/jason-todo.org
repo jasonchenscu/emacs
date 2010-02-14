@@ -1,4 +1,4 @@
-* Org-mode Setting
+* Org-mode Setting 													  :EMACS:
 # Jason TODO list and notes
 # Start date: <2009-06-15 16:06>
 #+STARTUP: overview
@@ -11,10 +11,10 @@
 #+DRAWERS: SNIP
 #+OPTIONS:"\n:t"
 
-* Project development 												   :WORK:
+* Project development												   :WORK:
 ** TODOLIST
 
-*** TODO review board review process workflow
+?*** TODO review board review process workflow
 *** TODO decouple genprofile for better organise and rereuse code, consider ip change and reconfiguration together.
 *** TODO seperate setnodeinfo to updatenodeinfo and insertnodeinfo, we have met several cases node UUID has changed due to setnodeInfo. bug #10948
 *** TODO Atmos in a box document update - we cannot support clone operation for existing atmos nodes. more detail see bug #10948
@@ -2134,6 +2134,32 @@ International Ispell
 [http://tindorafarms.com/index.php?hl=f5&q=uggc%3A%2F%2Fmxjney.oybtfcbg.pbz%2F2007%2F01%2Frznpf-gvc-vafgnyy-vfcryy-ba-jvaqbjf.ugzy]
 Emacs Tip: Install Ispell on Windows
 
+** Git use
+
+*** Github.com - my online git backup home
+*Global setup:*
+
+ Download and install Git
+  git config --global user.name "Your Name"
+  git config --global user.email yunfeng82@gmail.com
+
+*Next steps:*
+
+  mkdir home
+  cd home
+  git init
+  touch README
+  git add README
+  git commit -m 'first commit'
+  git remote add origin git@github.com:ftever/home.git
+  git push origin master
+      
+*Existing Git Repo?*
+
+  cd existing_git_repo
+  git remote add origin git@github.com:ftever/home.git
+  git push origin master
+
 
 ** Interest soft focus
 *** DONE see version control soft "Mercurial"
@@ -2493,10 +2519,33 @@ how can we make the refactor better?
 *** <2010-02-11 21:39>
 i found my work is not effective today. I don't know what I have done today and whether it's correct and useful things. 时间管理是个永远的话题，很多时候也在学习一些有效利用的时间的方法但是感觉过一段时间后自己的时间还是不能很好利用。我想每天还是要养成一个好的习惯，每天早晨5分钟想清楚今天的priority，晚上下班前5分钟总结一下今天的事情和收获，哪些事情还没有做完，为什么没有做完，是plan还是efficiency？我需要坚持这个习惯！
 
-
 *** <2010-02-12 23:13>
+Done:
+1. review Anne installation guide
+2. troubleshooting bug 11116
+3. start learn celery 
 
+I need to force myself to have a good time management and use emacs as my time control tool. 最近总是觉得工作起来没有精神，平时的生活也是，怎么才能找回自己的passion和energy？
 
+怎么样分析这个问题？ask 5 why？
+- why this, not have passion and energe? - familiy and work issues
+- what is familiy issues? - related to parents
+- how to solve this? - more communication to clear
+- what is work issues? - pay is not satisfied, challenge is ok
+- how to solve this? - read more, learn more and find good oppotunities
+- then what issues still have? - a mess life which needs to be organized and planned better for everyday
+
+so in all is *PLANNING*
+
+*** <2010-02-14 22:31>
+Brainstorming bring some good points which I totally agree about jobs and industry choices:
+1. 刚开始工作的时候看的更多的是机会和发展的能力
+2. 要等到别人猎而不是自己往坑里跳，才会有更好的价值
+3. 不要在遇到困难的时候和由于受别人跳的影响而跳，仔细判断自己现在的现状和自己的发展目标
+
+i have buy one gift for my wife and found i'm also happy with that after phone call with mom. Looks like this is a continuous improvement for all of us to have a good family environment and also for me to have a good attitude and energy to be concentrated on work!
+
+Other notes:
 
 ** Year 2010
 *** Daily plan
@@ -3224,8 +3273,6 @@ it's hard to do job transfer in current situation.
 4. 
 *** Idea list
 ** Menu for my wife
-   CLOCK: [2010-02-07 Sun 00:53]
-   CLOCK: [2010-02-07 Sun 00:53]--[2010-02-07 Sun 00:53] =>  0:00
 青椒肉丝
 蘑菇油菜
 西葫芦炒鸡蛋

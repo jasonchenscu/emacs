@@ -92,7 +92,7 @@
 ;;----------------------------------------------------------------------------
 ;;diary
 (global-set-key [f4] 'calendar)
-(setq diary-file "~/myemacs/data/jason-todo.org")
+;;(setq diary-file "~/myemacs/data/jason-todo.org")
 ;;----------------------------------------------------------------------------
 ;;折叠功能 hide and show code block
 ;;(add-hook 'c-mode-common-hook 'hs-minor-mode)
@@ -204,7 +204,7 @@ With argument, do this that many times."
 (defun my-insert-spliter()
   (interactive)
   (move-beginning-of-line nil)
-  (insert "** ------------------------------- spliter -------------------------------\n")
+  (insert "------------------------------- spliter -------------------------------\n")
   )
 ;;----------------------------------------------------------------------------
 ;;在.emacs(_emacs)配置文件中添加如下代码。按alt+p k键就可以关闭除当前buffer外的其它所有buffer

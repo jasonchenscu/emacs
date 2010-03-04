@@ -7,35 +7,56 @@
 #+TAGS: WORK(w) THINK(t) LIFE(l) EMACS(e) IMPORTANT(i)
 #+SEQ_TODO: TODO INPROGRESS | DONE CANCELED
 #+AUTHOR: Jason Chen
-#+EMAIL:  chen_jason@emc.com
+#+EMAIL:  chen_jason@emc.com, yunfeng82@gmail.com
 #+DRAWERS: SNIP
 #+OPTIONS:"\n:t"
 
-* Project development												   :WORK:
-** TODOLIST
+* Project development 												   :WORK:
 
-?*** TODO review board review process workflow
-*** TODO decouple genprofile for better organise and rereuse code, consider ip change and reconfiguration together.
+** TODOLIST
+*** TODO bug 10618 get version from conary command
+*** TODO review board review process workflow
+*** INPROGRESS decouple genprofile for better organise and rereuse code, consider ip change and reconfiguration together.
 *** TODO seperate setnodeinfo to updatenodeinfo and insertnodeinfo, we have met several cases node UUID has changed due to setnodeInfo. bug #10948
 *** TODO Atmos in a box document update - we cannot support clone operation for existing atmos nodes. more detail see bug #10948
 *** TODO Installation /etc/hosts add public ip end mark
-
 *** TODO check installation negative test cases in testlink
-*** Task framework discussion
-
-Task discussion
-
-how to decouple task execute engine and detail task command ?
-if there has any relations between tasks, should these task be *divided* into several small tasks?
-
-
-
 
 ** Atmos 1.4 cycle
-*** Task module redesign - sync framework
-Design consideration:
-1. K.I.S.S
-2. Think more in a large scale
+*** Installation code refactor
+**** Refactor checklist
+
+find a good way to handle node.cfg, not just use dictionary
+const.py needs to be cleanup. e.g VALID_DISK_RATIOS should be useless
+
+/etc/host as a module
+
+use log.exception to catch exception. this is better than log.error
+
+node.cfg consideration -> 
+1. make it as a common object with members (origninal inputs)
+2. update method by different ways (cfg file? db table? or even xml?)
+3. completely installation operation command from node.cfg, just need to call different methods, like init(), load(), update()
+4. init service config map can be a seperate module, where to pass the operation command type? also as one member of nodecfg?
+
+**** impact to pylib
+
+mauiutility interface refine about node.cfg get functions, like get_head_gmonds_grp(log)
+
+do we need to have a more detail category refine about all pylib functions? like seperate business related out from common util
+
+**** Common considerations
+
+1. when move function to pylib, where do put log which is inside the functions?
+no log track in module functions, put log in the main operation script. handle exception in module
+
+2. will each function need to check return value or just depend on the raise statement?
+no need to return true since default will return true. just raise exception if it's a normal routine
+
+3. about db param in util functions, will db instance better or db host name better?
+db instance should be better since we may not use db at all in future. module functions should not aware these operations but just focus on the business logic.
+
+first take out all db operations from main control logic, like genprofile, netconfig
 
 *** Postgresql changes
 **** DONE initDB -  --no-locale --encoding=EUC_JP
@@ -233,6 +254,34 @@ Starting Agent...
 This agent has been promoted while it was down.
 It will now be restarted as a primary agent.
 [root@Jason-130A-002 bin]# ping 10.32.171.80
+
+
+*** Patch management
+
+solve common copy
+
+it's can be easiliy done by python parsing, or simple DSL engine. 
+
+we can think it in a wide scope, whether other feature or script can leverage this scope.
+
+prototype
+
+有几个简单的原语就可以模拟整个的流程：
+BACKUP
+COPY
+EXEC
+
+Open questions:
+1. can we retry or restart from failure point? or all commands operations are reentrant?
+2. do we consider rollback?
+3. verify consideration?
+4. how to do kernel patch?
+5. can we solve package dependency?
+6. do we get rid of conary css ability?
+7. relation with upgrade? - not scope for this
+8. 
+
+
 
 ** Initialtive on effective daily work
 *** Effective code review by using ReviewBoard
@@ -449,6 +498,21 @@ _Review process:_ Try to get Ming involved as early as possible.
 
 first keep original function not change, keep diff as small as possible, which is easy for review, test, patch
 
+** Atmos IMPROVEMENT areas
+*** Cluster Task module redesign - sync framework
+Design consideration:
+1. K.I.S.S
+2. Think more in a large scale
+**** learn from celery about a distributed task framework design
+
+AMQP model:
+- Message Broker
+- Client subscriber
+- Publisher
+
+
+how to decouple task execute engine and detail task command ?
+if there has any relations between tasks, should these task be *divided* into several small tasks?
 
 ** MISC team member mgmt 
 Start tracking this from <2009-09-19 16:25>
@@ -457,6 +521,8 @@ Start tracking this from <2009-09-19 16:25>
 - Response for email (not mean timely response, but based on priority and not miss anything you need to follow 
 - 
 **** Caihua
+commit r48851 without review, approval and comments
+
 **** Jiang
 
 *** Bugzilla process discussed with Ming/Jiang/Chunjie
@@ -496,8 +562,6 @@ Ming: commit bug 10439 in revision r46628 - break slave node installation <2010-
 *** Show initiative and leadership
 
 	
-*** 
-
 ** Debug command collection
 select id, call, input, status, retval from tasks order by id;
 select id,scope, scopeuuid, call, input, status, retval from tasks where id>10 and call='synclb' order by id;
@@ -604,6 +668,10 @@ echo "select setval('sites_id_seq', (select max(id) from sites));" | su - postgr
 
 netstat -anp |grep 'tcp\|udp' | awk '{print $5}' | cut -d: -f1 | sort | uniq -c | sort -n
 
+svn copy  https://tvg01.lss.emc.com/svn/maui/trunk  https://tvg01.lss.emc.com/svn/maui/branches/atmos-1.3-cybercluster -m "create branch for cybercluster bug fixing to improve management database stability"
+
+svn copy  https://tvg01.lss.emc.com/svn/maui/branches/atmos-1.2.0  https://tvg01.lss.emc.com/svn/maui/branches/atmos-1.2.5-gui -m "create branch from 1.2.0 (r37176) for gui 1.2.5 getwell projects."
+
 *** Debug large scale installation
 
 cat /etc/hosts | grep 10.32 | sort | wc -l
@@ -625,6 +693,43 @@ Master node:
   - id: wangc14@172.16.16.80
   - passwd: ChangeMe
   - su - (passwd: Steel4Celery66)
+
+
+*** Debug UID task creation failure
+
+psql -U postgres system.db
+
+system.db=# select uuid, call,  status, retval, succnum, failnum, totalnum from tasks where id> 10000 and call='synclb' order by id;
+                 uuid                 |  call  | status | retval | succnum | failnum | totalnum 
+--------------------------------------+--------+--------+--------+---------+---------+----------
+ 1f461446-d359-40d1-9bce-f9b725f0eb26 | synclb |      3 |      0 |       2 |       0 |        2
+ 632e8325-ac11-467a-b9d0-b8fc51d10d3f | synclb |      3 |      0 |       2 |       0 |        2
+ 83e0d18e-456a-452d-b145-5250aa388b29 | synclb |      3 |      1 |       1 |       1 |        2
+
+rmg.db=# select uuid, call,  status, retval, succnum, failnum, totalnum from tasks where parentuuid='83e0d18e-456a-452d-b145-5250aa388b29' order by id;
+                 uuid                 |  call  | status | retval | succnum | failnum | totalnum 
+--------------------------------------+--------+--------+--------+---------+---------+----------
+ 2b6d1db4-0358-4d2d-ba9a-985b2918576f | synclb |      3 |      0 |      43 |       0 |       43
+
+Go to 2nd RMG db
+
+[root@BOSTON-001 ~]# psql -U postgres rmg.db -h NYC-001
+
+rmg.db=# select uuid, call,  status, retval, succnum, failnum, totalnum from tasks where parentuuid='83e0d18e-456a-452d-b145-5250aa388b29' order by id;
+                 uuid                 |  call  | status | retval | succnum | failnum | totalnum 
+--------------------------------------+--------+--------+--------+---------+---------+----------
+ 934fb0aa-9712-44a9-9f7d-07902d719b49 | synclb |      3 |      1 |      43 |       1 |       44
+
+rmg.db=# select uuid, output,scopeuuid, call,  status, retval, succnum, failnum, totalnum from tasks where parentuuid='934fb0aa-9712-44a9-9f7d-07902d719b49' and retval!=0 order by id;
+                 uuid                 |                                                             output                                                             |              scopeuuid               |  call  | status | retval | succnum | failnum | totalnum 
+--------------------------------------+--------------------------------------------------------------------------------------------------------------------------------+--------------------------------------+--------+--------+--------+---------+---------+----------
+ 0c8b2fa7-00f5-481b-8456-f9343f54d52a | Add UID failed: 65280  19b98290a848440ab99cfd9f9a479ff3:19b98290a848440ab99cfd9f9a479ff3:UID6951  eyXXfdCtVzUz14j0qyqxNY9cb2E= | 44454C4C-4200-1050-8047-B3C04F5A4631 | synclb |      3 |      1 |       0 |       0 |        0
+                                      :                                                                                                                              
+rmg.db=# select hostname from nodes where uuid='44454C4C-4200-1050-8047-B3C04F5A4631';
+   hostname   
+--------------
+ R610-NYC-008
+(1 row)
 
 
 ** Reviewboard setup notes in Ubuntu
@@ -805,6 +910,25 @@ If failed at some step during add segment, first revert to previous good shape s
    3) bin/configure.ksh -F config/1.3full_209_44138.cfg
    4) bin/run.ksh -F config/1.3full_209_44138.cfg all
 
+*** VC manage
+host: 10.32.109.36
+admin/password
+
+*** TC agent setup
+only have start service part, not include package installation part
+
+login as e2eauto
+
+cd ~/teamcity
+
+export PATH=/home/e2eauto/teamcity/Java/jdk1.6.0_14/bin:$PATH
+
+cd TC_Agent/
+
+vim conf/buildAgent.properties (update serverUrl as TC server, name of this build agent which has been identified in TC server)
+
+bin/agent.sh start
+
 *** Troubleshooting
 
 **** master node cannot boot from ISO
@@ -832,6 +956,25 @@ Jun 20 00:25:43 localhost sendmail[5272]: n5JGPh1t005272: from=root, size=7, cla
 Jun 20 00:25:43 localhost sendmail[5273]: n5JGPheb005273: from=<root@jason.lss.emc.com>, size=334, class=0, nrcpts=1, msgid=<200906191625.n5JGPh1t005272@jason.lss.emc.com>, proto=ESMTP, daemon=MTA, relay=localhost.localdomain [127.0.0.1]
 Jun 20 00:25:43 localhost sendmail[5272]: n5JGPh1t005272: to=chen_jason@emc.com, ctladdr=root (0/0), delay=00:00:00, xdelay=00:00:00, mailer=relay, pri=30007, relay=[127.0.0.1] [127.0.0.1], dsn=2.0.0, stat=Sent (n5JGPheb005273 Message accepted for delivery)
 Jun 20 00:25:45 localhost sendmail[5275]: n5JGPheb005273: to=<chen_jason@emc.com>, delay=00:00:02, xdelay=00:00:02, mailer=esmtp, pri=120334, relay=mailhub.lss.emc.com. [10.254.3.30], dsn=2.0.0, stat=Sent (n5J8xnu6021224 Message accepted for delivery)
+**** Another send mail issue resolved by Matt
+The server failed to send out PIT email.
+
+Type "mail" as user e2eauto to see the returned email.
+Final-Recipient: RFC822; wang_matthew@emc.com
+Action: failed
+Status: 5.1.8
+Remote-MTA: DNS; mailhub.lss.emc.com
+Diagnostic-Code: SMTP; 553 5.1.8 <wang_matthew@emc.com>... Domain of sender addr
+ess e2eauto@localhost.localdomain does not exist
+Last-Attempt-Date: Wed, 3 Mar 2010 18:47:19 +0800
+
+Already fixed with following solution:
+1.	Set a real hostname: hostname lion
+2.	Add a line to /etc/hosts: 10.32.171.186    ion.lss.emc.com lion
+Please archive this email in case you met this again on new agent.
+
+Matt
+
 ** Project lesson learn 											   :WORK:
 *** Plan
 **** Checklist
@@ -850,6 +993,14 @@ Jun 20 00:25:45 localhost sendmail[5275]: n5JGPheb005273: to=<chen_jason@emc.com
 *** Test
 **** Checklist
 
+*** Quality improvement
+Learn from PSP (Personal Software Process)
+- The PSP phase structure includes two review phases:
+    * Design Review
+    * Code Review
+To do an effective review, you need to follow a structured review process. The PSP recommends using *checklists* to help developers to consistently follow an orderly procedure.
+
+- PSP strong focus on *root-cause analysis* of an individual’s software defects and overruns, and on developing personal checklists and practices to avoid future recurrence, has significantly reduced personal defect rates.
 
 *** Customer support 
 **** Get things better understand and prioritize what should be solve first
@@ -1041,7 +1192,6 @@ Upgrade:
 *** Consider backword compatible when do new design for CM/system mgmt features
 Code should handle new/old db schema, task execution, protocol communication
 Learn from other products upgrade mechanism
-
 
 ** System management team meeting
 *** Meeting minutes 090817
@@ -1760,7 +1910,6 @@ Solution:
 1. Reduce client db connection and operation time and close the connection asap.
 2. Fix cybercluster issue on check transaction count. However, this may make slave data lost for some transactions.
 
-
 ** Tea session potential topics
 1. life lesson learn topics?
 2. technical related, expericed engineer recommend technical books, everyone read one session and share with other, writing code experience - Yubo
@@ -2103,8 +2252,7 @@ This will go against with CORP policy
 ** DONE Send out Goldman's CS case study and file related bugs to track issue
    CLOSED: [2009-07-13 Mon 22:06]
 ** DONE Send out node replacement status for eBay using
-   CLOSED: [2009-07-13 Mon 21:26]
-   
+   CLOSED: [2009-07-13 Mon 21:
 * Technical
 ** Emacs tips														  :EMACS:
 *** emacs中的自动换行
@@ -2161,6 +2309,12 @@ Emacs Tip: Install Ispell on Windows
   git push origin master
 
 
+*** init a git workspace
+1. Go to your workspace
+2. # git init
+3. # git add .
+4. # git commit -m 'comment'
+*** 
 ** Interest soft focus
 *** DONE see version control soft "Mercurial"
 	 CLOSED: [2009-09-02 Wed 13:14]
@@ -2324,6 +2478,10 @@ Done!
 echo 1 > /proc/sys/vm/block_dump
 dmesg -c > log (-c mean clear)
 
+
+*** Ubuntu GUI / console switch
+Ctrl-Alt-f1 -> console
+Alt-f7 -> GUI
 ** COLU architecture
 Upgrade process: (From management station client to trigger)
 1. Get catalog
@@ -2333,8 +2491,175 @@ Upgrade process: (From management station client to trigger)
 5. Non-disruptive upgrade (NDU) call
 6. Post tasks to recover to previous environment
 
-* Reading
-** 活法
+
+* Learning															  :THINK:
+** !!!Five minutes!!!
+*** <2010-03-01 17:55>
+today during genprofile refactoring discussion with denny, looks like i can't express my idea very clearly. i need to enhance my class design skills here.
+
+i should enourage other's good suggestion and ideas. so first listen carefully and think about the areas which need to improve, have a clear mind, then express the idea.
+
+*** <2010-02-27 20:42>
+
+
+*** 2010-02-25
+still how to motivate people? need to be calm down when discuss with others about technical problems. 
+
+e.g.
+1. explain the meaning of doing this
+2. all thing we have done are meaningful and useful not only to you but to the whole team development
+3. understand the changes and current status, make decision need more time and experience
+   
+GET THINGS DONE HABIT!!!
+*** 2010-02-24
+
+每天总是在想今天做的到底值不值得，有没有更好的选择。
+
+明确自己做事情的态度和做事情的方法。
+
+今天又学到了什么呢？？？
+
+
+*** 2010-02-05 
+I talk too much in today's dinner. some talk i cannot very confidence to that and /say it not clearly/ and rapidly. This would make others not fully understanding my ideas. this is not good especially to a wide audience. this will make me not very confidence and become nervous.
+*** 2010-02-06
+1. sometimes I cannot *Control my temper* very well. like today when do haircut, i waste some time to argur with the barber without any meaning. 
+2. I should _do one thing at one time_ but not distract myself into several things and switch among these things. 
+
+*** 2010-02-08
+Today, from Ming's RCA session, i found there is one good practice on asking right questions (5 why)
+From Kenny Chen's career talk, i have most impression is working hard is prerequisite. 
+i found my time is not enough and i have many tasks need to context switch, i should learn back from GTD working habits...
+*** 2010-02-09
+I always have many comments during other colleage's design review, sometimes a little aggressive. I think I should be not too criticize on others defects. 
+From today 1on1 with Ming, he gave me many good suggestions. here i list some of them:
+- think about more initiative on how to improve working efficiency, like meeting, code review, ???
+- enlarge my responsibility not only to installation/db, but to whole system mgmt area to contribute more
+- Reading->practice->reading->practice  a iterative improvement process
+
+*** 2010-02-10
+Discuss with Ming about installation recovery tool implementation and task module redesign, have some learnings.
+how can we make the refactor better? 
+- try to reduce each commit change
+- have a regular review
+- set up review process to be more effective
+- use refactor tools
+- also think about support more failure cases or features during refactor, can start thinking about and discussing
+- core issue to task module: not implementatino ways, but the cleaner loose couple design of task engine. should seperate task engine from task specific operations
+
+*** 2010-02-11
+i found my work is not effective today. I don't know what I have done today and whether it's correct and useful things. 时间管理是个永远的话题，很多时候也在学习一些有效利用的时间的方法但是感觉过一段时间后自己的时间还是不能很好利用。我想每天还是要养成一个好的习惯，每天早晨5分钟想清楚今天的priority，晚上下班前5分钟总结一下今天的事情和收获，哪些事情还没有做完，为什么没有做完，是plan还是efficiency？我需要坚持这个习惯！
+
+*** 2010-02-12
+Done:
+1. review Anne installation guide
+2. troubleshooting bug 11116
+3. start learn celery 
+
+I need to force myself to have a good time management and use emacs as my time control tool. 最近总是觉得工作起来没有精神，平时的生活也是，怎么才能找回自己的passion和energy？
+
+怎么样分析这个问题？ask 5 why？
+- why this, not have passion and energe? - familiy and work issues
+- what is familiy issues? - related to parents
+- how to solve this? - more communication to clear
+- what is work issues? - pay is not satisfied, challenge is ok
+- how to solve this? - read more, learn more and find good oppotunities
+- then what issues still have? - a mess life which needs to be organized and planned better for everyday
+
+so in all is *PLANNING*
+
+*** 2010-02-14
+Brainstorming bring some good points which I totally agree about jobs and industry choices:
+1. 刚开始工作的时候看的更多的是机会和发展的能力
+2. 要等到别人猎而不是自己往坑里跳，才会有更好的价值
+3. 不要在遇到困难的时候和由于受别人跳的影响而跳，仔细判断自己现在的现状和自己的发展目标
+
+i have buy one gift for my wife and found i'm also happy with that after phone call with mom. Looks like this is a continuous improvement for all of us to have a good family environment and also for me to have a good attitude and energy to be concentrated on work!
+
+Other notes:
+
+
+*** 2010-02-15
+today during learning with Celery, I found I really need to make a study plan on technical things, like python, DP, and read more source code. I should try to ask myself about my development plan and learning plan. It's good to track this and associate with my IDP this year. 
+
+Basically, technical and softskill are two parts I need to improve.
+Technical:
+- Python programming
+- Design pattern
+- Project/Program management
+
+Soft skill:
+- ???
+
+*** 2010-02-16
+no update today. still thinking about the learning plan this year and follow the detail plan... need to have a book list and reading plan.
+
+why don't first summarize what I have read last year?
+
+*** 2010-02-21
+Reading become technical leader. some thoughts about the innovation part from my past experience:
+1. 做事先做人！不在于做的事情，而是在于做事情的态度。只要有好的态度加上勤奋和努力，好的机会总会来的
+2. 培养自己的眼光和看事情的方法。如何培养眼光或者创新：
+   - 经常否定自己的想法
+   - 借鉴他人的想法
+   - 综合多人的想法
+3. 从成功中积累经验，从失败中积累教训，都是很宝贵的财富
+
+*** 2010-02-22
+have some discussion with Ming about the work pressure in US. 和明讨论了一下install的refactoring，总结出了应该把genprofile的流程和具体的install cmd流程分开，这样才能保持一个更加灵活的module和framework， 具体分析的过程基本上就是从上而下的分析，希望得到的是什么样子的结构，然后从这个结构再分析代码应该怎么调整。
+
+Sukwoo recommend me to review paper on ACM transaction on Storage. it's a exciting activity with much pressure, let me see what i can contribute in this side. i like to attend this kind of high-level public activities. 
+
+工作的效率还是没有太大提升，要开始强制自己用gtd的方法！！！
+
+** Year 2010
+*** Daily plan
+坚持！
+<2010-01-01 17:50>
+- 每天俯卧撑30个, 如有一天没做，下一天做60个
+- 继续养成好的读书习惯，每天晚上至少读书一小时
+- 每天自己反省思考10分钟，想一下今天的收获和需要提高的地方
+- write a daily for 5 minutes and just write about yourself today -- improve leadership skills
+*** Year Goal
+1. Job
+  - Be a supervisor and 20w year package
+2. Family
+
+** My learning plan
+Record what I need to learn and improve for my self. (Internal motivated.)<2009-12-13 21:05>
+
+
+*** Technical
+- Programming language
+  - C++
+  - STL
+  - Python
+- Design
+  - Design pattern
+  - Large system design
+
+*** Management
+
+
+
+*** Softskill
+
+
+** English words
+
+stamina 精力
+hypothesis 假设
+notion 观念，想法
+cumulative 累积的
+corollary 推论
+reckless 不计后果的
+prudent 谨慎的
+deliberate 深思熟虑的，故意的
+inadvertent 不注意的，疏忽的
+
+
+** Reading
+*** 活法
 树立正确的人生态度并始终贯彻执行，这是现在对我们每一个人的最大的要求。
 
 思考至关重要。
@@ -2354,14 +2679,14 @@ Upgrade process: (From management station client to trigger)
 
 明知吃亏也要遵守的哲学，明知有苦也要承受的觉悟，我们是否心存这些？这才是是否能够度过真正充实完满的人生，是否能够收获成功果实的分水岭。人类原本是脆弱的存在，若不是特别有意识地约束自己，就终将无法抗拒欲望和诱惑，这是事实。
 -- 自我感觉这个是非常难做到的一点，所谓大智若愚，不能斤斤计较让眼前的利益迷失了自己的方向和做人的原则。
-** 时间的玫瑰
+*** 时间的玫瑰
 投资和性格是紧密结合的。
 
 坚持价值投资
 
 坚持
 
-** 杜拉拉2
+*** 杜拉拉2
 怎么样才算判断力好？
 -- 能先于他人识别机会和风险，并采取行动把握先机和防范风险（快）。
 -- 能复杂困难的情况下，能快速抓住问题的关键（准）。
@@ -2409,7 +2734,7 @@ Upgrade process: (From management station client to trigger)
 观点澄清：“——在讨论过程中，主持人需要不断地去澄清并确认各方的观点，比如昨天的会上，当我们收集完大家的纸条，列出最重要的三个问题后，我就问大家是否同意这是最重要的三条？
 达成协议：“——当大家意见僵持不下，或者众说纷纭的时候，主持人要推动各方达成协议，比如昨天会上讲到费用，你希望由你来决定最低额度，而苏浅唱则希望通过小组讨论来决定，最后陈丰做了个主，不需要到小组会上讨论了，就由小区经理决定。
 会议总结：“——最后，主持人要做出总结，主要是一个SMART的解决方案，我们今天的会议做了什么决定，在这个决定中，每个人的任务是什么，其中要有下一次的跟进计划。
-** 影响力
+*** 影响力
 1. 
 2. 
 3. 
@@ -2417,8 +2742,8 @@ Upgrade process: (From management station client to trigger)
 5. 
 6. 
 
-** from WSJ
-*** [[http://chinese.wsj.com/gb/20090518/eoe135707.asp%3Fsource%3Darticle][what should manager do?]]
+*** from WSJ
+**** [[http://chinese.wsj.com/gb/20090518/eoe135707.asp%3Fsource%3Darticle][what should manager do?]]
 德鲁克将管理者的工作分成了五项基本任务。他写道，管理者应该：
 
 1) 确定目标。管理者为团队制定目标，决定需要做哪些工作来实现目标。
@@ -2431,7 +2756,7 @@ Upgrade process: (From management station client to trigger)
 
 5) 发展人员。随着知识工作者的增加，这个任务变得越来越重要。在知识经济中，人才是公司最为重要的资产，而开发这一资产则是管理者的职责。
 
-** Showstopper! The-Breakneck-Race-To-Create-Windows-Nt-And-The-Next-Generation-At-Microsoft
+*** Showstopper! The-Breakneck-Race-To-Create-Windows-Nt-And-The-Next-Generation-At-Microsoft
 The conflict stemmed from the differing priorities of the two sides.  Intent on refining their general model, programmers didn't want to distract themselves by fixing bugs.  Meanwhile, testers wanted to test.  This was a pointless activity when they saw the same bugs week after week. (p. 257)
 
 　　1、开发OS是烧钱的事情，NT开发接近5年，每年的花费据说在5000万美刀，那可是在90年代初期，换算成现在更是天文数字。从另一个侧面也说明了 linux系统的伟大。开发一个这么烧钱的玩意，如果没有管理层的强力支持，那么不是被砍掉，就是遭遇流产的命运，幸运的是NT团队得到了盖茨的鼎力支持，大概也只有他能这么烧钱了。Dave Culter从DEC辞职的原因也是因为管理层砍掉了他的团队。盖茨另一个做法是不干涉NT团队的开发工作，他只提出目标和期望，然后就偶尔过来看看，不对不知道的东西指手画脚，这点可不容易。
@@ -2487,98 +2812,19 @@ The conflict stemmed from the differing priorities of the two sides.  Intent on 
 　　　　感想之十： 有些项目，注定会在技术复杂度与功能复杂度两个方面，都惊人的高，大团队是不可避免的，尤其会变成高智商、强个性、多冲突的团队，如何管理是一个巨大的挑战。这个方面，不知道目前有没有专著。
 　　
 　　　　结语：《观止》讲的是一个超人，如何将一群聪明人都变成超人的故事。但是，我始终愿意相信，可以有另外一种方式，来管理一个中上等水平的团队，不是靠小宇宙爆发，而是靠更好的节奏感与控制力，来完成同样复杂的项目。
-* Learning															  :THINK:
-** !!!Five minutes!!!
-*** <2010-02-05 22:41>
-I talk too much in today's dinner. some talk i cannot very confidence to that and /say it not clearly/ and rapidly. This would make others not fully understanding my ideas. this is not good especially to a wide audience. this will make me not very confidence and become nervous.
-*** <2010-02-06 23:25>
-1. sometimes I cannot *Control my temper* very well. like today when do haircut, i waste some time to argur with the barber without any meaning. 
-2. I should _do one thing at one time_ but not distract myself into several things and switch among these things. 
-
-*** <2010-02-08 21:23>
-Today, from Ming's RCA session, i found there is one good practice on asking right questions (5 why)
-From Kenny Chen's career talk, i have most impression is working hard is prerequisite. 
-i found my time is not enough and i have many tasks need to context switch, i should learn back from GTD working habits...
-*** <2010-02-09 21:17>
-I always have many comments during other colleage's design review, sometimes a little aggressive. I think I should be not too criticize on others defects. 
-From today 1on1 with Ming, he gave me many good suggestions. here i list some of them:
-- think about more initiative on how to improve working efficiency, like meeting, code review, ???
-- enlarge my responsibility not only to installation/db, but to whole system mgmt area to contribute more
-- Reading->practice->reading->practice  a iterative improvement process
-
-*** <2010-02-10 22:30>
-Discuss with Ming about installation recovery tool implementation and task module redesign, have some learnings.
-how can we make the refactor better? 
-- try to reduce each commit change
-- have a regular review
-- set up review process to be more effective
-- use refactor tools
-- also think about support more failure cases or features during refactor, can start thinking about and discussing
-- core issue to task module: not implementatino ways, but the cleaner loose couple design of task engine. should seperate task engine from task specific operations
-
-*** <2010-02-11 21:39>
-i found my work is not effective today. I don't know what I have done today and whether it's correct and useful things. 时间管理是个永远的话题，很多时候也在学习一些有效利用的时间的方法但是感觉过一段时间后自己的时间还是不能很好利用。我想每天还是要养成一个好的习惯，每天早晨5分钟想清楚今天的priority，晚上下班前5分钟总结一下今天的事情和收获，哪些事情还没有做完，为什么没有做完，是plan还是efficiency？我需要坚持这个习惯！
-
-*** <2010-02-12 23:13>
-Done:
-1. review Anne installation guide
-2. troubleshooting bug 11116
-3. start learn celery 
-
-I need to force myself to have a good time management and use emacs as my time control tool. 最近总是觉得工作起来没有精神，平时的生活也是，怎么才能找回自己的passion和energy？
-
-怎么样分析这个问题？ask 5 why？
-- why this, not have passion and energe? - familiy and work issues
-- what is familiy issues? - related to parents
-- how to solve this? - more communication to clear
-- what is work issues? - pay is not satisfied, challenge is ok
-- how to solve this? - read more, learn more and find good oppotunities
-- then what issues still have? - a mess life which needs to be organized and planned better for everyday
-
-so in all is *PLANNING*
-
-*** <2010-02-14 22:31>
-Brainstorming bring some good points which I totally agree about jobs and industry choices:
-1. 刚开始工作的时候看的更多的是机会和发展的能力
-2. 要等到别人猎而不是自己往坑里跳，才会有更好的价值
-3. 不要在遇到困难的时候和由于受别人跳的影响而跳，仔细判断自己现在的现状和自己的发展目标
-
-i have buy one gift for my wife and found i'm also happy with that after phone call with mom. Looks like this is a continuous improvement for all of us to have a good family environment and also for me to have a good attitude and energy to be concentrated on work!
-
-Other notes:
-
-** Year 2010
-*** Daily plan
-坚持！
-<2010-01-01 17:50>
-- 每天俯卧撑30个, 如有一天没做，下一天做60个
-- 继续养成好的读书习惯，每天晚上至少读书一小时
-- 每天自己反省思考10分钟，想一下今天的收获和需要提高的地方
-- write a daily for 5 minutes and just write about yourself today -- improve leadership skills
-*** Year Goal
-1. Job
-  - Be a supervisor and 20w year package
-2. Family
-
-** My learning plan
-Record what I need to learn and improve for my self. (Internal motivated.)<2009-12-13 21:05>
 
 
-*** Technical
-- Programming language
-  - C++
-  - STL
-  - Python
-- Design
-  - Design pattern
-  - Large system design
+*** 浮沉 - 1&2
+<2010-02-19 21:07>
 
-*** Management
+浮沉第一部主要讲了一个女销售的成长故事，围绕了晶通电子的改制而引发的一系列外企销售的故事。故事里人物背景复杂，企业的组织结构和改进的混乱，从而带来了销售活动的多样化和人际关系的复杂联系。在这本书中，有很多道理并不只是在销售的场合中用，而是做事情和思考问题的方法方式，为人处事的一些很有用的道理。
 
 
+=========
 
-*** Softskill
+琳达暗自思量，乔莉占着晶通电子已经快三个月了，什么进展都没有，要是再这样下去，不出两个月，销售总监就得换人，公司的quota（销售定额）会压得他喘不过气来，到时候还是要用她这样熟悉赛思规矩的老销售。
 
+老乔听罢，又思量了一会儿，在电话中道："这件事情干成了是大功一件，你不可居功，要把它让给你的老板，只有这样，他才会让你坚持做完，如果这件事情干不成，他会把责任全部推到你头上，所以，不管成败，你都要紧紧拉住他，这样到时候，就算是你错他也有部分责任，你才能躲过一劫。"
 
 ** Design and programming
 *** FSM 
@@ -2927,7 +3173,25 @@ it's hard to do job transfer in current situation.
 2. 第一笔首付2~3成即可，其他的都留到过户的时候一起给
 3. 尾款可以先给中介，做为对上家的制约(尾款最好还是自己拿着，先给一部分中介费，等全部手续办好再给剩余的中介费)
 4. 中介费可以打折，最好最后手续全部结清再给，分批给也可以，但是不能在手续没办好时一次全给完
-* Wisdom															  :THINK:
+*** 投资
+**** [[http://cn.wsj.com/gb/20100301/roi150423.asp%3Fsource%3Dnewsletter][股神给我们的几点启示]]
+*保持流动性充足。* 他写道，我们决不会对陌生人的好意产生依赖，我们对自己事务的安排，一定会让我们极有可能面临的任何现金要求在我们的流动性面前显得微不足道；另外，这种流动性还将被我们所投的多家、多样化的公司所产生的利润流不断刷新。
+
+*大家都抛时我买进。* 巴菲特写道，在过去两年的混乱中，我们把大量资金用起来；这段时间对于投资者来说是极佳时期，因为恐慌气氛是他们的最好朋友……重大机遇难得一见，当天上掉金时，要拿一个大桶而不是顶针去接。
+
+*大家都买时我不买。* 巴菲特写道，那些只在评论家都很乐观时才投资的人，最后都是用极高的代价去买一种没有意义的安慰。从他这句话推导，显然是要有耐心。如果人人都在买进时你做到了按兵不动，那么只有在人人都抛售时你才能买进。
+
+*价值，价值，价值。* 巴菲特写道，投资中最重要的是你为了什么而给一家公司投钱──通过在股市中购买它的一个小部分──以及这家公司在未来一二十年会挣多少。
+
+*别被高增长故事愚弄。* 巴菲特提醒投资者说，他和伯克希尔副董事长芒格(Charlie Munger)不投那些“我们不能评估其未来的公司”，不管它们的产品可能多么让人兴奋。
+
+多数在1910年赌押汽车业、1930年赌飞机或在1950年下注于电视机生产商的投资者，到头来输得一无所有，尽管这些产品确实改变了世界。“急剧增长”并不一定带来高利润率和高额资本回报。喂，有没有人下注于中国？
+
+*理解你所持有的东西。* 巴菲特写道，根据媒体或分析师评论进行买卖的投资者不适合于我们。
+
+*防守好于进攻。* 巴菲特写道，虽然我们在某些市场上扬的年头里落后于标普指数，但在标普指数下跌的11个年头里，我们的表现一直好过这一指数；换句话说，我们的防守一直好于进攻，这种情况可能会继续下去。在动荡年代，巴菲特的这些建议都是符合时宜的。
+
+* Wisdom 															  :THINK:
 ** Good Words
 通过规划利用好现有的能力远比挖掘所谓的潜能更重要。
 
@@ -3261,9 +3525,6 @@ it's hard to do job transfer in current situation.
 
 
 * Out-of-date
-  :PROPERTIES:
-  :ORDERED:  t
-  :END:
 ** Thinking															  :THINK:
 *** Understand your truly self
 *** FeelGood List
@@ -3300,30 +3561,5 @@ it's hard to do job transfer in current situation.
 
 ** Test emacs orgmode sandbox
 
-0:00:28 0:00:2 *9* 0:00:31 0u:01:09 
-- 0:01:12 :: 
-- 0:01:16 :: 
-- 0:01:19 :: /0:01:25 0:01:27 0:01/:2 *8 * ,0:01:34 0:01:34 0:01:34 -0:00:24 -0:00:24 -0:00:22 -0:00:21 
-
-=asdf= _asdfaasdf_ a *sdfsdf* *sdfa*
-_asdfasdf_ adfas
-
-
 aaa bbb ccc
 * temp
-** DONE Attend ming's RCA meeting								  :IMPORTANT:
-   DEADLINE: <2010-02-09 Tue> CLOSED: [2010-02-12 Fri 10:15]
-   CLOCK: [2010-02-12 Fri 16:49]
-   - Note taken on [2010-02-12 Fri 16:46] \\
-     i'm done
-   - Note taken on [2010-02-12 Fri 16:46] \\
-     hehe
-[2010-02-13 Sat]- Book a room
-- call phone
-- take notes
-** DONE Try pit  <2010-02-08 13:13>
-   CLOSED: [2010-02-08 Mon 13:12]
-
-** DONE Send meeting request for Hang
-   DEADLINE: <2010-02-07 Sun> CLOSED: [2010-02-12 Fri 10:13]
-   

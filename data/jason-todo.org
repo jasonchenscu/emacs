@@ -11,12 +11,128 @@
 #+DRAWERS: SNIP
 #+OPTIONS:"\n:t"
 
+* Non-project related
+** Initialtive on effective daily work
+*** Effective code review by using ReviewBoard
+*** Effective meeting
+Preparation
+
+send out agenda before the meeting
+
+understand the goal
+
+action plan
+
+meeting minutes
+
+*** Technical talk sharing
+
+
+*** Effective coding
+High quality code
+
+*** Effective troubleshooting
+
+Debugging Atmos best practice???
+
+Profiling Atmos
+
+
+*** Need more investigation on initialtive
+*** Think about CI for Atmos on long run systems
+
+*** More discussion from Ming
+
+** Tea session - knowledge sharing in team wide
+
+*** Potential topics
+
+**** Installation refactoring learning
+**** Showstopper - reading sharing
+**** House buying experience
+**** CI introduction and best practice
+**** Debugging Atmos communication layer
+**** Understand Atmos whole I/O flow
+**** Any good vedios? from google
+**** logging and exception design in pylib
+
+*** Why need to sharing knowledge?
+1. Learning from others and practice presentation skills
+2. Improve self influence in the team 
+3. Have a good team culture on sharing
+
+*** Team discussion on next phase topics
+_<2009-09-07>_
+1. refine existing module architecture
+2. technical related, expericed engineer recommend technical books, everyone read one session and share with other, writing code experience - Yubo
+3. technical fundunmental improvement, write good code, good format, has good slides - Yubo
+4. tea session need slides, one topic has several owners, writing notes when reading books - Yubo
+5. not only improve code quality, but also improve everyone quality
+6. seven habits
+7. a series of workshop with some specific topics
+8. programming thought, e.g. design pattern, SEDA(Jiang)
+9. introduction to Huawei, eBay, IBM quality assure process - by Yubo, Lizhong, Xin, Hongbin
+10. Caihua film introduction, weekend books interested
+11. tea session feedback collection and post brainstorming
+12. review past session experience - session postmortem
+13. prepare slides and organise all information in twiki
+14. other products introduction - feature, design, architecture analyze
+15. invite other team members to hear others opinion
+16. how to manage bug and maintain?
+17. how to collect and organize information?
+18. team senior people introduct coding experience
+19. home introduction, tradition
+20. cannot get attraction with too many food if talking about technical topics
+21. life lesson learn topics?
+
+** MISC team member mgmt 
+Start tracking this from <2009-09-19 16:25>
+*** Feedbacks for my team members
+**** Caihua
+commit r48851 without review, approval and comments
+**** Chunjie														:ARCHIVE:
+- Response for email (not mean timely response, but based on priority and not miss anything you need to follow 
+- 
+
+**** Jiang															:ARCHIVE:
+
+*** Bugzilla process discussed with Ming/Jiang/Chunjie
+**** Process proposal from Jiang.
+•	When a new bug is filed, someone accept the bug and change the assignee to himself;
+•	Later when the assignee is investigating on the bug, add keyword [Investigating] at the beginning of 'User Defined Keywords' field;
+•	Later when the assignee has found the root cause and does the fix work, we can change the keyword to [UnderFixing];
+•	Later when the assignee has finished the fix work and send the code for reviewing, we can change the keyword to [UnderReviewing];
+•	Other wise the keyword should be removed so others know that the bug is not currently active;
+
+**** Break history
+Chunjie - bug 8094 - no UnderReviewing
+Chunjie - bug 10016 - comment from Yubo
+I don’t think we’re doing well for bug 10016 in the below aspects: 
+•	Originally when file the bug, the problem is not clearly described. 
+•	Later when Ming asked what the problem is, haven’t given a good answer. 
+•	Chen has given a very good example to everybody — be specific when describe the problem.
+
+I will reiterate those principle in dealing with a bug in Bugzilla, but I need everyone put more attention on this part.
+
+Thanks,
+Yubo 
+*** Break build/smoke testing
+Jiang: commit bug 7898 in revision r40845/40846 <2009-09-19 16:25>
+Chunjie: commit bug 8094 in revision r44833 and fix in 44874 <2009-12-04 21:39>
+Jiang: commit bug 9122 in revision r45005 and fix in 45033 <2009-12-09 17:00>
+Chunjie: commit bug 9553 in revision r46621 and fix in r46706 - break smoke test installation<2010-01-11 09:45>
+Ming: commit bug 10439 in revision r46628 - break slave node installation <2010-01-11 16:41>
+
+*** Receive positive feedbacks
+*** Perform good communication
+*** Show initiative and leadership
+
 * Project development 												   :WORK:
 
 ** TODOLIST
+*** INPROGRESS [#A] decouple genprofile for better organise and rereuse code, consider ip change and reconfiguration together.
+*** INPROGRESS review board review process workflow
 *** TODO bug 10618 get version from conary command
-*** TODO review board review process workflow
-*** INPROGRESS decouple genprofile for better organise and rereuse code, consider ip change and reconfiguration together.
 *** TODO seperate setnodeinfo to updatenodeinfo and insertnodeinfo, we have met several cases node UUID has changed due to setnodeInfo. bug #10948
 *** TODO Atmos in a box document update - we cannot support clone operation for existing atmos nodes. more detail see bug #10948
 *** TODO Installation /etc/hosts add public ip end mark
@@ -45,6 +161,8 @@ mauiutility interface refine about node.cfg get functions, like get_head_gmonds_
 
 do we need to have a more detail category refine about all pylib functions? like seperate business related out from common util
 
+think about exception design - any exception subclass inheritence 
+
 **** Common considerations
 
 1. when move function to pylib, where do put log which is inside the functions?
@@ -57,6 +175,64 @@ no need to return true since default will return true. just raise exception if i
 db instance should be better since we may not use db at all in future. module functions should not aware these operations but just focus on the business logic.
 
 first take out all db operations from main control logic, like genprofile, netconfig
+**** nodecfg consideration from ming
+HI Jason
+ 
+I had a look and think it is on the right track.
+ 
+Here is my thought, might help you thinking
+ 
+class atmosconfig
+- hold all atmosconfig with input configuration from customer. these are the metadata.
+ 
+a compute() method that can generate a list of nodecfg with hostname as key and nodecfg as value
+ 
+ 
+classe nodecfg has load_from_file(), load_from_db(), save_to_file() save_to_db() methods
+ 
+also has nodeconfig1.merge(nodeconfig2)
+ 
+and nodeconfig.apply()
+ 
+ 
+these are some of the megamethods.
+ 
+ 
+so new installation or system reconfig.
+ 
+atmosconfig.load_from_db()
+atmosconfig.update_xyz()   - get new information from external.
+atmosconfig.compute() generate a list of new nodeconfig
+for each hostname key, load an existing one nodeconfig_old().load_from_db()
+then nc1.merge(nc2)
+nc1.save_to_db()
+ 
+send notification to each CM to do a reconfig
+ 
+nodeconfig.load_from_db
+nodeconfig.load_from_file()
+merging again.
+persist to disk
+.apply() to figure out what changed and then config services and files.
+ 
+ 
+simply for other work like dns config or cosrestore, etc.
+ 
+Ming
+
+
+*** Slony replication for postgres
+
+**** Questions
+
+1. Good way to handle sequence id replication?
+   - partition id into master and slave
+   - use a user defined function to replace sequence id in a replicated table
+   - not replicate sequence, just adjust them when slave promote master
+2. What monitoring or troubleshooting tools we need if any error happens in service and data corruption?
+3. 
+4. 
+5. 
 
 *** Postgresql changes
 **** DONE initDB -  --no-locale --encoding=EUC_JP
@@ -283,24 +459,8 @@ Open questions:
 
 
 
-** Initialtive on effective daily work
-*** Effective code review by using ReviewBoard
-*** Effective meeting
-Preparation
 
-send out agenda before the meeting
 
-understand the goal
-
-action plan
-
-meeting minutes
-
-*** Effective coding
-
-*** Effective troubleshooting
-
-*** Need more investigation on initialtive
 
 ** Installtion collection
 *** Switch configuration
@@ -514,54 +674,14 @@ AMQP model:
 how to decouple task execute engine and detail task command ?
 if there has any relations between tasks, should these task be *divided* into several small tasks?
 
-** MISC team member mgmt 
-Start tracking this from <2009-09-19 16:25>
-*** Feedbacks for my team members
-**** Chunjie
-- Response for email (not mean timely response, but based on priority and not miss anything you need to follow 
-- 
-**** Caihua
-commit r48851 without review, approval and comments
 
-**** Jiang
+*** Pylib document and standard refine
+If we want to have a common library for others to use, we should improve following areas:
+- Clear design on pylib architecture and function category
+- Have a common standard convention to enhance and maintain pylib source code, easy to maintain and extend
+- Good document to find out API easily (sphinix?)
+- Have owner to review all codes related to pylib
 
-*** Bugzilla process discussed with Ming/Jiang/Chunjie
-**** Process proposal from Jiang.
-•	When a new bug is filed, someone accept the bug and change the assignee to himself;
-•	Later when the assignee is investigating on the bug, add keyword [Investigating] at the beginning of 'User Defined Keywords' field;
-•	Later when the assignee has found the root cause and does the fix work, we can change the keyword to [UnderFixing];
-•	Later when the assignee has finished the fix work and send the code for reviewing, we can change the keyword to [UnderReviewing];
-•	Other wise the keyword should be removed so others know that the bug is not currently active;
-
-**** Break history
-Chunjie - bug 8094 - no UnderReviewing
-Chunjie - bug 10016 - comment from Yubo
-I don’t think we’re doing well for bug 10016 in the below aspects: 
-•	Originally when file the bug, the problem is not clearly described. 
-•	Later when Ming asked what the problem is, haven’t given a good answer. 
-•	Chen has given a very good example to everybody — be specific when describe the problem.
-
-I will reiterate those principle in dealing with a bug in Bugzilla, but I need everyone put more attention on this part.
-
-Thanks,
-Yubo 
-
-
-*** Break build/smoke testing
-Jiang: commit bug 7898 in revision r40845/40846 <2009-09-19 16:25>
-Chunjie: commit bug 8094 in revision r44833 and fix in 44874 <2009-12-04 21:39>
-Jiang: commit bug 9122 in revision r45005 and fix in 45033 <2009-12-09 17:00>
-Chunjie: commit bug 9553 in revision r46621 and fix in r46706 - break smoke test installation<2010-01-11 09:45>
-Ming: commit bug 10439 in revision r46628 - break slave node installation <2010-01-11 16:41>
-
-
-
-
-*** Receive positive feedbacks
-*** Perform good communication
-*** Show initiative and leadership
-
-	
 ** Debug command collection
 select id, call, input, status, retval from tasks order by id;
 select id,scope, scopeuuid, call, input, status, retval from tasks where id>10 and call='synclb' order by id;
@@ -730,6 +850,7 @@ rmg.db=# select hostname from nodes where uuid='44454C4C-4200-1050-8047-B3C04F5A
 --------------
  R610-NYC-008
 (1 row)
+
 
 
 ** Reviewboard setup notes in Ubuntu
@@ -1181,7 +1302,7 @@ Upgrade:
 	 CLOSED: [2010-02-12 Fri 11:22]
 
 
-** Upgrade develop and check process
+** Upgrade develop and check process								:ARCHIVE:
 *** Be the owner of upgrade 
 *** Track all upgrade scripts 
 *** Track all issues without any workarounds
@@ -1193,7 +1314,7 @@ Upgrade:
 Code should handle new/old db schema, task execution, protocol communication
 Learn from other products upgrade mechanism
 
-** System management team meeting
+** System management team meeting									:ARCHIVE:
 *** Meeting minutes 090817
 Project overall status:
 No issues and risks for ongoing 1.2.5 and 1.3 projects.
@@ -1281,7 +1402,7 @@ This week -
 3. Track team 1.3 projects status and risks
 4. Support whole team for 1.2.5/1.3 pit/mauits issues and troubleshooting
 
-** Customer site troubleshooting
+** Customer site troubleshooting									:ARCHIVE:
 *** Goldman reinstall/reboot cause RMG missing issue
 
 **** Troubleshooting process:
@@ -1909,29 +2030,6 @@ tcp        0      0 10.32.182.200:54230         10.32.182.197:5432          TIME
 Solution:
 1. Reduce client db connection and operation time and close the connection asap.
 2. Fix cybercluster issue on check transaction count. However, this may make slave data lost for some transactions.
-
-** Tea session potential topics
-1. life lesson learn topics?
-2. technical related, expericed engineer recommend technical books, everyone read one session and share with other, writing code experience - Yubo
-3. technical fundunmental improvement, write good code, good format, has good slides - Yubo
-4. tea session need slides, one topic has several owners, writing notes when reading books - Yubo
-5. not only improve code quality, but also improve everyone quality
-6. seven habits
-7. refine existing module architecture
-8. cannot get attraction with too many food if talking about technical topics
-9. a series of workshop with some specific topics
-10. programming thought, e.g. design pattern, SEDA(Jiang)
-11. introduction to Huawei, eBay, IBM quality assure process - by Yubo, Lizhong, Xin, Hongbin
-12. Caihua film introduction, weekend books interested
-13. team senior people introduct coding experience
-14. home introduction, tradition
-15. prepare slides and organise all information in twiki
-16. tea session feedback collection and post brainstorming
-17. review past session experience - session postmortem
-18. how to manage bug and maintain?
-19. how to collect and organize information?
-20. other products introduction - feature, design, architecture analyze
-21. invite other team members to hear others opinion
 ** Atmos 1.3 cycle 
 *** Atmos capacity reporting mechanisms
 
@@ -1996,7 +2094,7 @@ Remind Xin about his improvement in pgpool
 *** DONE Remove Compression+Dedup support in GUI/CLI installation -> To Chunjie
 	 CLOSED: [2009-08-11 Tue 12:59]
 
-* Daily work 														   :WORK:
+* Daily work												   :WORK:ARCHIVE:
 <2010-01-03 21:53>
 
 ** CANCELED update db wiki about impact areas (files, comments?)
@@ -2282,6 +2380,10 @@ International Ispell
 [http://tindorafarms.com/index.php?hl=f5&q=uggc%3A%2F%2Fmxjney.oybtfcbg.pbz%2F2007%2F01%2Frznpf-gvc-vafgnyy-vfcryy-ba-jvaqbjf.ugzy]
 Emacs Tip: Install Ispell on Windows
 
+*** orgmode
+**** set archive mode
+if not use frequently, use archive mode (c-c c-x c-a), use same command can unarchive
+
 ** Git use
 
 *** Github.com - my online git backup home
@@ -2315,63 +2417,6 @@ Emacs Tip: Install Ispell on Windows
 3. # git add .
 4. # git commit -m 'comment'
 *** 
-** Interest soft focus
-*** DONE see version control soft "Mercurial"
-	 CLOSED: [2009-09-02 Wed 13:14]
-
-** Good cluster management solution
-*** [[http://reductivelabs.com/products/puppet/][Puppet]] - Puppet helps accomplish the goal of a hands-off, automated infrastructure. 
-The benefits of automated infrastructure go beyond policy-enforced consistency and auditing.  The impact of hardware failure and other disaster scenarios can be mitigated, as services can be quickly restored by Puppet.
-
-
-*** [[http://www.hyperic.com/products/applications-monitoring.html][Hyperic IQ/UQ]] - a Java-based platform for monitoring and managing software resources, required by SpringSource(Vmware)
-
-
-*** [[http://msdn.microsoft.com/en-us/library/ms952401.aspx][MSCS]] - Microsoft clustering services
-Some good concept and design which is very similar as our CM:
-Microsoft Cluster Service is comprised of three key components: the Cluster Service, Resource Monitor and Resource DLLs. Additionally, Cluster Administrator allows for the production of Extension DLLs for management capability.
-
-*The Cluster Service* is the core component and runs as a high-priority system service. The Cluster Service controls cluster activities and performs such tasks as coordinating event notification, facilitating communication between cluster components, handling failover operations and managing the configuration. Each cluster node runs its own Cluster Service.
-
-*The Resource Monitor* is an interface between the Cluster Service and the cluster resources, and runs as an independent process. The Cluster Service uses the Resource Monitor to communicate with the resource DLLs. The DLL handles all communication with the resource, so hosting the DLL in a Resource Monitor shields the Cluster Service from resources that misbehave or stop functioning. Multiple copies of the Resource Monitor can be running on a single node, thereby providing a means by which unpredictable resources can be isolated from other resources.
-
-When the Cluster Service needs to perform an operation on a resource, it sends the request to the Resource Monitor assigned to that resource. If the Resource Monitor does not have a DLL in its process that can handle that type of resource, it uses the registration information to load the DLL associated with that resource type. It then passes the Cluster Service's request to one of the DLL's entry point functions. The resource DLL handles the details of the operation so as to meet the specific needs of the resource.
-
-
-*** DONE Cluster task system by python
-	 SCHEDULED: <2010-02-21 Sun> DEADLINE: <2010-02-24 Wed>
-http://pypi.python.org/pypi/celery/1.0.0
-http://www.aditam.org/
-
-
-
-** Windows
-*** cygwin + rxvt
-Change cygwin.bat with following configuration:
-------------------------------- spliter -------------------------------
-@echo off
-C:
-chdir C:\cygwin\bin
-set HOME=C:\Jason\home
-set EDITOR=vim
-set VISUAL=vim
-set CYGWIN=tty title glob binmode
-rxvt -sr -sl 2500 -sb -geometry 90x30 -tn rxvt -fn "Consolas-20" -e bash --login -i
-------------------------------- spliter -------------------------------
-
-*** Make windows usable with Linux tools
-[[http://www.burningcutlery.com/derek/winsetup/#cygwin]]
-
-** Cloud storage products
-*** [[http://aws.Amazon.com/S3][Amazon S3]]
-*** [[http://www.bluewolf.com/on-demand-solutions/salesforce-solutions/Arcade][Bluewolf Arcade]]
-*** [[http://www.Bycast.com][Bycast StorageGrid]]
-*** [[http://www.caringo.com][Caringo的CAStor和CloudFolder]]
-*** [[http://www.ibm.com/ibm/cloud/cloudburst][IBM CloudBurst]]
-*** [[http://www.nirvanix.com][Nirvanix SDN]]
-*** [[http://www.parascale.com/index.Php/solutions/overview][ParaScale Cloud Storage]]
-*** [[http://www.seanodes.com][Seanodes的Shared Internal Storage]]
-*** [[http://www.zetta.net][Zetta的Enterprise Cloud Storage On Demand]]
 
 ** Linux tips and good tools
 *** autofs and automount
@@ -2482,6 +2527,59 @@ dmesg -c > log (-c mean clear)
 *** Ubuntu GUI / console switch
 Ctrl-Alt-f1 -> console
 Alt-f7 -> GUI
+
+** Good cluster management solution
+*** [[http://reductivelabs.com/products/puppet/][Puppet]] - Puppet helps accomplish the goal of a hands-off, automated infrastructure. 
+The benefits of automated infrastructure go beyond policy-enforced consistency and auditing.  The impact of hardware failure and other disaster scenarios can be mitigated, as services can be quickly restored by Puppet.
+
+
+*** [[http://www.hyperic.com/products/applications-monitoring.html][Hyperic IQ/UQ]] - a Java-based platform for monitoring and managing software resources, required by SpringSource(Vmware)
+
+
+*** [[http://msdn.microsoft.com/en-us/library/ms952401.aspx][MSCS]] - Microsoft clustering services
+Some good concept and design which is very similar as our CM:
+Microsoft Cluster Service is comprised of three key components: the Cluster Service, Resource Monitor and Resource DLLs. Additionally, Cluster Administrator allows for the production of Extension DLLs for management capability.
+
+*The Cluster Service* is the core component and runs as a high-priority system service. The Cluster Service controls cluster activities and performs such tasks as coordinating event notification, facilitating communication between cluster components, handling failover operations and managing the configuration. Each cluster node runs its own Cluster Service.
+
+*The Resource Monitor* is an interface between the Cluster Service and the cluster resources, and runs as an independent process. The Cluster Service uses the Resource Monitor to communicate with the resource DLLs. The DLL handles all communication with the resource, so hosting the DLL in a Resource Monitor shields the Cluster Service from resources that misbehave or stop functioning. Multiple copies of the Resource Monitor can be running on a single node, thereby providing a means by which unpredictable resources can be isolated from other resources.
+
+When the Cluster Service needs to perform an operation on a resource, it sends the request to the Resource Monitor assigned to that resource. If the Resource Monitor does not have a DLL in its process that can handle that type of resource, it uses the registration information to load the DLL associated with that resource type. It then passes the Cluster Service's request to one of the DLL's entry point functions. The resource DLL handles the details of the operation so as to meet the specific needs of the resource.
+
+
+*** DONE Cluster task system by python
+	 SCHEDULED: <2010-02-21 Sun> DEADLINE: <2010-02-24 Wed>
+http://pypi.python.org/pypi/celery/1.0.0
+http://www.aditam.org/
+
+
+** Windows
+*** cygwin + rxvt
+Change cygwin.bat with following configuration:
+------------------------------- spliter -------------------------------
+@echo off
+C:
+chdir C:\cygwin\bin
+set HOME=C:\Jason\home
+set EDITOR=vim
+set VISUAL=vim
+set CYGWIN=tty title glob binmode
+rxvt -sr -sl 2500 -sb -geometry 90x30 -tn rxvt -fn "Consolas-20" -e bash --login -i
+------------------------------- spliter -------------------------------
+
+*** Make windows usable with Linux tools
+[[http://www.burningcutlery.com/derek/winsetup/#cygwin]]
+
+** Cloud storage products
+*** [[http://aws.Amazon.com/S3][Amazon S3]]
+*** [[http://www.bluewolf.com/on-demand-solutions/salesforce-solutions/Arcade][Bluewolf Arcade]]
+*** [[http://www.Bycast.com][Bycast StorageGrid]]
+*** [[http://www.caringo.com][Caringo的CAStor和CloudFolder]]
+*** [[http://www.ibm.com/ibm/cloud/cloudburst][IBM CloudBurst]]
+*** [[http://www.nirvanix.com][Nirvanix SDN]]
+*** [[http://www.parascale.com/index.Php/solutions/overview][ParaScale Cloud Storage]]
+*** [[http://www.seanodes.com][Seanodes的Shared Internal Storage]]
+*** [[http://www.zetta.net][Zetta的Enterprise Cloud Storage On Demand]]
 ** COLU architecture
 Upgrade process: (From management station client to trigger)
 1. Get catalog
@@ -2490,10 +2588,41 @@ Upgrade process: (From management station client to trigger)
 4. Run rules (Precheck / Health check based on different rules and suggestion)
 5. Non-disruptive upgrade (NDU) call
 6. Post tasks to recover to previous environment
+** Interest soft focus
+*** DONE see version control soft "Mercurial"
+	 CLOSED: [2009-09-02 Wed 13:14]
 
 
 * Learning															  :THINK:
 ** !!!Five minutes!!!
+*** <2010-03-08 22:12>
+
+after 1on1 with ming, ming shared many thoughts with me:
+1. deep thinking about myself for improvement areas
+2. 千里马常有，伯乐不常有
+3. like start up style
+4. why move to mgmt? 
+   1. many technical talent better than me, but why many talents get together but cannot work as 1+1>2. how to organize the work is importantn?
+   2. the career path is become narrow as you go more high technical level, like linux kernel developement on one area.
+5. personal IDP 
+
+what useful for me?
+1. today is present, find what are more valuable to you and learn/think to grow
+2. mgmt track? 
+
+*** <2010-03-07 23:06>
+I should avoid over commit situations! Not always set high expectations to others!
+
+Manage time is still a problem....
+
+What I have done in past two hours, just learn how to use post-review? that's not enough?
+
+why i always not feel satisfied even learning all time? do this cause by a unclear goal? I should draft out a IDP A.S.A.P. This way will make me grow with a stable and more balance way.
+
+*** <2010-03-06 15:09>
+
+In team meeting, I should not say too much about some high level principles. I should be a good executor and be a good example for others. Just do more and say less should be good at this time. 
+
 *** <2010-03-01 17:55>
 today during genprofile refactoring discussion with denny, looks like i can't express my idea very clearly. i need to enhance my class design skills here.
 
@@ -2627,8 +2756,6 @@ Sukwoo recommend me to review paper on ACM transaction on Storage. it's a exciti
 
 ** My learning plan
 Record what I need to learn and improve for my self. (Internal motivated.)<2009-12-13 21:05>
-
-
 *** Technical
 - Programming language
   - C++
@@ -2640,10 +2767,9 @@ Record what I need to learn and improve for my self. (Internal motivated.)<2009-
 
 *** Management
 
-
-
 *** Softskill
-
+- Initiative
+- Analyse existing work environment and alway find out improvement areas
 
 ** English words
 
@@ -2656,7 +2782,7 @@ reckless 不计后果的
 prudent 谨慎的
 deliberate 深思熟虑的，故意的
 inadvertent 不注意的，疏忽的
-
+amateur 业余爱好者
 
 ** Reading
 *** 活法
@@ -3151,6 +3277,82 @@ it's hard to do job transfer in current situation.
 但是，我觉得有一些可能文化上面的东西，可能会限制这些员工的发展。我看到比较多的是，有的时候员工他们碰到一个问题，我觉得可能是考试考太多了，他们看到一个问题，他们不太会去跟旁边的人，一起跟周围的团队里面的人，或者跟美国团队人一起交流，一起想最好的解决方案，能够把大家不同的观点整合起来。很多的时候看到他们自己在非常辛苦地在干。那苦干之后真的是做出来成果就说，你有没有考虑到一二三四五六，那你有没有跟这个人这个人去谈过，好像这方面做得相对来说比较差一点。因为我觉得我们考试的模式就说你不能问别人，你都要自己解决。
 
 我们在工作中都是，你不可能一个人把方方面面都考虑全，这是不可能的。所以你一定要跟你团队里面的人搞好关系，一定要把团队里面帮你一起想这个问题，还有什么其他的观点，而且能够非常坦然的把这个观点结合到你的解决方案中去，那我觉得这方面相对来说就是相对弱一点。而且就是这种主动性比较差，如果你没有跟他说要做什么事情，你交代的我都做好了就完了。那这两方面我觉得中国员工需要想一想怎么样加强的地方。
+
+*** 洪强宁谈豆瓣网技术架构
+各位观众朋友大家好，这里是InfoQ中文站的赖翥翔，现在在首届QCon北京大会的现场，坐在我旁边的是来自豆瓣网的洪强宁。强宁你好，向大家介绍一下自己以及自己和豆瓣的联系。
+我是大概在06年的3月份加入豆瓣的。当时应该是豆瓣的02号程序员。01号是阿北。现在是任豆瓣的首席架构师。负责豆瓣技术开发的相关工作。
+
+我记得在之前社区中有对豆瓣高并发能力的讨论，豆瓣现在的用户数量以及访问量如何？用了多长时间达到了现在的水平？
+现在的话，我刚才没有上网，不知道现在是不是已经达到了300万用户，如果还没有达到的话，马上就会到了，可能是今天，可能是明天。300万是指我们的注册用户，另外还有千万级的非注册用户。访问量的话，现在应该是两千万每天。
+
+
+如果能达到这样的访问量，确实说明豆瓣高并发的能力是相当强，我想请您从技术这个角度介绍一下豆瓣网的架构。
+这个话题比较大一点，我刚才在演讲的时候，已经表述这方面的问题了。可以这么说，最简单的方法来说，豆瓣网可分割成两大块：一块是前端的Web，也就是用户在浏览器访问的时候会触发一系列的操作，从数据库拿出数据，渲染成HTML页面反馈给用户，这是前端；另外一块是后端，在豆瓣有一个很强的数据挖掘团队，每天把用户产生的数据进行分析，进行组合，然后产生出用户推荐，然后放在数据库里面，前端会实时的抓取这些数据显示给用户。
+
+如果是这样子，要是让你重新设计的话，你会觉得有必要改进里面哪些部分吗？
+豆瓣（架构）设计现在在WEB这一端主要是用这么几种技术：前端是nginx和lighttpd，中间是Quixote的Web框架，后面是MySQL以及我们自己开发的DoubanDB。这些除了Quixote都是一些比较流行的、尖端的技术。Quixote稍微老一点，如果要重新设计的话，可能会在这方面做一些考虑。比如Python社区中的Django、Pylons等等都是可以考虑的，那么在豆瓣的内部的话，我们一般是用web.py，很轻量的一个Web框架来做，也是非常不错的选择，它可能需要自己做的事情多一点。但是，也不太可能完全重新设计了。
+
+
+那如果要缓解高并发所带来的压力，Cache的利用肯定是一个非常有效的途径。那么豆瓣的缓存命中率一般是多大？这方面的策略是怎样？
+Memcache命中率一般都在97%左右，应该还算是比较高的。策略其实是比较简单的，如果每次要去执行一个比较耗时耗资源的操作，比如说去数据库查询的话，就会以Python的Object形式存放在Memcache里面，下次再拿这个数据的时候就直接从Cache中拿就行了。这边选择什么样的东西，尽量有一个Guideline，必须是要耗时的，耗资源的，而且是重复使用的。比如它是耗资源的，但是只用一次，Cache也没有意义。差不多用这种方法保证Cache的东西都是真正有效的，也提高了命中率。
+
+
+要提高承受高压力的流量，另外一个有效的措施是对数据库来进行分区分片，在这方面豆瓣是怎么做的？
+豆瓣现在还没有达到数据库分片的程度。我们现在最常见的手段是，按照功能分区。我们会把数据表分成几个独立的库，现在是一共有4个库。每个表都是库的一个部分，每个库会有主副两个。通过这种方式来减轻数据库的压力，当然这个是现在的方案，再往后的话，表的行数会增长，到达一定的程度后，还要进行水平分割，这是肯定的。然后我们现在的技术方面，在操作数据库之前，首先获取数据库的游标，有一个方法，这个方法会干所有的事情，我们以后做的时候会从这个方法中进行判断该从哪取东西。这个架构已经在了，只是现在还没有做这一步而已。
+
+
+数据库这边主要采用什么解决方案呢？
+在数据库这边，我们主要用的是MySQL。MySQL有一个问题，大文本字段会影响它的性能。如果数据量过大的话，它会挤占索引的内存。那么现在一个行之有效的方法是，我们另外建立一套可伸缩的Key-Value数据库，叫做DoubanDB。我们把不需要索引的大文本字段，放到DoubanDB里面去。 MySQL只保存需要索引的Relationship这方面的信息。这样给MySQL数据库降低了压力，也就可以保证它的性能。
+
+
+比如说像保证数据的安全性，以及数据库的吞吐量，豆瓣是怎样的策略呢？
+首先DoubanDB会把每个数据在三个节点进行备份，任何一个出现故障都不会影响索取数据。MySQL是通过双Master方案，同时还会带1到2个slave，所以说在MySQL中我们会有三到四个的备份。这点是可以放心的。
+
+你刚才说到MySQL的双Master方案，这方面会不会存在什么问题？比如说同步的问题，等等？
+在MySQL里面，双Master方案是一个比较经典的方案，我们现在用它很大一部分是为了解决我们同步延迟的问题。在做切换的时候，会出现同步延迟的问题，但其实MySQL的同步速度还是可以的，在切换的时候，我们会忍受几秒钟等待同步的时间。在做脚本的切换的时候，我们会稍微等一下。
+
+豆瓣的数据表一般是怎么样的规模？
+数据表，这个不好说了，因为不同的表都是不一样的。我们最大的表是“九点”的Entry表，“九点”的爬虫爬过来的所有的文章，现在应该有四千万左右的行数。然后其他的上百万的表也有很多。还有包括收藏表也有千万级的行数。
+
+在这种海量数据的情况下，对数据表的就结构变更，一定是一个比较麻烦的问题。常见的情况，比如增加一个新的索引，会导致索引好几个小时。像豆瓣之前会存在这样的问题，是怎么解决的呢？
+这个问题曾经让我们吃过苦头，在忽视它的状况下就去改表，然后就锁了很长时间。后来我们意识到这个问题，如果有表的改动的话，我们会先在一个测试的库上试验一下它的时间长短，是不是在可接受的范围，如果是可接受的范围，比如说几分钟，就做一个定时任务，在深夜里面去执行。如果耗时是不可忍受的，就必须通过其他技术手段，我们现在的手段一般是建一个新表，这个新表从旧表同步数据，然后再写数据的时候，也会同步，往两边写，一直到两边完全一样了，再把旧表删掉，大概是这样一个方式。
+
+刚才您好像提过你们设计了自己的DoubanDB，还有一个是DoubanFS，这两者关系是怎么样的？
+首先是先出来的DoubanFS，我们刚开始的时候用MogileFS来解决我们可扩展图片存储的问题，由于MogileFS有一个重型数据库，这成为了它的性能瓶颈。我们为了解决这个问题，开发了DoubanFS，基于哈希来寻找节点。之后，我们又发现了新的问题，数据库中的大文本字段也会影响性能。所以，我们在DoubanFS的基础上，换了一个底层，做了一些调整，参照Amazon的dynamo思想，搭建了DoubanDB，把文本字段放在 DoubanDB里面。做完之后，又反过来用DoubanDB来实现FS，大致是这么一个过程。
+
+DoubanFS跟DoubanDB的实现，他们在对于内容的安全性，或者内容的冗余性…
+都是（备份）三份。这都是可以配置的，现在的配置是3份。
+
+DoubanDB就是用什么机制实现的？
+DoubanDB简单来说是这样子：你来一个Key，它是Key-Value数据库，你要写或读的时候，通过这个Key来寻找这个值。拿一个Key对它做哈希，通过Consistent哈希方法去查找它在哪个节点上，然后往这个节点上去写或读。在这个节点上，顺着哈希的wheel顺次的找到第二、三个节点，写的时候会保证这三个节点都写，读的时候是任意一个，如果其中一个读失败了，会自动切换到下一个。
+
+您刚才提DoubanDB的话，是采用的技术是？
+DoubanDB的底层存储用的是TokyoCabinet，是一个很轻量级、高效的Key-Value数据库。我们在它的基础之上，做了分布式，用这种方式来实现的。
+
+实际上有一些其他的方案可以解决，比如说像Berkeley DB（简称BDB）、CouchDB等等，你们为什么要选择TokyoCabinet？
+最简单的原因是由于它足够快，实际上BDB跟它比较类似，BDB更加强大一些。对我们而言，我们在这边就是需要一个可靠、高效的Key-Value存储，这两个其实是我们都可以替换的，只要统一下接口就可以。CouchDB的话就是另外一个东西了，它是一个文档型数据库，它不仅仅做了一个Key- Value的工作，它还在这上面做了很多其他的事情，比如它有View的概念，可以进行query。这些TokyoCabinet是没有的，而我们暂时也不需要这些功能。CouchDB是一个很有意思的数据库，我们可能会在其他方面（应用），我们也在研究它。
+
+从我们刚才的讨论中，Web前端你用了nginx又用了lighttpd。它们都是非常流行的前端，这两种方案经常打架，豆瓣为什么把它们融合在一块？
+这是历史原因。我们其实没有刻意地去倾向某一个。这两个都是非常优秀的Web Server，都很轻量，都很高效。最开始的时候我们用的是lighttpd，然后是因为出现过一些问题，其实不是lighttpd的问题，但当时我们怀疑可能是lighttpd有问题，就尝试了一下nginx，觉得这个也不错，然后这个结构就保留下来了。nginx对开发者和用户的友好性都更好一些。我举个例子，比如说重启，其实在豆瓣的Web Server是经常要重启的，我们会有一个健康检查的脚本，定时的检查网站是不是正常，如果觉得不正常的话，就会做一些保护措施，其中就包括重启。 lighttpd的重启，是一个很粗暴的Kill。Nginx是一个reload的方案，会先把手头的事情做完了再重启。这样会好很多，而且它会在重启之前会帮你做一些好的事情。所以，现在我们用Nginx越来越多。Nginx的配置文件也比lighttpd写起来更舒服一些。
+
+豆瓣现在有一个庞大的用户群体，针对这样一些海量数据做好数据挖掘，肯定不是一件容易的事情，能从技术这个角度讲讲挖掘的实现吗？
+在豆瓣专门有一个算法团队，他们的主要工作就是数据挖掘。这边讲技术实现的话，可能就讲不完了。只能讲一些大概，数据挖掘是怎么和前端结合起来的，让用户看见的。每天用户在豆瓣上的操作都会产生很多数据，在豆瓣上面看到的东西，收藏的东西，都会存在数据库或是访问日志。每天这些信息都会传到算法团队的机器上，然后会从这个数据中建立一个稀疏矩阵，你看过什么，干过什么。他们维护了一个很高效的稀疏矩阵运算库，然后用它来做各种各样的尝试，去看是否能得到好的结果，一旦发现这个结果很好，就会把它写到数据库里面。然后用户在访问的时候，前端从数据库中取出推荐给你的数据，然后把这些数据做一些过滤（比如你读过的东西就不再给你展现了）、调整，最后展现给用户。基本上是这么一个逻辑。
+
+从刚才你所描述的内容，可以发现豆瓣其实是一个应用非常多的，几乎用的都是开源框架吧？
+全部是开源的。
+
+我相信你们从社区的智慧以及各方面都会获取很多东西，我不知道豆瓣对开源社区是不是也做了一些回馈？
+是有的，我们最大的回馈形式是patch。我们用很多的开源软件，这当中就不可避免的有各种各样的问题，我们会尝试通过自己的努力解决这些问题，把我们的解决方案反馈给开发者。比较典型的像libmemcached，是一个C的memcached客户端。现在也是非常火的，基本是一个官方的C的客户端。它其实有很多bug，我们在使用的时候发现，去修正它。现在我们的团队成员里面有直接就是它的开发成员。比如说像Python的Mako模板，也是用的人非常多的模板。我们也在使用，使用起来发现它的性能稍微弱一些，我们也花了精力对它进行了优化，这个优化现在也是被接受了，在Mako的后来版本发布出来了。然后豆瓣自己也有一些开源的项目，最主要的开源的项目是豆瓣API的访问客户端，这个是在google code上面，也有很多志愿者参与进来，帮我们一起修改。然后从另外一个方面来说，豆瓣和国内的开源社区也有紧密的联系。豆瓣的上线通知就是发在开源组织 CPUG的邮件列表里面的，豆瓣的很多成员也是CPUG的成员，会在邮件列表里面去帮助回答问题，讨论问题，这也是一种回馈的方式。
+
+豆瓣的开发团队是怎么样的？
+我们现在开发团队这边是11个人，有全职有兼职，还是比较放松。我们采用的是敏捷的方法，但是也不是完全的一模一样的方式。在豆瓣内部，我们尽可能地去发挥每个人的创造力。比如，在豆瓣作息是自由的，你可以自己决定什么时候来，什么时候走。比如你想在家里面静下心来写code，你可以往邮件列表里面发条消息说，我今天不过来了，就可以在家里面。每天会有很多的讨论，我们在豆瓣的办公室是一个独立的区域。在这个区域里面有白板，大家可以随时讨论。然后每周我们会有一个技术交流会议，大家轮流来发表一下自己最近在看一些什么东西，有什么心得，跟大家分享一下，这些都促进团队的沟通与发展的，很有用的东西。
+
+看来豆瓣是一个相当开放、技术和兴趣驱动的团队。
+我们希望一直保持这样的样子。
+
+那现场的观众有没有什么问题？其他记者：我是接着社区那个话题问一下，豆瓣现在有了很多的积累，有很多东西都已经成形了，有没有考虑说开放一些项目？
+我们是有这个计划的。比如说DoubanDB，实际上我们在创立这个项目的时候，就是说这个项目我们做出来后是要开源的，到现在还没开源，是因为这个项目还在变化之中。由于开发的时间上的限制，所以现在还和豆瓣本身的数据绑得太紧，我们而且也是在不断地调整，现在还在调整的过程当中。找一个合适时机，我们会把它跟的豆瓣的数据剥离出来，成为一个可以独立地去安装、运行的应用的时候，就会把它拿出来，我想应该很快就能够做到这点。
+
 ** Year 2009
 *** Summary from outlook
 .
@@ -3523,8 +3725,7 @@ it's hard to do job transfer in current situation.
 父亲握着他的手来到后院说：你做得很好，我的好孩子。但是看看那些围篱上的洞，这些围篱将永远不能回复成从前。你生气的时候说的话将像这些钉子一样留下疤痕。如果你拿刀子捅别人一刀，不管你说了多少次对不起，那个伤口将永远存在。话语的伤痛就像真实的伤痛一样令人无法承受。 
 启示：人与人之间常常因为一些彼此无法释怀的坚持，而造成永远的伤害。如果我们都能从自己做起，开始宽容地看待他人，相信你(你)一定能收到许多意想不到的结果....帮别人开启一扇窗，也就是让自己看到更完整的天空....
 
-
-* Out-of-date
+* Out-of-date														:ARCHIVE:
 ** Thinking															  :THINK:
 *** Understand your truly self
 *** FeelGood List

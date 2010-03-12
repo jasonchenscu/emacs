@@ -21,7 +21,11 @@
 (global-set-key [(control down)] 'move-frame-down)
 (global-set-key [(control left)] 'move-frame-left)
 (global-set-key [(control right)] 'move-frame-right)
-
+;;----------------------------------------------------------------------------
+(load-file "~/myemacs/bm/bm-1.34.el")
+(global-set-key (kbd "<C-f2>") 'bm-toggle)
+(global-set-key (kbd "<f2>")   'bm-next)
+(global-set-key (kbd "<S-f2>") 'bm-previous)
 ;;move the current line up or down
 (global-set-key [(meta up)] 'move-line-up)
 (global-set-key [(meta down)] 'move-line-down)

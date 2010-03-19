@@ -130,8 +130,10 @@ Ming: commit bug 10439 in revision r46628 - break slave node installation <2010-
 * Project development 												   :WORK:
 
 ** TODOLIST
+*** TODO Read REST code from Yong and give feedbacks
 *** INPROGRESS [#A] decouple genprofile for better organise and rereuse code, consider ip change and reconfiguration together.
 *** INPROGRESS review board review process workflow
+*** TODO Test force resync db without restart service
 *** TODO bug 10618 get version from conary command
 *** TODO seperate setnodeinfo to updatenodeinfo and insertnodeinfo, we have met several cases node UUID has changed due to setnodeInfo. bug #10948
 *** TODO Atmos in a box document update - we cannot support clone operation for existing atmos nodes. more detail see bug #10948
@@ -223,6 +225,19 @@ Ming
 
 *** Slony replication for postgres
 
+**** First review with Caihua, tests need to do: <2010-03-19 14:18>
+1. Check sl_log1/2 table cleanup mechanism
+2. Check slon master and slave port and network connection behavior
+3. Will subscribe command resync all the data?
+4. Check el_event table ev_minxid, ev_maxxid and ev_xip information, which table has the information?
+5. Understand postgres shutdown param
+
+Failure case:
+1. master postgres down: service unavailable, master slon continue restart, slave slon continue reconnect every 10 seconds
+2. master postgres come back: all service and data back to normal
+3. master slon down: data cannot sync
+4. master slon come back: data become sync
+
 **** Questions
 
 1. Good way to handle sequence id replication?
@@ -230,9 +245,10 @@ Ming
    - use a user defined function to replace sequence id in a replicated table
    - not replicate sequence, just adjust them when slave promote master
 2. What monitoring or troubleshooting tools we need if any error happens in service and data corruption?
-3. 
-4. 
-5. 
+
+Slony users
+Use of “slony” PG user to run Slony-I processes is highly recommended
+Separating maintenance roles to multiple users (molly, dumpy, slony) has proven useful.
 
 *** Postgresql changes
 **** DONE initDB -  --no-locale --encoding=EUC_JP
@@ -1021,11 +1037,20 @@ If failed at some step during add segment, first revert to previous good shape s
    - ./revertsnapshot.ksh 10.32.109.36 cheny7 password RMG1-IS2-ready ../hostlist-RMG1-IS
 
 *** Full cycle 1.3 testing on hulk - 169.209 ~ 169.216
+========= NEW PIT ==============
+1. ssh cheny7@10.32.180.27 (password)
+2. find out one install image on /share/pub/MauiImages
+3. run command: 
+   bin/pit.sh -c conf/testbeds/maap/cheny7-169.209-216.conf --image /share/pub/MauiImages/atmos-1.3.1/atmos-auto-1.3.1.49512-x86_64-disc1.iso -i cheny7
+
+==========OLD ways for PIT =================
 1. ssh cheny7@10.32.169.18 (password)
 2. cd pit-hulk/
 3. ./startpit jason_full_130_44138 209.cfg
 4. Check log until pit finished
-5. Running full cycle testing:
+
+===========mauits ==================
+Running full cycle testing:
    1) login to 10.32.180.27 (cheny7)
    2) go to /home/cheny7/mauits and mauits config are located in /home/cheny7/mauits/config, e.g. config/1.3full_209_44138.cfg
    3) bin/configure.ksh -F config/1.3full_209_44138.cfg
@@ -2595,6 +2620,42 @@ Upgrade process: (From management station client to trigger)
 
 * Learning															  :THINK:
 ** !!!Five minutes!!!
+*** <2010-03-19 22:10>
+last week in the lesson learn from Rich POX API document review, Rich give a very good feeback:
+
+Always be *critically think*, ask the right question and understand the feature you're doing.
+
+If I think about the root cause for this, *make a good planning* is the most important factor.
+
+I have said many time to have a good planning, not only for the daily work, but for my personal goal, monthly, yearly goal. I need to think it critically about the daily work planning as well as project good planning, go deep into details!
+
+Below is the mail thread about my thanks.
+
+From: Urmston, Rich 
+Sent: Wednesday, March 17, 2010 10:05 PM
+To: Chen, Jason (CIG)
+Subject: RE: Thanks a lot for your feedback.
+
+Thanks Jason.  I am confident you and the team will gain the confidence to look at things more critically as you gain more experience.  I know it takes time to develop these skills and ways of thinking.  
+ 
+Have a good night!
+
+________________________________________
+From: Chen, Jason (CIG) 
+Sent: Wednesday, March 17, 2010 10:01 AM
+To: Urmston, Rich
+Subject: Thanks a lot for your feedback.
+Hi Rich,
+
+I want to thank you again for your feedbacks. I really appreciate of your suggestion about our improvement areas. We should improve ourselves a lot from this side. At many times, we have incorrect assumption and not pay more focus on real feature from customer perspective. Just as you pointed out, we always shy and not asking right and necessary questions even not understand the feature and use cases. This blinds us to provide a more user-friendly and well-designed feature. Moreover, the management part works are mostly customer-oriented. This will lead to many customer confusion and misunderstanding. 
+
+Moving forward, as everyone is more focus and with less features on hands, I think it will help us to put more efforts on understanding specific feature deeply we’re working on. But definitely, we need to let all our team members (especially myself) to be aware of this for the daily working habits. Only in this way, we can get each of our features better designed with better quality. 
+
+Have a good day!
+
+Best regards,
+Jason
+
 *** <2010-03-08 22:12>
 
 after 1on1 with ming, ming shared many thoughts with me:
@@ -2783,6 +2844,12 @@ prudent 谨慎的
 deliberate 深思熟虑的，故意的
 inadvertent 不注意的，疏忽的
 amateur 业余爱好者
+dictator 独裁者
+amortize 分期偿还
+condense 浓缩
+paradox 自相矛盾
+critically 批评地, 用钻研眼光地
+
 
 ** Reading
 *** 活法
@@ -3128,6 +3195,15 @@ Action plan:
    - This is a good oppotunity for you to involve more components and bring your ideas to the team. If you have any good suggestion to the framework, then bring these out and let others know your opioion. We may not fix this in short term due to resource or other high priority things, but this would let others know your value in the team and would consider give you more oppotunity and responsibility if there has any good place. 
    - This is also a good chance for you to involve design discussion and think about improvements, a good practice chance
    - This is also good for you to learn from others during the daily upgrade review status meeting. Learn from Yubo how to organize and analyze existing issues and make a clear day by day. 
+
+
+*** From Pat Gelsinger
+What's the secret of a succesful career?
+1. *Do you best in the current job position.* Make yourself outstanding
+2. Always *be prepared for the next career* on your desired job position
+
+EMC has better customer relationship and focus
+Intel has more process, discipline and timeline
 
 *** About project and people management
 1. More communication to understand each group's progress and issues

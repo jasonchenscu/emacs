@@ -128,6 +128,20 @@ Ming: commit bug 10439 in revision r46628 - break slave node installation <2010-
 *** Show initiative and leadership
 
 * Project development 												   :WORK:
+** Command Atmos mgmt command
+cossetup -u SecurityAdmin -p '#1Passwd' --userpass 'password' --userinfo n --local
+cosuser -u SecurityAdmin -p 'password' -c --userid MauiAdmin --userpass 'password' --local
+cossysadmin -u SecurityAdmin -p 'password' -a --userid MauiAdmin --authtype local --local
+
+ssh_do 10.32.182.197 'cosrmg -u MauiAdmin_pit -p '\''password'\'' --local         -a --rmgname '\''trunk4-r1'\'' --rmgloc '\''Boston'\'' --transtype unicast         --enablesmtp n --userpass '\''ChangeMe'\''         --host 10.32.182.197 --startip 10.32.182.197 --endip 10.32.182.198         --gateway 10.32.180.1 --subnetmask 255.255.252.0         --hostprefix '\''trunk4-r1s1'\'' --dnsserver 10.32.97.148         --dnssuffix lss.emc.com --ntpserver external --ntpaddress 10.32.72.28 --ssmode manual         --diskratio '\''1:4'\'' --sspattern '\''default_pattern'\''         --placement '\''optimal,optimal'\'' --acttype '\''n,c'\'' --plattype 0'
+
+
+cosuser -u MauiAdmin_pit -p 'password' -c --userid ta1 --userpass 'password' --local
+costenant -c --name mauits --authtype local -u MauiAdmin -p password --local
+costenantadmin -a --userid ta1 --tenid t1 -u MauiAdmin_pit -p 'password' --local
+cossubtenant -c --name st1 --authtype local -u ta1 -p 'password' -t t1
+cosuid -c --name uid1 --subtenid st1 --email a@b.com -u ta1 -p 'password' -t t1
+
 
 ** TODOLIST
 *** TODO Read REST code from Yong and give feedbacks
@@ -141,7 +155,145 @@ Ming: commit bug 10439 in revision r46628 - break slave node installation <2010-
 *** TODO check installation negative test cases in testlink
 
 ** Atmos 1.4 cycle
-*** Installation code refactor
+*** [#A] Slony replication for postgres
+**** Mgmt expection
+
+1st phase - basic installation and replication
+
+next phase
+- performance evaluation
+- think about remote replication
+- advance things
+
+
+forward important sections to Sukwoo, Caihua for the failure scenarios
+
+deliver schedule? 1.3.3?
+
+
+
+**** Random Notes from slony documents
+both Slony-I and PostgreSQL  must be compiled with the --enable-thread-safety option
+
+Slony-I does not automatically propagate schema changes, nor does it have any ability to replicate large objects.
+NTP required
+
+carefully define the replication set, not to have many too big data tables together. see [[http://www.slony.info/documentation/definingsets.html][here]]
+
+the long and short is that having a replication set *consisting only of sequences* is not a particularly good idea.
+
+Principle: Use an unambiguous, stable time zone such as UTC or GMT. Long running transactions are Evil. VACUUM policy needs to be carefully defined.
+
+Need to reconsider VACUUM policy. impact to autovacuum. no need to do vacuum in slony tables? see Cleanup_Thread.c:260
+also look at [[http://www.slony.info/documentation/maintenance.html][here ]]about vacuum inteaction
+
+Before getting too excited about having fallen into some big problem, consider killing and restarting all the slon processes. With a very few exceptions, it is generally not a big deal to kill off and restart the slon processes. Each slon connects to one database for which it is the manager, and then connects to other databases as needed to draw in events. If you kill off a slon, all you do is to interrupt those connections. If a SYNC or other event is sitting there half-processed, there's no problem: the transaction will roll back, and when the slon restarts, it will restart that event from scratch.
+
+It has proven useful to define a slony user for use by Slony-I, as distinct from a generic postgres or pgsql user. 
+Use of ¡°slony¡± PG user to run Slony-I processes is highly recommended
+Separating maintenance roles to multiple users (molly, dumpy, slony) has proven useful.
+
+Failover policies should be planned for ahead of time. The admin failover guides should be created to provide checklists of what to do when certain "unhappy" events take place. This is one of the vital components of any disaster recovery preparations.
+
+slon log need to rotate, need to _register this in commonlogd._
+
+DSN - data source name
+
+You absolutely must not include transaction control commands, particularly BEGIN and COMMIT, inside these DDL scripts.
+
+Normally SYNC is always an incremental thing. The only time that Slony-I "synchronizes" the contents of a table is at the time the subscription is set up, at which time it uses COPY to draw in the entire contents from the provider node.
+
+Note that as far as slon is concerned, there is no "master" or "slave." They are just nodes. 
+
+Check contents of the tables sl_node and sl_path and sl_listen after two nodes have been configured. 
+
+**** Slony source code workflow
+
+During configuration and setup:
+
+In master node:
+
+In slave node:
+
+Slon core threads:
+cheny7@cheny7-desktop ~/source/slony1-2.0.2/src/slon$ tree
+|-- cleanup_thread.c -> Remove old event and log data
+|-- local_listen.c -> Wait for local event and scan for event
+|-- remote_listen.c  (remoteListen_receive_event()) -> Receive event from db tables and pass them to worker thread
+|-- remote_worker.c  (sync_event()) -> Process event provided by remote listen thread
+|-- sync_thread.c -> Generate SYNC event to local
+
+Remote_worker.c 
+- store_confirm_forward -> confirm the received events
+- sync_event -> start process one SYNC
+- 
+
+Remote_listen.c
+- remoteListen_receive_events -> Retrieve all new events from origin nodes
+- 
+
+**** Good testing tools
+In tools directory:
+test_slony_state.pl and test_slony_state-dbi.pl, described in [[http://www.slony.info/documentation/maintenance.html][here]]. this is recommend to use after adding a node to replication.
+
+
+
+**** Slony important links
+
+Important links need to understand:
+1. Concepts: http://www.slony.info/documentation/concepts.html
+2. Failover: http://www.slony.info/documentation/failover.html
+3. Slony important task operations: http://www.slony.info/documentation/addthings.html
+4. Notice when using Slonik: http://www.slony.info/documentation/usingslonik.html
+
+Mgmt related tools and usage which is helpful for debugging and monitoring: 
+1. Monitoring: http://www.slony.info/documentation/monitoring.html
+2. Maintenance: http://www.slony.info/documentation/maintenance.html
+3. Administrate: http://www.slony.info/documentation/adminscripts.html
+
+Sections which can skip since these are out of date:
+1. Slony-I listen paths: http://www.slony.info/documentation/listenpaths.html
+2. Race Conditions and Slony-I: http://www.slony.info/documentation/raceconditions.html
+3. Partitioning Support: http://www.slony.info/documentation/partitioning.html
+4. Slony Upgrade: http://www.slony.info/documentation/slonyupgrade.html
+5. Using Slony-I for PostgreSQL Upgrades: http://www.slony.info/documentation/versionupgrade.html
+
+
+**** First review with Caihua, tests need to do: <2010-03-19 14:18>
+1. Check sl_log1/2 table cleanup mechanism
+2. Check slon master and slave port and network connection behavior
+3. Will subscribe command resync all the data?
+4. Check el_event table ev_minxid, ev_maxxid and ev_xip information, which table has the information?
+5. Understand postgres shutdown param
+
+Failure case:
+1. master postgres down: service unavailable, master slon continue restart, slave slon continue reconnect every 10 seconds
+2. master postgres come back: all service and data back to normal
+3. master slon down: data cannot sync
+4. master slon come back: data become sync
+
+**** Questions
+
+1. Good way to handle sequence id replication?
+   - partition id into master and slave
+   - use a user defined function to replace sequence id in a replicated table
+   - not replicate sequence, just adjust them when slave promote master
+2. What monitoring or troubleshooting tools we need if any error happens in service and data corruption?
+3. When run MOVE SET, what's the potential issues we might meet? locking? no service? data lost?
+4. 
+
+*** [#A] Task module improvement
+
+Yubo suggestion:
+1. Need to think about how to describle the issue properly and push the improvement in the group. 
+2. Do we need to reconsider priority of this since only us understand the details and issues?
+3. What can we learn from policy sync mechanism?
+4. Do not need to rewrite. Just solve the existing issues.
+
+Action items:
+1. Think about above suggestion and send a proposal to Yubo
+
+*** [#B] Installation code refactor
 **** Refactor checklist
 
 find a good way to handle node.cfg, not just use dictionary
@@ -175,6 +327,8 @@ no need to return true since default will return true. just raise exception if i
 
 3. about db param in util functions, will db instance better or db host name better?
 db instance should be better since we may not use db at all in future. module functions should not aware these operations but just focus on the business logic.
+
+4. table driven implementation to tolerate future changes without main code change. See svn #49839 on how to handle more switches OID in the future. (From Ming)
 
 first take out all db operations from main control logic, like genprofile, netconfig
 **** nodecfg consideration from ming
@@ -221,40 +375,7 @@ persist to disk
 simply for other work like dns config or cosrestore, etc.
  
 Ming
-
-
-*** Slony replication for postgres
-
-**** First review with Caihua, tests need to do: <2010-03-19 14:18>
-1. Check sl_log1/2 table cleanup mechanism
-2. Check slon master and slave port and network connection behavior
-3. Will subscribe command resync all the data?
-4. Check el_event table ev_minxid, ev_maxxid and ev_xip information, which table has the information?
-5. Understand postgres shutdown param
-
-Failure case:
-1. master postgres down: service unavailable, master slon continue restart, slave slon continue reconnect every 10 seconds
-2. master postgres come back: all service and data back to normal
-3. master slon down: data cannot sync
-4. master slon come back: data become sync
-
-**** Questions
-
-1. Good way to handle sequence id replication?
-   - partition id into master and slave
-   - use a user defined function to replace sequence id in a replicated table
-   - not replicate sequence, just adjust them when slave promote master
-2. What monitoring or troubleshooting tools we need if any error happens in service and data corruption?
-
-Slony users
-Use of ¡°slony¡± PG user to run Slony-I processes is highly recommended
-Separating maintenance roles to multiple users (molly, dumpy, slony) has proven useful.
-
-*** Postgresql changes
-**** DONE initDB -  --no-locale --encoding=EUC_JP
-	 CLOSED: [2010-02-12 Fri 10:15]
-
-*** setup autostart
+*** [#C] setup autostart
 [root@Jason-130A-001 bin]# export FT_DIR=/etc/autostart/EAS_5.3SP3.patch/Linux/bin
 [root@Jason-130A-001 bin]# export FT_DIR=/etc/autostart/EAS_5.3SP3.patch/Linux
 [root@Jason-130A-001 bin]# vi ft_setup
@@ -447,6 +568,23 @@ This agent has been promoted while it was down.
 It will now be restarted as a primary agent.
 [root@Jason-130A-002 bin]# ping 10.32.171.80
 
+*** [#B] pylib enhancement
+**** TODO Add one stop wiki page for all system mgmt developement process
+**** Team tea session discussion - I 
+
+Denny is owner of pylib. All code change related to pylib need to get Denny's approval before to commit the code.
+
+Action items:
+1. check pylib db disconnection behavior - Caihua
+2. add example to code style - Denny
+3. define prefix word for error code, const - Denny
+4. add pydoc module docstring to code convention - Denny
+5. exception module needs to be refined for details - Denny
+6. move svc_util.py to pylib, seperate into different classes, e.g. fstab, drives, mounts - Longda
+7. refine topology in mauiutility - Jason
+8. need to add log in pylib. investigate how to log in pylib - Yubo
+9. add module division to wiki page - Denny & Jason
+
 
 *** Patch management
 
@@ -471,11 +609,10 @@ Open questions:
 5. can we solve package dependency?
 6. do we get rid of conary css ability?
 7. relation with upgrade? - not scope for this
-8. 
 
-
-
-
+*** Postgresql changes												:ARCHIVE:
+**** DONE initDB -  --no-locale --encoding=EUC_JP
+	 CLOSED: [2010-02-12 Fri 10:15]
 
 
 ** Installtion collection
@@ -783,7 +920,7 @@ vi /var/log/boot.log
 vi /var/log/secure
 vi /srv/pgsql/start.log
 
-find . -name "*" -type f -exec grep -Hn mauiconfig {} \;
+find  -name "*" -type f -exec grep -Hn mauiconfig {} \;
 tar czvf JasonBash.tgz `la`
 find . -type d -name '.svn' -exec rm -rf {} \;
 find . -name "*.rhtml" -type f -exec grep Maui -Hn {} \;
@@ -829,8 +966,7 @@ Master node:
   - id: wangc14@172.16.16.80
   - passwd: ChangeMe
   - su - (passwd: Steel4Celery66)
-
-
+	
 *** Debug UID task creation failure
 
 psql -U postgres system.db
@@ -867,6 +1003,22 @@ rmg.db=# select hostname from nodes where uuid='44454C4C-4200-1050-8047-B3C04F5A
  R610-NYC-008
 (1 row)
 
+
+*** Debug IPMI related issues
+A snippet from the setup script that is part of the installation is below:
+
+   ipmitool lan set 1 ipsrc static
+   ipmitool lan set 1 ipaddr $IPADDR
+   ipmitool lan set 1 netmask $NETMASK
+   ipmitool lan set 1 defgw ipaddr $DEFGW
+   ipmitool lan set 1 access on
+   # UserID2 is defined by the standard as the privileged user, which appears as "root"
+   ipmitool user set password 2 $ROOTPW
+
+ipmictl -H 192.168.13.140 -U root -P passwd power_status
+ipmitool -H 192.168.17.11 -U root -P passwd power status
+
+for i in `seq 1 10`; do ipmictl -H 192.168.13.141 power_status;ipmitool -H 192.168.13.141 -U root -P passwd power status;date;sleep 2; done
 
 
 ** Reviewboard setup notes in Ubuntu
@@ -1200,8 +1352,501 @@ Suggestion:
 1. Assign task by feature to reduce switch
 2. Divide people into feature/release
 3. If too many new hires, need to change process for the management, like code review...
+** Atmos 1.3 cycle 
+*** Atmos capacity reporting mechanisms
 
-** Atmos 1.2.x cycle
+#!/usr/bin/python2.4
+
+import os
+i
+mport statvfs
+st = os.statvfs("/mauimds-db/mds-1fbce6f0-2f6d-4320-a615-916848b05a4c")
+blocksize = st[statvfs.F_BSIZE]
+total_block = st[statvfs.F_BLOCKS]
+free_block = st[statvfs.F_BFREE]
+avail_block = st[statvfs.F_BAVAIL]
+
+print blocksize
+
+print total_block
+
+print free_block
+
+print avail_block
+
+print total_block * blocksize /1024/1024/1024
+
+print free_block * blocksize /1024/1024/1024
+
+print avail_block * blocksize /1024/1024/1024
+
+*** Release management
+1. Branch merge
+2. Smoke test results and bug fixing
+3. Load testing
+4. Go through high risk projects
+
+*** DONE DB new deployment upgrade
+	 CLOSED: [2009-09-02 Wed 13:11]
+Assumption:
+1. Cannot add node during upgrade
+
+
+Refine:
+1. Migrate alert data in postSystem stage
+2. Move node schedule tasks in postUpgrade stage
+3. Will CM reload the same UUID task twice?
+4. Configure postgresql/pgreplicate in preSystem stage
+5. MDS remote replication upgrade consideration. how to check previous remote mds replication? - Karthik clarify
+6. SNMP upgrade - Chunjie 3 days
+7. Subtenant NAS - Caihua ? days
+8. Document mgmt db operations are not allowed during upgrade
+*** DONE build RPM package for CLI tools
+	 CLOSED: [2009-09-02 Wed 13:11]
+*** DONE detail test scope and target -- need to confirm with Arun
+	 CLOSED: [2009-07-21 Tue 20:17]
+scope: 4 RMG 200 nodes or even 6-8 RMG 300 nodes
+
+understand exist issues and limitation: db size, db load, response time, 
+
+focus on these issues and simulate similar testbed to get test data
+
+**** Test db availability during pgcluster data recovery process
+Remind Xin about his improvement in pgpool
+*** DONE Remove Compression+Dedup support in GUI/CLI installation -> To Chunjie
+	 CLOSED: [2009-08-11 Tue 12:59]
+
+** DB testing notes
+*** Postgres testing tips
+**** Analyse query speed
+http://drupal.org/node/343082
+The main advantage of PostgreSQL over MySQL is the ability to log long-running queries, have full access to statistics on index/disc use and optimize queries. This is a long issue to discuss. For example, UPDATEs can be written in batches, which boosts performance. Choose:
+fsync = off
+
+At first, you need to set shared memory to a good level and tune Postgresql.conf to make sure that indexes are loaded in memory. Then all your queries should run in less than 30 ms. Make sure you are using pgAdmin3 graphical interface. It has good representation of statistics on index/seqential scans.
+
+I am presently migrating a 500.000 user messages board from PhpBB to Drupal. I log every query > 30 ms and there is a bunch of them.
+
+In postgresql.conf, set:
+log_min_duration_statement = 30
+
+**** Test disks for postgresql
+http://www.westnet.com/~gsmith/content/postgresql/pg-disktesting.htm
+
+*** ATT typical setup data
+1.2.1/1.2.2 version
+
+No database connection available
+
+[root@dfw01-is01-001 ~]# netstat -natp |grep 5432 |grep ESTABLISHED | wc -l
+197
+[root@dfw01-is01-001 ~]# netstat -natp |grep 5432 |grep ESTABLISHED | grep pgreplicate | wc -l
+141
+[root@dfw01-is01-001 ~]# netstat -natp |grep 5432 |grep ESTABLISHED | grep -v pgreplicate | wc -l
+67
+
+[root@dfw01-is01-001 ~]# netstat -natp |grep 5432 |grep ESTABLISHED | grep -v pgreplicate | grep -v "172.31.30.11:5432       172.31.30.11:"
+tcp        0      0 172.31.30.11:5432       172.31.30.25:55700      ESTABLISHED 27483/postgres: pos 
+tcp        0      0 172.31.30.11:59652      172.31.30.11:5432       ESTABLISHED 2504/ruby           
+tcp        0      0 172.31.30.11:5432       172.31.30.15:44281      ESTABLISHED 27815/postgres: pos 
+tcp        0      0 172.31.30.11:5432       172.31.30.31:56881      ESTABLISHED 27689/postgres: pos 
+tcp        0      0 172.31.30.11:5432       172.31.30.34:40089      ESTABLISHED 27685/postgres: pos 
+tcp        0      0 172.31.30.11:5432       172.31.30.35:55761      ESTABLISHED 27465/postgres: pos 
+tcp        0      0 172.31.30.11:5432       172.31.30.12:56497      ESTABLISHED 27697/postgres: pos 
+tcp        0      0 172.31.30.11:5432       172.31.30.32:40975      ESTABLISHED 27516/postgres: pos 
+tcp        0      0 172.31.30.11:5432       172.31.30.24:33864      ESTABLISHED 27467/postgres: pos 
+tcp        0      0 172.31.30.11:5432       172.31.30.35:55769      ESTABLISHED -                   
+tcp        0      0 172.31.30.11:58742      172.31.30.11:5432       ESTABLISHED 4240/cm             
+tcp        0      0 172.31.30.11:5432       172.31.30.13:46334      ESTABLISHED 27565/postgres: pos 
+tcp        0      0 172.31.30.11:5432       172.31.30.14:60623      ESTABLISHED 27687/postgres: pos 
+tcp        0      0 172.31.30.11:5432       172.31.30.26:55065      ESTABLISHED 27693/postgres: pos 
+tcp        0      0 172.31.30.11:55206      172.31.30.12:5432       ESTABLISHED -                   
+tcp        0      0 172.31.30.11:5432       172.31.30.33:52925      ESTABLISHED 27632/postgres: pos 
+tcp        0      0 172.31.30.11:5432       172.31.30.23:59384      ESTABLISHED 27566/postgres: pos 
+tcp        0      0 172.31.30.11:5432       172.31.30.16:35929      ESTABLISHED 27884/postgres: pos 
+tcp        0      0 172.31.30.11:5432       172.31.30.22:37951      ESTABLISHED 27876/postgres: pos 
+tcp        0      0 172.31.30.11:5432       172.31.46.11:54710      ESTABLISHED 16620/postgres: pos 
+tcp        0      0 172.31.30.11:5432       172.31.30.21:50370      ESTABLISHED 27703/postgres: pos 
+
+[root@dfw01-is01-001 ~]# netstat -natp |grep 5432 |grep ESTABLISHED | grep -v pgreplicate | grep -v "172.31.30.11:5432       172.31.30.11:" | wc -l
+19
+
+[root@dfw01-is01-001 8.2]# pwd
+/srv/pgsql/8.2
+[root@dfw01-is01-001 8.2]# du -sh
+1.2G	
+[root@dfw01-is01-001 8.2]# du -h
+12K	./data/pg_multixact/offsets
+12K	./data/pg_multixact/members
+28K	./data/pg_multixact
+3.9M	./data/base/10819
+3.9M	./data/base/10818
+1.2G	./data/base/16384
+3.9M	./data/base/1
+1.2G	./data/base
+13M	./data/pg_clog
+4.9M	./data/pg_subtrans
+312K	./data/global
+4.0K	./data/pg_xlog/archive_status
+33M	./data/pg_xlog
+4.0K	./data/pg_tblspc
+4.0K	./data/pg_twophase
+1.2G	./data
+48K	./etc
+1.2G	.
+
+[root@dfw01-is01-001 ~]# #pgdbrestore --file=/srv/pgsql/backup/system.db.tar.gz
+[root@dfw01-is01-001 ~]# cd /srv/pgsql/8.2/
+[root@dfw01-is01-001 8.2]# du -sh
+35M	.
+
+postgres=# DROP DATABASE "system.db" ;
+DROP DATABASE
+postgres=# CREATE DATABASE "system.db";
+CREATE DATABASE
+postgres=# \q
+[root@dfw01-is01-001 backup]# pg_restore -U postgres -d system.db system.db.tar
+[root@dfw01-is01-001 8.2]# du -sh
+53M	.
+
+2009-06-27 09:22:36,616 INFO cosprovision:156 Updating node database and node table in system db
+2009-06-29 05:58:20,423 ERROR dblib.py:39 can't set datestyle to ISO
+2009-06-29 05:58:20,423 ERROR cosprovision:388 DB ACCESS ERROR
+
+system.db=# UPDATE nodecfgs SET services = 'CLIENT,WS,CC,JS,MDLS,AS,RMS,SPREAD,MDS,SS' where id=44;
+
+ 43 | is01-001       | CLIENT,WS,CC,JS,MDLS,AS,RMS,SPREAD,MDS,SS
+ 44 | is01-002       | CLIENT,WS,CC,JS,MDLS,AS,PGS,RMS,SPREAD,MDS,SS
+
+system.db=# select id, call, input, status, retval from tasks where id > 630 order by id
+;
+ id  |                              call                              |                                                                     input                                                                      | status | retval 
+-----+----------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------+--------+--------
+ 643 | smtpconf                                                       | -f admin@maui.emc.com -s smtp01.dfw01.emcatmos.com                                                                                             |      3 |      0
+ 644 |                                                                |                                                                                                                                                |      2 |      1
+ 645 | cosprovision                                                   | precheck                                                                                                                                       |      3 |      0
+ 646 | cosprovision                                                   | netconfig --nodeuuid=44454C4C-5600-1054-8054-B6C04F524631                                                                                      |      3 |      0
+ 647 | cosprovision                                                   | genprofile --cmd=add_rmg --siteuuid=c99507a1-8575-4240-b713-d2edbc51d289 --seguuid=cf66049b-6515-4ecf-9791-23eeb94350b5 --dbhost=172.31.30.11  |      3 |      0
+ 648 | cosprovision                                                   | srvconfig --cmd=setup --services=all                                                                                                           |      3 |      0
+ 649 | cosprovision                                                   | partition --cmd=create                                                                                                                         |      3 |      0
+ 650 | cosprovision                                                   | updatecfg --srv=all                                                                                                                            |      2 |      0
+ 651 | update_fs_info                                                 |                                                                                                                                                |      1 |      0
+ 652 | snmp_sys_uptime                                                |                                                                                                                                                |      1 |      0
+ 653 | /usr/local/maui/ganglia/lib/ganglia/python_modules/maui_svc.py | gen_config                                                                                                                                     |      1 |      0
+(11 rows)
+
+Usage:
+To dump a database:
+$ pg_dump mydb > db.out
+
+To reload this database:
+$ psql -d database -f db.out
+
+To dump a database called mydb that contains large objects to a tar file:
+$ pg_dump -Ft -b mydb > db.tar
+
+To reload this database (with large objects) to an existing database called newdb:
+$ pg_restore -d newdb db.tar
+
+dump database in compressed include blobs show progress
+pg_dump -i -h someserver -p 5432 -U someuser -F c -b -v -f "/somepath/somedb.backup" somedb
+dump database in sql_ascii encoding
+pg_dump -i -h someserver -p 5432 -U someuser -E sql_ascii -F c -b -v -f "/somepath/somedb.backup" somedb
+backup pgagent schema of postgres db in plain text copy format, maintain oids
+pg_dump -i -h someserver -p 5432 -U postgres -F p -o -v -n pgagent -f "C:/pgagent.sql" postgres
+dump all databases - note pg_dumpall can only output to plain text
+pg_dumpall -i -h someserver -p 5432 -U someuser -c -o -f "/somepath/alldbs.sql"
+
+
+CMLOG:"Mon Jun 29 07:03:19 2009":MAUI:is01-001:13169:1249986912:"Mon Jun 29 07:03:19 2009":0:CM:cm:4:0:ses_ctrl.cxx:monitor:129:Failed to get ses flag from DB. ret 2006
+CMLOG:"Mon Jun 29 07:03:19 2009":MAUI:is01-001:13169:1249986912:"Mon Jun 29 07:03:19 2009":0:CM:cm:3:0:sysMgmtDB.cxx:getSesFlag:1198:Failed to get SES flag for node: 44454C4C-5600-1054-8054-B6C04F524631.
+CMLOG:"Mon Jun 29 07:02:19 2009":MAUI:is01-001:13169:1249986912:"Mon Jun 29 07:02:19 2009":0:CM:cm:4:0:ses_ctrl.cxx:monitor:129:Failed to get ses flag from DB. ret 2006
+CMLOG:"Mon Jun 29 07:02:19 2009":MAUI:is01-001:13169:1249986912:"Mon Jun 29 07:02:19 2009":0:CM:cm:3:0:sysMgmtDB.cxx:getSesFlag:1198:Failed to get SES flag for node: 44454C4C-5600-1054-8054-B6C04F524631.
+CMLOG:"Mon Jun 29 07:01:19 2009":MAUI:is01-001:13169:1249986912:"Mon Jun 29 07:01:19 2009":0:CM:cm:4:0:ses_ctrl.cxx:monitor:129:Failed to get ses flag from DB. ret 2006
+CMLOG:"Mon Jun 29 07:01:19 2009":MAUI:is01-001:13169:1249986912:"Mon Jun 29 07:01:19 2009":0:CM:cm:3:0:sysMgmtDB.cxx:getSesFlag:1198:Failed to get SES flag for node: 44454C4C-5600-1054-8054-B6C04F524631.
+CMLOG:"Mon Jun 29 07:00:45 2009":MAUI:is01-001:13169:1392662880:"Mon Jun 29 07:00:45 2009":0:CM:cm:6:0:mgmtlib.cxx:_capkeyRefresh:418:The CM should not invoke capkeyRefresh. Remove the timer.
+CMLOG:"Mon Jun 29 07:00:45 2009":MAUI:is01-001:13169:47489715496320:"Mon Jun 29 07:00:45 2009":0:CM:cm:6:0:mgmtlib.cxx:itimerHandler:575:Handling signal 14 to refresh Capkeys
+
+ sqlite3 /var/local/maui/sysmgmtdb/ses_db "select * from disks"
+
+After one day, db size:
+[root@dfw01-is01-001 ~]# du -sh /srv/pgsql/8.2/
+81M	/srv/pgsql/8.2/
+
+**** Network information
+AT&T Dallas MaaS					
+DFW-IS1					Linux
+Host Name	Public IP	Private IP	RMG Name	Location	Login
+dfw01-is01-001	172.31.30.11	192.168.11.11	dfw01-rmg01	DFW	root
+dfw01-is01-002	172.31.30.12	192.168.11.12	dfw01-rmg01	DFW	root
+dfw01-is01-003	172.31.30.13	192.168.11.13	dfw01-rmg01	DFW	root
+dfw01-is01-004	172.31.30.14	192.168.11.14	dfw01-rmg01	DFW	root
+dfw01-is01-005	172.31.30.15	192.168.11.15	dfw01-rmg01	DFW	root
+dfw01-is01-006	172.31.30.16	192.168.11.16	dfw01-rmg01	DFW	root
+					Linux
+DFW-IS2				Location	Login
+dfw01-is02-001	172.31.30.21	192.168.11.11	dfw01-rmg01	DFW	root
+dfw01-is02-002	172.31.30.22	192.168.11.12	dfw01-rmg01	DFW	root
+dfw01-is02-003	172.31.30.23	192.168.11.13	dfw01-rmg01	DFW	root
+dfw01-is02-004	172.31.30.24	192.168.11.14	dfw01-rmg01	DFW	root
+dfw01-is02-005	172.31.30.25	192.168.11.15	dfw01-rmg01	DFW	root
+dfw01-is02-006	172.31.30.26	192.168.11.16	dfw01-rmg01	DFW	root
+					Linux
+DFW-IS3				Location	Login
+dfw01-is03-001	172.31.30.31	192.168.11.11	dfw01-rmg01	DFW	root
+dfw01-is03-002	172.31.30.32	192.168.11.12	dfw01-rmg01	DFW	root
+dfw01-is03-003	172.31.30.33	192.168.11.13	dfw01-rmg01	DFW	root
+dfw01-is03-004	172.31.30.34	192.168.11.14	dfw01-rmg01	DFW	root
+dfw01-is03-005	172.31.30.35	192.168.11.15	dfw01-rmg01	DFW	root
+dfw01-is03-006	172.31.30.36	192.168.11.16	dfw01-rmg01	DFW	root
+					
+Dallas General Configuration					
+Gateway	172.31.30.1				
+Mask	255.255.255.0				
+DNS1	172.31.16.53				
+DNS2	172.31.16.54				
+NTP1	ntp01.dfw01.emcatmos.com				
+NTP2	ntp02.dfw01.emcatmos.com				
+SMTP1	smtp01.dfw01.emcatmos.com				
+SMTP2	smtp02.dfw01.emcatmos.com				
+Email Alerts	dco@emcatmos.com
+			
+Domain	dfw01.emcatmos.com				
+
+AT&T Ashburn MaaS					
+IAD-IS1					Linux
+Host Name	Public IP	Private IP	RMG Name	Location	Login
+is01-001	172.31.46.11	192.168.11.11	iad01-rmg01	IAD	root
+is01-002	172.31.46.12	192.168.11.12	iad01-rmg01	IAD	root
+is01-003	172.31.46.13	192.168.11.13	iad01-rmg01	IAD	root
+is01-004	172.31.46.14	192.168.11.14	iad01-rmg01	IAD	root
+is01-005	172.31.46.15	192.168.11.15	iad01-rmg01	IAD	root
+is01-006	172.31.46.16	192.168.11.16	iad01-rmg01	IAD	root
+					Linux
+IAD-IS2				Location	Login
+is02-001	172.31.46.21	192.168.11.11	iad01-rmg01	IAD	root
+is02-002	172.31.46.22	192.168.11.12	iad01-rmg01	IAD	root
+is02-003	172.31.46.23	192.168.11.13	iad01-rmg01	IAD	root
+is02-004	172.31.46.24	192.168.11.14	iad01-rmg01	IAD	root
+is02-005	172.31.46.25	192.168.11.15	iad01-rmg01	IAD	root
+is02-006	172.31.46.26	192.168.11.16	iad01-rmg01	IAD	root
+					Linux
+IAD-IS3				Location	Login
+is03-001	172.31.46.31	192.168.11.11	iad01-rmg01	IAD	root
+is03-002	172.31.46.32	192.168.11.12	iad01-rmg01	IAD	root
+is03-003	172.31.46.33	192.168.11.13	iad01-rmg01	IAD	root
+is03-004	172.31.46.34	192.168.11.14	iad01-rmg01	IAD	root
+is03-005	172.31.46.35	192.168.11.15	iad01-rmg01	IAD	root
+is03-006	172.31.46.36	192.168.11.16	iad01-rmg01	IAD	root
+					
+Dallas General Configuration					
+Gateway	172.31.46.1				
+Mask	255.255.255.0				
+DNS1	172.31.16.53				
+DNS2	172.31.16.54				
+NTP1	ntp01.iad01.emcatmos.com				
+NTP2	ntp02.iad01.emcatmos.com				
+SMTP1	smtp01.iad01.emcatmos.com				
+SMTP2	smtp02.iad01.emcatmos.com				
+Email Alerts	dco@emcatmos.com
+			
+Domain	iad01.emcatmos.com				
+
+RMG1 and RMG2 RTT delay is 40 ms
+
+[root@is01-001 etc]# ping 172.31.30.11
+PING 172.31.30.11 (172.31.30.11) 56(84) bytes of data.
+64 bytes from 172.31.30.11: icmp_seq=0 ttl=64 time=40.0 ms
+64 bytes from 172.31.30.11: icmp_seq=1 ttl=64 time=39.8 ms
+64 bytes from 172.31.30.11: icmp_seq=2 ttl=64 time=39.8 ms
+
+[root@is01-001 etc]# ping 172.31.46.21
+PING 172.31.46.21 (172.31.46.21) 56(84) bytes of data.
+64 bytes from 172.31.46.21: icmp_seq=0 ttl=64 time=3.79 ms
+64 bytes from 172.31.46.21: icmp_seq=1 ttl=64 time=0.126 ms
+64 bytes from 172.31.46.21: icmp_seq=2 ttl=64 time=0.119 ms
+
+*** Remove new RMG master node
+Version 1.3.0
+1. Modify database nodecfgs table, remove target node hostname in below items:
+   - seg_heads
+   - mdls_list
+   - as_list
+   - rms_list
+   - rm_data_source
+   - rm_metric_src_list
+   - rms_rmg_list
+   - rms_node_list
+   - spread_source
+
+System.db=# UPDATE clusters SET prefixname = 'iad01-is01' where id=8;
+system.db=# UPDATE nodes SET hostname = 'iad01-is01-001' where id=23;
+system.db=# UPDATE nodecfgs SET hostname = 'iad01-is01-001' where id = 43;
+system.db=# UPDATE nodecfgs SET hostname = 'iad01-is01-002' where id = 44;
+system.db=# UPDATE nodecfgs SET hostname = 'iad01-is01-003' where id = 45;
+system.db=# UPDATE nodecfgs SET hostname = 'iad01-is01-004' where id = 46;
+system.db=# UPDATE nodecfgs SET hostname = 'iad01-is01-005' where id = 47;
+system.db=# UPDATE nodecfgs SET hostname = 'iad01-is01-006' where id = 48;
+system.db=# UPDATE nodecfgs SET seg_heads = 'dfw01-is01-001,dfw01-is02-001,dfw01-is03-001,iad01-is01-001';
+system.db=# UPDATE nodecfgs SET mdls_list = 'dfw01-is01-002,dfw01-is01-001,iad01-is01-001';
+system.db=# UPDATE nodecfgs SET as_list = 'dfw01-is01-002,dfw01-is01-001,iad01-is01-001';
+system.db=# UPDATE nodecfgs SET rms_list = 'dfw01-is01-001:DFW,dfw01-is01-002:DFW,dfw01-is01-003:DFW,dfw01-is01-004:DFW,dfw01-is01-005:DFW,dfw01-is01-006:DFW,dfw01-is02-001:DFW,dfw01-is02-002:DFW,dfw01-is02-003:DFW,dfw01-is02-004:DFW,dfw01-is02-005:DFW,dfw01-is02-006:DFW,dfw01-is03-001:DFW,dfw01-is03-002:DFW,dfw01-is03-003:DFW,dfw01-is03-004:DFW,dfw01-is03-005:DFW,dfw01-is03-006:DFW,iad01-is01-001:IAD,iad01-is01-002:IAD,iad01-is01-003:IAD,iad01-is01-004:IAD,iad01-is01-005:IAD,iad01-is01-006:IAD';
+system.db=# UPDATE nodecfgs SET rm_data_source = 'dfw01-rmg01,dfw01-is01-001,dfw01-is01-002,dfw01-is02-001,dfw01-is03-001;iad01-rmg01,iad01-is01-001,iad01-is01-002';
+system.db=# UPDATE nodecfgs SET rm_metric_src_list = 'dfw01-rmg01;iad01-rmg01';
+system.db=# UPDATE nodecfgs SET rms_rmg_list = 'dfw01-rmg01,dfw01-is01-001,dfw01-is01-002;iad01-rmg01,iad01-is01-001,iad01-is01-002';
+system.db=# UPDATE nodecfgs SET rms_node_list = 'dfw01-rmg01,dfw01-is01-003,dfw01-is01-004,dfw01-is01-005,dfw01-is01-006,dfw01-is02-003,dfw01-is02-004,dfw01-is02-005,dfw01-is02-006,dfw01-is03-003,dfw01-is03-004,dfw01-is03-005,dfw01-is03-006;iad01-rmg01,iad01-is01-003,iad01-is01-004,iad01-is01-005,iad01-is01-006';
+system.db=# UPDATE nodecfgs SET spread_source = 'iad01-is01-001:172.31.46.11:192.168.11.11:172.31.46.255;iad01-is01-002:172.31.46.12:192.168.11.12:172.31.46.255 dfw01-is03-001:172.31.30.31:192.168.11.11:172.31.30.255;dfw01-is03-002:172.31.30.32:192.168.11.12:172.31.30.255 dfw01-is02-001:172.31.30.21:192.168.11.11:172.31.30.255;dfw01-is02-002:172.31.30.22:192.168.11.12:172.31.30.255 dfw01-is01-001:172.31.30.11:192.168.11.11:172.31.30.255;dfw01-is01-002:172.31.30.12:192.168.11.12:172.31.30.255';
+system.db=# UPDATE nodecfgs SET services = 'CLIENT,WS,CC,JS,RMS,SPREAD,MDS,SS' where hostname = 'iad01-is01-002';
+
+2. Reconfigure every node in the system
+
+Backup old node config file.
+[root@dfw01-is02-006 ~]# cd /etc/maui
+[root@dfw01-is02-006 maui]# cp node.cfg node.cfg.bak
+
+Check pxe log about genprofile command
+[root@dfw01-is02-006 maui]# genprofile --cmd=load_from_db --dbhost=172.31.30.11 --siteuuid=de599df8-8f9a-4966-8032-4c75c5999d86 --seguuid=b28ba40e-6927-4839-a0d5-7a2ab04d9587
+
+Modify new generated node cfg. Here we don't want to partition disks again. So we don't need to reconfigure SS and MDS services. 
+[root@dfw01-is02-006 maui]# vimdiff node.cfg node.cfg.bak 
+Move SS_NumDisks, MDS_Ports, SS_DiskList, SS_DiskLocation from old node.cfg to new node.cfg. Remove MDS,SS from Services in new node.cfg.
+[root@dfw01-is02-006 maui]# mauiconfig -f node.cfg
+[root@dfw01-is02-006 maui]# mauictl restart
+[root@dfw01-is02-006 maui]# mauictl status
+Add MDS,SS back to Services in new node.cfg
+
+Change in new node:
+js_cfg.xml:44:    <entry key="JsSet" value="iad01-is01-001,is01-002" />
+mds/10410/mds_cfg.xml:48:  <entry key="masterHost" value="is01-002"/>
+mds/10608/mds_cfg.xml:48:  <entry key="masterHost" value="is01-002"/>
+mds/10606/mds_cfg.xml:48:  <entry key="masterHost" value="is01-002"/>
+mds/10601/mds_cfg.xml:48:  <entry key="masterHost" value="is01-002"/>
+
+Reinitialize lockboxes and dump/restore data from lockboxes:
+
+3. Issues
+Core dump:
+Core was generated by `/usr/local/maui/bin/mauisvcmgr -s mauimds -q mauimds_getmdsmaster'.
+Core was generated by `/usr/local/maui/bin/mauisvcmgr -s mauimds -q mauimds_getmdsslave'.
+Core was generated by `/usr/local/maui/bin/mauisvcmgr -s mauimds -q mauimds_getmdsdown'.
+
+*** Cybercluster troubleshooting
+There are two errors which would cause slave db start hangs:
+1. Client close connection unexpected. but the transaction id still not equal to ZERO which cause cybercluster hang to recover.
+
+[root@auto3-130A-001 ~]# ps -ef | grep pg
+root      8494  8288  0 15:16 pts/0    00:00:00 grep pg
+postgres 21063     1  0 14:57 ?        00:00:00 /usr/bin/pgreplicate -D /srv/pgsql/8.2/etc -l
+root     21206     1  0 14:57 ?        00:00:00 /bin/sh /usr/local/maui/bin/mmon pgreplicate --cleanup=service postgresql restart pgreplicate --pidfile=/srv/pgsql/8.2/etc/pgreplicate.pid --restart=1
+postgres 21298     1  0 14:57 ?        00:00:01 /usr/bin/postgres -D /srv/pgsql/8.2/data -i
+postgres 21348 21298  0 14:57 ?        00:00:00 /usr/bin/postgres -D /srv/pgsql/8.2/data -i
+
+[root@auto3-130A-001 ~]# gdb --pid=21063 /usr/bin/pgreplicate 
+GNU gdb 6.7.1
+....
+
+(gdb) info thread
+  8 Thread 0x4164e940 (LWP 21066)  0x00007fab5db63511 in nanosleep () from /lib64/libc.so.6
+  7 Thread 0x40f26940 (LWP 21067)  0x00007fab5db95da2 in select () from /lib64/libc.so.6
+  6 Thread 0x41512940 (LWP 21068)  0x00007fab5db95da2 in select () from /lib64/libc.so.6
+  5 Thread 0x41aa7940 (LWP 21346)  0x00007fab5db95da2 in select () from /lib64/libc.so.6
+  4 Thread 0x41027940 (LWP 24602)  0x00007fab5db95da2 in select () from /lib64/libc.so.6
+  3 Thread 0x41128940 (LWP 27284)  0x00007fab5db95da2 in select () from /lib64/libc.so.6
+  2 Thread 0x41ba8940 (LWP 27613)  0x00007fab5db95da2 in select () from /lib64/libc.so.6
+  1 Thread 0x7fab5f527700 (LWP 21063)  0x00007fab5db95da2 in select () from /lib64/libc.so.6
+(gdb) t 8
+[Switching to thread 8 (Thread 0x4164e940 (LWP 21066))]#0  0x00007fab5db63511 in nanosleep () from /lib64/libc.so.6
+(gdb) p Host_Tbl_Begin->transaction_count
+$1 = 1
+(gdb) set print pretty on
+(gdb) p *Host_Tbl_Begin
+$2 = {
+  useFlag = 2, 
+  same_as_replicator = 1 '\001', 
+  hostName = "auto3-130A-001", '\0' <repeats 113 times>, 
+  resolvedName = "10.32.109.102\000\000\000\000\000\000\000\000\000\000", 
+  port = 5432, 
+  recoveryPort = 7001, 
+  hostNum = 1, 
+  transaction_count = 1, 
+  retry_count = 0, 
+  n_ddlstmt = 108, 
+  n_begin = 1, 
+  n_commit = 0, 
+  n_rollback = 0, 
+  n_insert = 0, 
+  n_update = 7, 
+  n_delete = 0
+}
+(gdb) set Host_Tbl_Begin->transaction_count=0
+(gdb) c
+Continuing.
+[New Thread 0x408d2940 (LWP 24082)]
+[Thread 0x408d2940 (LWP 24082) exited]
+[New Thread 0x408d2940 (LWP 24085)]
+[Thread 0x408d2940 (LWP 24085) exited]
+
+On slave node, it will first hang at below msgs:
+Start in recovery mode!
+Please wait until a data synchronization finishes from Master DB...
+1st recovery step of [global] directory...Warning: Permanently added 'auto3-130a-001,10.32.109.102' (RSA) to the list of known hosts.^M
+OK
+1st recovery step of [base] directory...OK
+1st recovery step of [pg_clog] directory...OK
+1st recovery step of [pg_xlog] directory...OK
+1st sync_table_space OK
+=====================================================
+
+After master change transaction to ZERO and continue, slave node will contine the recovery process and everything works well!
+2nd recovery step of [global] directory...OK
+2nd recovery step of [base] directory...OK
+2nd recovery step of [pg_clog] directory...OK
+2nd recovery step of [pg_xlog] directory...OK
+2nd sync_table_space OK
+2nd recovery successed
+2009-10-28 15:22:18 UTC    1  LOG:  PGR_Do_Master_Main(): PGR_Create_Socket_Bind succeeded
+
+2. Client keep transaction too long and during this time, slave node reboot master node and it will cause both slave recover and db client hangs:
+Troubleshooting:
+From master node /var/log/message/, we can get below db restart time and information:
+
+local7.notice<189>: Oct 28 06:15:50 localhost postgresql: etc -l & startup succeeded
+user.notice<13>: Oct 28 06:15:54 localhost mmon[24452]: monitor "pgreplicate[24301]" via "/srv/pgsql/8.2/etc/pgreplicate.pid" interval "10" seconds restart "service postgresql restart pgreplicate"
+local7.notice<189>: Oct 28 06:15:55 localhost postgresql: data' -o '-i' start & startup succeeded
+
+From master node DB log /srv/pgsql/8.2/log/postgresql-2009-10-28.log, we can see below transaction not finished:
+
+2009-10-28 06:16:21 UTC trunk4A-004(34067) rmg.db 4ae7e1b5.655d 2 authentication LOG:  connection authorized: user=postgres database=rmg.db
+2009-10-28 06:16:21 UTC trunk4A-004(34067) rmg.db 4ae7e1b5.655d 3 SET LOG:  duration: 0.656 ms  statement: SET DATESTYLE TO 'ISO'
+2009-10-28 06:16:21 UTC trunk4A-004(34067) rmg.db 4ae7e1b5.655d 4 SHOW LOG:  duration: 0.259 ms  statement: SHOW client_encoding
+2009-10-28 06:16:21 UTC trunk4A-004(34067) rmg.db 4ae7e1b5.655d 5 SHOW LOG:  duration: 0.069 ms  statement: SHOW default_transaction_isolation
+2009-10-28 06:16:21 UTC trunk4A-004(34067) rmg.db 4ae7e1b5.655d 6 SET LOG:  duration: 0.307 ms  statement: BEGIN; SET TRANSACTION ISOLATION LEVEL READ COMMITTED
+2009-10-28 06:16:21 UTC trunk4A-004(34067) rmg.db 4ae7e1b5.655d 7 SELECT LOG:  duration: 0.000 ms  statement: SELECT * FROM tasks WHERE scope=E'Node' and scopeuuid=E'502CC302-83FE-5CFE-CEED-B13A55819393' and call=E'update_fs_info'
+2009-10-28 06:16:21 UTC trunk4A-004(34067) rmg.db 4ae7e1b5.655d 8 INSERT LOG:  duration: 0.000 ms  statement: INSERT INTO tasks (uuid, scopeuuid, tasktype, scope, call, starttime, status, scheduled, interval) VALUES (E'fa687c69-ecc7-4aea-bb70-342f357caa14',E'502CC302-83FE-5CFE-CEED-B13A55819393',E'0',E'Node',E'update_fs_info','2009-10-28T06:16:43.790859',E'0',E'1',E'3600')
+
+[root@trunk4A-001 ~]# ps axf | grep transaction
+17425 pts/2    S+     0:00          \_ grep transaction
+25949 ?        Ss     0:00  \_ postgres: postgres rmg.db trunk4A-004(34067) idle in transaction
+26590 ?        Ss     0:00  \_ postgres: postgres rmg.db trunk4A-003(56757) idle in transaction
+
+From the client node side we can see below command hold the transaction:
+[root@trunk4A-004 ~]# ps -ef | grep cos
+root     11535  3974  0 06:15 ?        00:00:00 /usr/bin/python2.4 /usr/local/maui/provision/cosprovision partition --cmd=create
+root     17413 17299  0 06:55 pts/0    00:00:00 grep cos
+[root@trunk4A-004 ~]# netstat -anpt | grep 5432
+tcp        0      0 10.32.182.200:54219         10.32.182.197:5432          TIME_WAIT   -                   
+tcp        0      0 10.32.182.200:34065         10.32.182.197:5432          ESTABLISHED 11535/python2.4     
+tcp        0      0 10.32.182.200:54231         10.32.182.197:5432          TIME_WAIT   -                   
+tcp        0      0 10.32.182.200:54242         10.32.182.197:5432          TIME_WAIT   -                   
+tcp        0      0 10.32.182.200:34067         10.32.182.197:5432          ESTABLISHED 11535/python2.4     
+tcp        0      0 10.32.182.200:54237         10.32.182.197:5432          TIME_WAIT   -                   
+tcp        0      0 10.32.182.200:54230         10.32.182.197:5432          TIME_WAIT   -                   
+
+Solution:
+1. Reduce client db connection and operation time and close the connection asap.
+2. Fix cybercluster issue on check transaction count. However, this may make slave data lost for some transactions.
+
+** Atmos 1.2.x cycle												:ARCHIVE:
 *** DONE Installation getwell plan and roadmap -- meeting with Chunjie/Yubo
    CLOSED: [2009-07-21 Tue 22:30]
 Installation
@@ -1289,7 +1934,7 @@ Short term
 - many changes to web service, client and mds side
 
 
-** Mgmt DB roadmap TODO list
+** Mgmt DB roadmap TODO list										:ARCHIVE:
 *** CANCELED Think about divide db data and log to different disks which we can leverage external DAE disks
 	 CLOSED: [2010-02-12 Fri 11:24]
 
@@ -1627,498 +2272,6 @@ what information has lost?
 
 5. Provide scripts to dump node.cfg to nodecfg table
 
-** DB testing notes
-*** Postgres testing tips
-**** Analyse query speed
-http://drupal.org/node/343082
-The main advantage of PostgreSQL over MySQL is the ability to log long-running queries, have full access to statistics on index/disc use and optimize queries. This is a long issue to discuss. For example, UPDATEs can be written in batches, which boosts performance. Choose:
-fsync = off
-
-At first, you need to set shared memory to a good level and tune Postgresql.conf to make sure that indexes are loaded in memory. Then all your queries should run in less than 30 ms. Make sure you are using pgAdmin3 graphical interface. It has good representation of statistics on index/seqential scans.
-
-I am presently migrating a 500.000 user messages board from PhpBB to Drupal. I log every query > 30 ms and there is a bunch of them.
-
-In postgresql.conf, set:
-log_min_duration_statement = 30
-
-**** Test disks for postgresql
-http://www.westnet.com/~gsmith/content/postgresql/pg-disktesting.htm
-
-*** ATT typical setup data
-1.2.1/1.2.2 version
-
-No database connection available
-
-[root@dfw01-is01-001 ~]# netstat -natp |grep 5432 |grep ESTABLISHED | wc -l
-197
-[root@dfw01-is01-001 ~]# netstat -natp |grep 5432 |grep ESTABLISHED | grep pgreplicate | wc -l
-141
-[root@dfw01-is01-001 ~]# netstat -natp |grep 5432 |grep ESTABLISHED | grep -v pgreplicate | wc -l
-67
-
-[root@dfw01-is01-001 ~]# netstat -natp |grep 5432 |grep ESTABLISHED | grep -v pgreplicate | grep -v "172.31.30.11:5432       172.31.30.11:"
-tcp        0      0 172.31.30.11:5432       172.31.30.25:55700      ESTABLISHED 27483/postgres: pos 
-tcp        0      0 172.31.30.11:59652      172.31.30.11:5432       ESTABLISHED 2504/ruby           
-tcp        0      0 172.31.30.11:5432       172.31.30.15:44281      ESTABLISHED 27815/postgres: pos 
-tcp        0      0 172.31.30.11:5432       172.31.30.31:56881      ESTABLISHED 27689/postgres: pos 
-tcp        0      0 172.31.30.11:5432       172.31.30.34:40089      ESTABLISHED 27685/postgres: pos 
-tcp        0      0 172.31.30.11:5432       172.31.30.35:55761      ESTABLISHED 27465/postgres: pos 
-tcp        0      0 172.31.30.11:5432       172.31.30.12:56497      ESTABLISHED 27697/postgres: pos 
-tcp        0      0 172.31.30.11:5432       172.31.30.32:40975      ESTABLISHED 27516/postgres: pos 
-tcp        0      0 172.31.30.11:5432       172.31.30.24:33864      ESTABLISHED 27467/postgres: pos 
-tcp        0      0 172.31.30.11:5432       172.31.30.35:55769      ESTABLISHED -                   
-tcp        0      0 172.31.30.11:58742      172.31.30.11:5432       ESTABLISHED 4240/cm             
-tcp        0      0 172.31.30.11:5432       172.31.30.13:46334      ESTABLISHED 27565/postgres: pos 
-tcp        0      0 172.31.30.11:5432       172.31.30.14:60623      ESTABLISHED 27687/postgres: pos 
-tcp        0      0 172.31.30.11:5432       172.31.30.26:55065      ESTABLISHED 27693/postgres: pos 
-tcp        0      0 172.31.30.11:55206      172.31.30.12:5432       ESTABLISHED -                   
-tcp        0      0 172.31.30.11:5432       172.31.30.33:52925      ESTABLISHED 27632/postgres: pos 
-tcp        0      0 172.31.30.11:5432       172.31.30.23:59384      ESTABLISHED 27566/postgres: pos 
-tcp        0      0 172.31.30.11:5432       172.31.30.16:35929      ESTABLISHED 27884/postgres: pos 
-tcp        0      0 172.31.30.11:5432       172.31.30.22:37951      ESTABLISHED 27876/postgres: pos 
-tcp        0      0 172.31.30.11:5432       172.31.46.11:54710      ESTABLISHED 16620/postgres: pos 
-tcp        0      0 172.31.30.11:5432       172.31.30.21:50370      ESTABLISHED 27703/postgres: pos 
-
-[root@dfw01-is01-001 ~]# netstat -natp |grep 5432 |grep ESTABLISHED | grep -v pgreplicate | grep -v "172.31.30.11:5432       172.31.30.11:" | wc -l
-19
-
-[root@dfw01-is01-001 8.2]# pwd
-/srv/pgsql/8.2
-[root@dfw01-is01-001 8.2]# du -sh
-1.2G	
-[root@dfw01-is01-001 8.2]# du -h
-12K	./data/pg_multixact/offsets
-12K	./data/pg_multixact/members
-28K	./data/pg_multixact
-3.9M	./data/base/10819
-3.9M	./data/base/10818
-1.2G	./data/base/16384
-3.9M	./data/base/1
-1.2G	./data/base
-13M	./data/pg_clog
-4.9M	./data/pg_subtrans
-312K	./data/global
-4.0K	./data/pg_xlog/archive_status
-33M	./data/pg_xlog
-4.0K	./data/pg_tblspc
-4.0K	./data/pg_twophase
-1.2G	./data
-48K	./etc
-1.2G	.
-
-[root@dfw01-is01-001 ~]# #pgdbrestore --file=/srv/pgsql/backup/system.db.tar.gz
-[root@dfw01-is01-001 ~]# cd /srv/pgsql/8.2/
-[root@dfw01-is01-001 8.2]# du -sh
-35M	.
-
-postgres=# DROP DATABASE "system.db" ;
-DROP DATABASE
-postgres=# CREATE DATABASE "system.db";
-CREATE DATABASE
-postgres=# \q
-[root@dfw01-is01-001 backup]# pg_restore -U postgres -d system.db system.db.tar
-[root@dfw01-is01-001 8.2]# du -sh
-53M	.
-
-2009-06-27 09:22:36,616 INFO cosprovision:156 Updating node database and node table in system db
-2009-06-29 05:58:20,423 ERROR dblib.py:39 can't set datestyle to ISO
-2009-06-29 05:58:20,423 ERROR cosprovision:388 DB ACCESS ERROR
-
-system.db=# UPDATE nodecfgs SET services = 'CLIENT,WS,CC,JS,MDLS,AS,RMS,SPREAD,MDS,SS' where id=44;
-
- 43 | is01-001       | CLIENT,WS,CC,JS,MDLS,AS,RMS,SPREAD,MDS,SS
- 44 | is01-002       | CLIENT,WS,CC,JS,MDLS,AS,PGS,RMS,SPREAD,MDS,SS
-
-system.db=# select id, call, input, status, retval from tasks where id > 630 order by id
-;
- id  |                              call                              |                                                                     input                                                                      | status | retval 
------+----------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------+--------+--------
- 643 | smtpconf                                                       | -f admin@maui.emc.com -s smtp01.dfw01.emcatmos.com                                                                                             |      3 |      0
- 644 |                                                                |                                                                                                                                                |      2 |      1
- 645 | cosprovision                                                   | precheck                                                                                                                                       |      3 |      0
- 646 | cosprovision                                                   | netconfig --nodeuuid=44454C4C-5600-1054-8054-B6C04F524631                                                                                      |      3 |      0
- 647 | cosprovision                                                   | genprofile --cmd=add_rmg --siteuuid=c99507a1-8575-4240-b713-d2edbc51d289 --seguuid=cf66049b-6515-4ecf-9791-23eeb94350b5 --dbhost=172.31.30.11  |      3 |      0
- 648 | cosprovision                                                   | srvconfig --cmd=setup --services=all                                                                                                           |      3 |      0
- 649 | cosprovision                                                   | partition --cmd=create                                                                                                                         |      3 |      0
- 650 | cosprovision                                                   | updatecfg --srv=all                                                                                                                            |      2 |      0
- 651 | update_fs_info                                                 |                                                                                                                                                |      1 |      0
- 652 | snmp_sys_uptime                                                |                                                                                                                                                |      1 |      0
- 653 | /usr/local/maui/ganglia/lib/ganglia/python_modules/maui_svc.py | gen_config                                                                                                                                     |      1 |      0
-(11 rows)
-
-Usage:
-To dump a database:
-$ pg_dump mydb > db.out
-
-To reload this database:
-$ psql -d database -f db.out
-
-To dump a database called mydb that contains large objects to a tar file:
-$ pg_dump -Ft -b mydb > db.tar
-
-To reload this database (with large objects) to an existing database called newdb:
-$ pg_restore -d newdb db.tar
-
-dump database in compressed include blobs show progress
-pg_dump -i -h someserver -p 5432 -U someuser -F c -b -v -f "/somepath/somedb.backup" somedb
-dump database in sql_ascii encoding
-pg_dump -i -h someserver -p 5432 -U someuser -E sql_ascii -F c -b -v -f "/somepath/somedb.backup" somedb
-backup pgagent schema of postgres db in plain text copy format, maintain oids
-pg_dump -i -h someserver -p 5432 -U postgres -F p -o -v -n pgagent -f "C:/pgagent.sql" postgres
-dump all databases - note pg_dumpall can only output to plain text
-pg_dumpall -i -h someserver -p 5432 -U someuser -c -o -f "/somepath/alldbs.sql"
-
-
-CMLOG:"Mon Jun 29 07:03:19 2009":MAUI:is01-001:13169:1249986912:"Mon Jun 29 07:03:19 2009":0:CM:cm:4:0:ses_ctrl.cxx:monitor:129:Failed to get ses flag from DB. ret 2006
-CMLOG:"Mon Jun 29 07:03:19 2009":MAUI:is01-001:13169:1249986912:"Mon Jun 29 07:03:19 2009":0:CM:cm:3:0:sysMgmtDB.cxx:getSesFlag:1198:Failed to get SES flag for node: 44454C4C-5600-1054-8054-B6C04F524631.
-CMLOG:"Mon Jun 29 07:02:19 2009":MAUI:is01-001:13169:1249986912:"Mon Jun 29 07:02:19 2009":0:CM:cm:4:0:ses_ctrl.cxx:monitor:129:Failed to get ses flag from DB. ret 2006
-CMLOG:"Mon Jun 29 07:02:19 2009":MAUI:is01-001:13169:1249986912:"Mon Jun 29 07:02:19 2009":0:CM:cm:3:0:sysMgmtDB.cxx:getSesFlag:1198:Failed to get SES flag for node: 44454C4C-5600-1054-8054-B6C04F524631.
-CMLOG:"Mon Jun 29 07:01:19 2009":MAUI:is01-001:13169:1249986912:"Mon Jun 29 07:01:19 2009":0:CM:cm:4:0:ses_ctrl.cxx:monitor:129:Failed to get ses flag from DB. ret 2006
-CMLOG:"Mon Jun 29 07:01:19 2009":MAUI:is01-001:13169:1249986912:"Mon Jun 29 07:01:19 2009":0:CM:cm:3:0:sysMgmtDB.cxx:getSesFlag:1198:Failed to get SES flag for node: 44454C4C-5600-1054-8054-B6C04F524631.
-CMLOG:"Mon Jun 29 07:00:45 2009":MAUI:is01-001:13169:1392662880:"Mon Jun 29 07:00:45 2009":0:CM:cm:6:0:mgmtlib.cxx:_capkeyRefresh:418:The CM should not invoke capkeyRefresh. Remove the timer.
-CMLOG:"Mon Jun 29 07:00:45 2009":MAUI:is01-001:13169:47489715496320:"Mon Jun 29 07:00:45 2009":0:CM:cm:6:0:mgmtlib.cxx:itimerHandler:575:Handling signal 14 to refresh Capkeys
-
- sqlite3 /var/local/maui/sysmgmtdb/ses_db "select * from disks"
-
-After one day, db size:
-[root@dfw01-is01-001 ~]# du -sh /srv/pgsql/8.2/
-81M	/srv/pgsql/8.2/
-
-**** Network information
-AT&T Dallas MaaS					
-DFW-IS1					Linux
-Host Name	Public IP	Private IP	RMG Name	Location	Login
-dfw01-is01-001	172.31.30.11	192.168.11.11	dfw01-rmg01	DFW	root
-dfw01-is01-002	172.31.30.12	192.168.11.12	dfw01-rmg01	DFW	root
-dfw01-is01-003	172.31.30.13	192.168.11.13	dfw01-rmg01	DFW	root
-dfw01-is01-004	172.31.30.14	192.168.11.14	dfw01-rmg01	DFW	root
-dfw01-is01-005	172.31.30.15	192.168.11.15	dfw01-rmg01	DFW	root
-dfw01-is01-006	172.31.30.16	192.168.11.16	dfw01-rmg01	DFW	root
-					Linux
-DFW-IS2				Location	Login
-dfw01-is02-001	172.31.30.21	192.168.11.11	dfw01-rmg01	DFW	root
-dfw01-is02-002	172.31.30.22	192.168.11.12	dfw01-rmg01	DFW	root
-dfw01-is02-003	172.31.30.23	192.168.11.13	dfw01-rmg01	DFW	root
-dfw01-is02-004	172.31.30.24	192.168.11.14	dfw01-rmg01	DFW	root
-dfw01-is02-005	172.31.30.25	192.168.11.15	dfw01-rmg01	DFW	root
-dfw01-is02-006	172.31.30.26	192.168.11.16	dfw01-rmg01	DFW	root
-					Linux
-DFW-IS3				Location	Login
-dfw01-is03-001	172.31.30.31	192.168.11.11	dfw01-rmg01	DFW	root
-dfw01-is03-002	172.31.30.32	192.168.11.12	dfw01-rmg01	DFW	root
-dfw01-is03-003	172.31.30.33	192.168.11.13	dfw01-rmg01	DFW	root
-dfw01-is03-004	172.31.30.34	192.168.11.14	dfw01-rmg01	DFW	root
-dfw01-is03-005	172.31.30.35	192.168.11.15	dfw01-rmg01	DFW	root
-dfw01-is03-006	172.31.30.36	192.168.11.16	dfw01-rmg01	DFW	root
-					
-Dallas General Configuration					
-Gateway	172.31.30.1				
-Mask	255.255.255.0				
-DNS1	172.31.16.53				
-DNS2	172.31.16.54				
-NTP1	ntp01.dfw01.emcatmos.com				
-NTP2	ntp02.dfw01.emcatmos.com				
-SMTP1	smtp01.dfw01.emcatmos.com				
-SMTP2	smtp02.dfw01.emcatmos.com				
-Email Alerts	dco@emcatmos.com
-			
-Domain	dfw01.emcatmos.com				
-
-AT&T Ashburn MaaS					
-IAD-IS1					Linux
-Host Name	Public IP	Private IP	RMG Name	Location	Login
-is01-001	172.31.46.11	192.168.11.11	iad01-rmg01	IAD	root
-is01-002	172.31.46.12	192.168.11.12	iad01-rmg01	IAD	root
-is01-003	172.31.46.13	192.168.11.13	iad01-rmg01	IAD	root
-is01-004	172.31.46.14	192.168.11.14	iad01-rmg01	IAD	root
-is01-005	172.31.46.15	192.168.11.15	iad01-rmg01	IAD	root
-is01-006	172.31.46.16	192.168.11.16	iad01-rmg01	IAD	root
-					Linux
-IAD-IS2				Location	Login
-is02-001	172.31.46.21	192.168.11.11	iad01-rmg01	IAD	root
-is02-002	172.31.46.22	192.168.11.12	iad01-rmg01	IAD	root
-is02-003	172.31.46.23	192.168.11.13	iad01-rmg01	IAD	root
-is02-004	172.31.46.24	192.168.11.14	iad01-rmg01	IAD	root
-is02-005	172.31.46.25	192.168.11.15	iad01-rmg01	IAD	root
-is02-006	172.31.46.26	192.168.11.16	iad01-rmg01	IAD	root
-					Linux
-IAD-IS3				Location	Login
-is03-001	172.31.46.31	192.168.11.11	iad01-rmg01	IAD	root
-is03-002	172.31.46.32	192.168.11.12	iad01-rmg01	IAD	root
-is03-003	172.31.46.33	192.168.11.13	iad01-rmg01	IAD	root
-is03-004	172.31.46.34	192.168.11.14	iad01-rmg01	IAD	root
-is03-005	172.31.46.35	192.168.11.15	iad01-rmg01	IAD	root
-is03-006	172.31.46.36	192.168.11.16	iad01-rmg01	IAD	root
-					
-Dallas General Configuration					
-Gateway	172.31.46.1				
-Mask	255.255.255.0				
-DNS1	172.31.16.53				
-DNS2	172.31.16.54				
-NTP1	ntp01.iad01.emcatmos.com				
-NTP2	ntp02.iad01.emcatmos.com				
-SMTP1	smtp01.iad01.emcatmos.com				
-SMTP2	smtp02.iad01.emcatmos.com				
-Email Alerts	dco@emcatmos.com
-			
-Domain	iad01.emcatmos.com				
-
-RMG1 and RMG2 RTT delay is 40 ms
-
-[root@is01-001 etc]# ping 172.31.30.11
-PING 172.31.30.11 (172.31.30.11) 56(84) bytes of data.
-64 bytes from 172.31.30.11: icmp_seq=0 ttl=64 time=40.0 ms
-64 bytes from 172.31.30.11: icmp_seq=1 ttl=64 time=39.8 ms
-64 bytes from 172.31.30.11: icmp_seq=2 ttl=64 time=39.8 ms
-
-[root@is01-001 etc]# ping 172.31.46.21
-PING 172.31.46.21 (172.31.46.21) 56(84) bytes of data.
-64 bytes from 172.31.46.21: icmp_seq=0 ttl=64 time=3.79 ms
-64 bytes from 172.31.46.21: icmp_seq=1 ttl=64 time=0.126 ms
-64 bytes from 172.31.46.21: icmp_seq=2 ttl=64 time=0.119 ms
-
-*** Remove new RMG master node
-1. Modify database nodecfgs table, remove target node hostname in below items:
-   - seg_heads
-   - mdls_list
-   - as_list
-   - rms_list
-   - rm_data_source
-   - rm_metric_src_list
-   - rms_rmg_list
-   - rms_node_list
-   - spread_source
-
-system.db=# UPDATE clusters SET prefixname = 'iad01-is01' where id=8;
-system.db=# UPDATE nodes SET hostname = 'iad01-is01-001' where id=23;
-system.db=# UPDATE nodecfgs SET hostname = 'iad01-is01-001' where id = 43;
-system.db=# UPDATE nodecfgs SET hostname = 'iad01-is01-002' where id = 44;
-system.db=# UPDATE nodecfgs SET hostname = 'iad01-is01-003' where id = 45;
-system.db=# UPDATE nodecfgs SET hostname = 'iad01-is01-004' where id = 46;
-system.db=# UPDATE nodecfgs SET hostname = 'iad01-is01-005' where id = 47;
-system.db=# UPDATE nodecfgs SET hostname = 'iad01-is01-006' where id = 48;
-system.db=# UPDATE nodecfgs SET seg_heads = 'dfw01-is01-001,dfw01-is02-001,dfw01-is03-001,iad01-is01-001';
-system.db=# UPDATE nodecfgs SET mdls_list = 'dfw01-is01-002,dfw01-is01-001,iad01-is01-001';
-system.db=# UPDATE nodecfgs SET as_list = 'dfw01-is01-002,dfw01-is01-001,iad01-is01-001';
-system.db=# UPDATE nodecfgs SET rms_list = 'dfw01-is01-001:DFW,dfw01-is01-002:DFW,dfw01-is01-003:DFW,dfw01-is01-004:DFW,dfw01-is01-005:DFW,dfw01-is01-006:DFW,dfw01-is02-001:DFW,dfw01-is02-002:DFW,dfw01-is02-003:DFW,dfw01-is02-004:DFW,dfw01-is02-005:DFW,dfw01-is02-006:DFW,dfw01-is03-001:DFW,dfw01-is03-002:DFW,dfw01-is03-003:DFW,dfw01-is03-004:DFW,dfw01-is03-005:DFW,dfw01-is03-006:DFW,iad01-is01-001:IAD,iad01-is01-002:IAD,iad01-is01-003:IAD,iad01-is01-004:IAD,iad01-is01-005:IAD,iad01-is01-006:IAD';
-system.db=# UPDATE nodecfgs SET rm_data_source = 'dfw01-rmg01,dfw01-is01-001,dfw01-is01-002,dfw01-is02-001,dfw01-is03-001;iad01-rmg01,iad01-is01-001,iad01-is01-002';
-system.db=# UPDATE nodecfgs SET rm_metric_src_list = 'dfw01-rmg01;iad01-rmg01';
-system.db=# UPDATE nodecfgs SET rms_rmg_list = 'dfw01-rmg01,dfw01-is01-001,dfw01-is01-002;iad01-rmg01,iad01-is01-001,iad01-is01-002';
-system.db=# UPDATE nodecfgs SET rms_node_list = 'dfw01-rmg01,dfw01-is01-003,dfw01-is01-004,dfw01-is01-005,dfw01-is01-006,dfw01-is02-003,dfw01-is02-004,dfw01-is02-005,dfw01-is02-006,dfw01-is03-003,dfw01-is03-004,dfw01-is03-005,dfw01-is03-006;iad01-rmg01,iad01-is01-003,iad01-is01-004,iad01-is01-005,iad01-is01-006';
-system.db=# UPDATE nodecfgs SET spread_source = 'iad01-is01-001:172.31.46.11:192.168.11.11:172.31.46.255;iad01-is01-002:172.31.46.12:192.168.11.12:172.31.46.255 dfw01-is03-001:172.31.30.31:192.168.11.11:172.31.30.255;dfw01-is03-002:172.31.30.32:192.168.11.12:172.31.30.255 dfw01-is02-001:172.31.30.21:192.168.11.11:172.31.30.255;dfw01-is02-002:172.31.30.22:192.168.11.12:172.31.30.255 dfw01-is01-001:172.31.30.11:192.168.11.11:172.31.30.255;dfw01-is01-002:172.31.30.12:192.168.11.12:172.31.30.255';
-system.db=# UPDATE nodecfgs SET services = 'CLIENT,WS,CC,JS,RMS,SPREAD,MDS,SS' where hostname = 'iad01-is01-002';
-
-2. Reconfigure every node in the system
-
-Backup old node config file.
-[root@dfw01-is02-006 ~]# cd /etc/maui
-[root@dfw01-is02-006 maui]# cp node.cfg node.cfg.bak
-
-Check pxe log about genprofile command
-[root@dfw01-is02-006 maui]# genprofile --cmd=load_from_db --dbhost=172.31.30.11 --siteuuid=de599df8-8f9a-4966-8032-4c75c5999d86 --seguuid=b28ba40e-6927-4839-a0d5-7a2ab04d9587
-
-Modify new generated node cfg. Here we don't want to partition disks again. So we don't need to reconfigure SS and MDS services. 
-[root@dfw01-is02-006 maui]# vimdiff node.cfg node.cfg.bak 
-Move SS_NumDisks, MDS_Ports, SS_DiskList, SS_DiskLocation from old node.cfg to new node.cfg. Remove MDS,SS from Services in new node.cfg.
-[root@dfw01-is02-006 maui]# mauiconfig -f node.cfg
-[root@dfw01-is02-006 maui]# mauictl restart
-[root@dfw01-is02-006 maui]# mauictl status
-Add MDS,SS back to Services in new node.cfg
-
-Change in new node:
-js_cfg.xml:44:    <entry key="JsSet" value="iad01-is01-001,is01-002" />
-mds/10410/mds_cfg.xml:48:  <entry key="masterHost" value="is01-002"/>
-mds/10608/mds_cfg.xml:48:  <entry key="masterHost" value="is01-002"/>
-mds/10606/mds_cfg.xml:48:  <entry key="masterHost" value="is01-002"/>
-mds/10601/mds_cfg.xml:48:  <entry key="masterHost" value="is01-002"/>
-
-Reinitialize lockboxes and dump/restore data from lockboxes:
-
-3. Issues
-Core dump:
-Core was generated by `/usr/local/maui/bin/mauisvcmgr -s mauimds -q mauimds_getmdsmaster'.
-Core was generated by `/usr/local/maui/bin/mauisvcmgr -s mauimds -q mauimds_getmdsslave'.
-Core was generated by `/usr/local/maui/bin/mauisvcmgr -s mauimds -q mauimds_getmdsdown'.
-
-*** Cybercluster troubleshooting
-There are two errors which would cause slave db start hangs:
-1. Client close connection unexpected. but the transaction id still not equal to ZERO which cause cybercluster hang to recover.
-
-[root@auto3-130A-001 ~]# ps -ef | grep pg
-root      8494  8288  0 15:16 pts/0    00:00:00 grep pg
-postgres 21063     1  0 14:57 ?        00:00:00 /usr/bin/pgreplicate -D /srv/pgsql/8.2/etc -l
-root     21206     1  0 14:57 ?        00:00:00 /bin/sh /usr/local/maui/bin/mmon pgreplicate --cleanup=service postgresql restart pgreplicate --pidfile=/srv/pgsql/8.2/etc/pgreplicate.pid --restart=1
-postgres 21298     1  0 14:57 ?        00:00:01 /usr/bin/postgres -D /srv/pgsql/8.2/data -i
-postgres 21348 21298  0 14:57 ?        00:00:00 /usr/bin/postgres -D /srv/pgsql/8.2/data -i
-
-[root@auto3-130A-001 ~]# gdb --pid=21063 /usr/bin/pgreplicate 
-GNU gdb 6.7.1
-....
-
-(gdb) info thread
-  8 Thread 0x4164e940 (LWP 21066)  0x00007fab5db63511 in nanosleep () from /lib64/libc.so.6
-  7 Thread 0x40f26940 (LWP 21067)  0x00007fab5db95da2 in select () from /lib64/libc.so.6
-  6 Thread 0x41512940 (LWP 21068)  0x00007fab5db95da2 in select () from /lib64/libc.so.6
-  5 Thread 0x41aa7940 (LWP 21346)  0x00007fab5db95da2 in select () from /lib64/libc.so.6
-  4 Thread 0x41027940 (LWP 24602)  0x00007fab5db95da2 in select () from /lib64/libc.so.6
-  3 Thread 0x41128940 (LWP 27284)  0x00007fab5db95da2 in select () from /lib64/libc.so.6
-  2 Thread 0x41ba8940 (LWP 27613)  0x00007fab5db95da2 in select () from /lib64/libc.so.6
-  1 Thread 0x7fab5f527700 (LWP 21063)  0x00007fab5db95da2 in select () from /lib64/libc.so.6
-(gdb) t 8
-[Switching to thread 8 (Thread 0x4164e940 (LWP 21066))]#0  0x00007fab5db63511 in nanosleep () from /lib64/libc.so.6
-(gdb) p Host_Tbl_Begin->transaction_count
-$1 = 1
-(gdb) set print pretty on
-(gdb) p *Host_Tbl_Begin
-$2 = {
-  useFlag = 2, 
-  same_as_replicator = 1 '\001', 
-  hostName = "auto3-130A-001", '\0' <repeats 113 times>, 
-  resolvedName = "10.32.109.102\000\000\000\000\000\000\000\000\000\000", 
-  port = 5432, 
-  recoveryPort = 7001, 
-  hostNum = 1, 
-  transaction_count = 1, 
-  retry_count = 0, 
-  n_ddlstmt = 108, 
-  n_begin = 1, 
-  n_commit = 0, 
-  n_rollback = 0, 
-  n_insert = 0, 
-  n_update = 7, 
-  n_delete = 0
-}
-(gdb) set Host_Tbl_Begin->transaction_count=0
-(gdb) c
-Continuing.
-[New Thread 0x408d2940 (LWP 24082)]
-[Thread 0x408d2940 (LWP 24082) exited]
-[New Thread 0x408d2940 (LWP 24085)]
-[Thread 0x408d2940 (LWP 24085) exited]
-
-On slave node, it will first hang at below msgs:
-Start in recovery mode!
-Please wait until a data synchronization finishes from Master DB...
-1st recovery step of [global] directory...Warning: Permanently added 'auto3-130a-001,10.32.109.102' (RSA) to the list of known hosts.^M
-OK
-1st recovery step of [base] directory...OK
-1st recovery step of [pg_clog] directory...OK
-1st recovery step of [pg_xlog] directory...OK
-1st sync_table_space OK
-=====================================================
-
-After master change transaction to ZERO and continue, slave node will contine the recovery process and everything works well!
-2nd recovery step of [global] directory...OK
-2nd recovery step of [base] directory...OK
-2nd recovery step of [pg_clog] directory...OK
-2nd recovery step of [pg_xlog] directory...OK
-2nd sync_table_space OK
-2nd recovery successed
-2009-10-28 15:22:18 UTC    1  LOG:  PGR_Do_Master_Main(): PGR_Create_Socket_Bind succeeded
-
-2. Client keep transaction too long and during this time, slave node reboot master node and it will cause both slave recover and db client hangs:
-Troubleshooting:
-From master node /var/log/message/, we can get below db restart time and information:
-
-local7.notice<189>: Oct 28 06:15:50 localhost postgresql: etc -l & startup succeeded
-user.notice<13>: Oct 28 06:15:54 localhost mmon[24452]: monitor "pgreplicate[24301]" via "/srv/pgsql/8.2/etc/pgreplicate.pid" interval "10" seconds restart "service postgresql restart pgreplicate"
-local7.notice<189>: Oct 28 06:15:55 localhost postgresql: data' -o '-i' start & startup succeeded
-
-From master node DB log /srv/pgsql/8.2/log/postgresql-2009-10-28.log, we can see below transaction not finished:
-
-2009-10-28 06:16:21 UTC trunk4A-004(34067) rmg.db 4ae7e1b5.655d 2 authentication LOG:  connection authorized: user=postgres database=rmg.db
-2009-10-28 06:16:21 UTC trunk4A-004(34067) rmg.db 4ae7e1b5.655d 3 SET LOG:  duration: 0.656 ms  statement: SET DATESTYLE TO 'ISO'
-2009-10-28 06:16:21 UTC trunk4A-004(34067) rmg.db 4ae7e1b5.655d 4 SHOW LOG:  duration: 0.259 ms  statement: SHOW client_encoding
-2009-10-28 06:16:21 UTC trunk4A-004(34067) rmg.db 4ae7e1b5.655d 5 SHOW LOG:  duration: 0.069 ms  statement: SHOW default_transaction_isolation
-2009-10-28 06:16:21 UTC trunk4A-004(34067) rmg.db 4ae7e1b5.655d 6 SET LOG:  duration: 0.307 ms  statement: BEGIN; SET TRANSACTION ISOLATION LEVEL READ COMMITTED
-2009-10-28 06:16:21 UTC trunk4A-004(34067) rmg.db 4ae7e1b5.655d 7 SELECT LOG:  duration: 0.000 ms  statement: SELECT * FROM tasks WHERE scope=E'Node' and scopeuuid=E'502CC302-83FE-5CFE-CEED-B13A55819393' and call=E'update_fs_info'
-2009-10-28 06:16:21 UTC trunk4A-004(34067) rmg.db 4ae7e1b5.655d 8 INSERT LOG:  duration: 0.000 ms  statement: INSERT INTO tasks (uuid, scopeuuid, tasktype, scope, call, starttime, status, scheduled, interval) VALUES (E'fa687c69-ecc7-4aea-bb70-342f357caa14',E'502CC302-83FE-5CFE-CEED-B13A55819393',E'0',E'Node',E'update_fs_info','2009-10-28T06:16:43.790859',E'0',E'1',E'3600')
-
-[root@trunk4A-001 ~]# ps axf | grep transaction
-17425 pts/2    S+     0:00          \_ grep transaction
-25949 ?        Ss     0:00  \_ postgres: postgres rmg.db trunk4A-004(34067) idle in transaction
-26590 ?        Ss     0:00  \_ postgres: postgres rmg.db trunk4A-003(56757) idle in transaction
-
-From the client node side we can see below command hold the transaction:
-[root@trunk4A-004 ~]# ps -ef | grep cos
-root     11535  3974  0 06:15 ?        00:00:00 /usr/bin/python2.4 /usr/local/maui/provision/cosprovision partition --cmd=create
-root     17413 17299  0 06:55 pts/0    00:00:00 grep cos
-[root@trunk4A-004 ~]# netstat -anpt | grep 5432
-tcp        0      0 10.32.182.200:54219         10.32.182.197:5432          TIME_WAIT   -                   
-tcp        0      0 10.32.182.200:34065         10.32.182.197:5432          ESTABLISHED 11535/python2.4     
-tcp        0      0 10.32.182.200:54231         10.32.182.197:5432          TIME_WAIT   -                   
-tcp        0      0 10.32.182.200:54242         10.32.182.197:5432          TIME_WAIT   -                   
-tcp        0      0 10.32.182.200:34067         10.32.182.197:5432          ESTABLISHED 11535/python2.4     
-tcp        0      0 10.32.182.200:54237         10.32.182.197:5432          TIME_WAIT   -                   
-tcp        0      0 10.32.182.200:54230         10.32.182.197:5432          TIME_WAIT   -                   
-
-Solution:
-1. Reduce client db connection and operation time and close the connection asap.
-2. Fix cybercluster issue on check transaction count. However, this may make slave data lost for some transactions.
-** Atmos 1.3 cycle 
-*** Atmos capacity reporting mechanisms
-
-#!/usr/bin/python2.4
-
-import os
-i
-mport statvfs
-st = os.statvfs("/mauimds-db/mds-1fbce6f0-2f6d-4320-a615-916848b05a4c")
-blocksize = st[statvfs.F_BSIZE]
-total_block = st[statvfs.F_BLOCKS]
-free_block = st[statvfs.F_BFREE]
-avail_block = st[statvfs.F_BAVAIL]
-
-print blocksize
-
-print total_block
-
-print free_block
-
-print avail_block
-
-print total_block * blocksize /1024/1024/1024
-
-print free_block * blocksize /1024/1024/1024
-
-print avail_block * blocksize /1024/1024/1024
-
-*** Release management
-1. Branch merge
-2. Smoke test results and bug fixing
-3. Load testing
-4. Go through high risk projects
-
-*** DONE DB new deployment upgrade
-	 CLOSED: [2009-09-02 Wed 13:11]
-Assumption:
-1. Cannot add node during upgrade
-
-
-Refine:
-1. Migrate alert data in postSystem stage
-2. Move node schedule tasks in postUpgrade stage
-3. Will CM reload the same UUID task twice?
-4. Configure postgresql/pgreplicate in preSystem stage
-5. MDS remote replication upgrade consideration. how to check previous remote mds replication? - Karthik clarify
-6. SNMP upgrade - Chunjie 3 days
-7. Subtenant NAS - Caihua ? days
-8. Document mgmt db operations are not allowed during upgrade
-*** DONE build RPM package for CLI tools
-	 CLOSED: [2009-09-02 Wed 13:11]
-*** DONE detail test scope and target -- need to confirm with Arun
-	 CLOSED: [2009-07-21 Tue 20:17]
-scope: 4 RMG 200 nodes or even 6-8 RMG 300 nodes
-
-understand exist issues and limitation: db size, db load, response time, 
-
-focus on these issues and simulate similar testbed to get test data
-
-**** Test db availability during pgcluster data recovery process
-Remind Xin about his improvement in pgpool
-*** DONE Remove Compression+Dedup support in GUI/CLI installation -> To Chunjie
-	 CLOSED: [2009-08-11 Tue 12:59]
-
 * Daily work												   :WORK:ARCHIVE:
 <2010-01-03 21:53>
 
@@ -2385,17 +2538,11 @@ This will go against with CORP policy
 
 *** emacsÆ´Ð´¼ì²é
 1 DONE ²é¿´ispellµÄÊý¾Ý¿âÄ¬ÈÏÎ»ÖÃ:~/.ispell_english
-####################################################
-      CLOSED: [2009-05-09 ÐÇÆÚÁù 16:24]
-
 2 DONE Ê¹ÓÃflyspell-modeÄ£Ê½
-#############################
-      CLOSED: [2009-05-09 ÐÇÆÚÁù 16:24]
-     M-$: correct words (using Ispell).
-     M-TAB: automatically correct word.
+M-$: correct words (using Ispell).
+M-TAB: automatically correct word.
 
 3 useful link
-##############
 [http://www.emacswiki.org/cgi-bin/wiki/GettingIspellWorkinginEmacsForWindows]
 GettingIspellWorkinginEmacsForWindows
 [http://www.lasr.cs.ucla.edu/geoff/tars/ispell-3.3.02.tar.gz]
@@ -2441,9 +2588,20 @@ if not use frequently, use archive mode (c-c c-x c-a), use same command can unar
 2. # git init
 3. # git add .
 4. # git commit -m 'comment'
-*** 
+*** git with svn in Atmos use - wiki from Ming
+
 
 ** Linux tips and good tools
+
+*** Good cmd utility from commandlinefu.com
+
+mtr google.com -- traceroute + ping
+$ssh-copy-id user@host -- ½« ssh keys ¸´ÖÆµ½ user@host ÒÔÆôÓÃÎÞÃÜÂë SSH µÇÂ¼
+sudo !! -- ÒÔ root ÕÊ»§Ö´ÐÐÉÏÒ»ÌõÃüÁî
+!<whatever>:p -- Check command history, but avoid running it
+watch -d -n 2 'df; ls -FlAt;' -- Like top, but for files
+wget --random-wait -r -p -e robots=off -U mozilla http://www.example.com -- Download an entire website
+
 *** autofs and automount
 
 Good tool to control mount point in network environment.
@@ -2595,6 +2753,9 @@ rxvt -sr -sl 2500 -sb -geometry 90x30 -tn rxvt -fn "Consolas-20" -e bash --login
 *** Make windows usable with Linux tools
 [[http://www.burningcutlery.com/derek/winsetup/#cygwin]]
 
+*** Shutdown from console
+# shutdown -r -t 0 -c "reboot computer"
+
 ** Cloud storage products
 *** [[http://aws.Amazon.com/S3][Amazon S3]]
 *** [[http://www.bluewolf.com/on-demand-solutions/salesforce-solutions/Arcade][Bluewolf Arcade]]
@@ -2617,9 +2778,13 @@ Upgrade process: (From management station client to trigger)
 *** DONE see version control soft "Mercurial"
 	 CLOSED: [2009-09-02 Wed 13:14]
 
-
-* Learning															  :THINK:
+* Learning 															  :THINK:
 ** !!!Five minutes!!!
+*** <2010-03-25 10:26>
+Rich's go to detail set me a really good example on review things. I should always verify my words before speak it out. Otherwize, they may not trust you if you make the same mistake several times.
+
+When fix bug or write code, always be prepared for the future changes, Ming's table driven (commit #49839) style to handle switch config is one good example to learn.
+
 *** <2010-03-19 22:10>
 last week in the lesson learn from Rich POX API document review, Rich give a very good feeback:
 
@@ -2834,22 +2999,26 @@ Record what I need to learn and improve for my self. (Internal motivated.)<2009-
 
 ** English words
 
-stamina ¾«Á¦
-hypothesis ¼ÙÉè
-notion ¹ÛÄî£¬Ïë·¨
-cumulative ÀÛ»ýµÄ
-corollary ÍÆÂÛ
-reckless ²»¼Æºó¹ûµÄ
-prudent ½÷É÷µÄ
-deliberate ÉîË¼ÊìÂÇµÄ£¬¹ÊÒâµÄ
-inadvertent ²»×¢ÒâµÄ£¬ÊèºöµÄ
-amateur ÒµÓà°®ºÃÕß
-dictator ¶À²ÃÕß
-amortize ·ÖÆÚ³¥»¹
-condense Å¨Ëõ
-paradox ×ÔÏàÃ¬¶Ü
-critically ÅúÆÀµØ, ÓÃ×êÑÐÑÛ¹âµØ
-
+| stamina     | ¾«Á¦                |
+| hypothesis  | ¼ÙÉè                |
+| notion      | ¹ÛÄî£¬Ïë·¨          |
+| cumulative  | ÀÛ»ýµÄ              |
+| corollary   | ÍÆÂÛ                |
+| reckless    | ²»¼Æºó¹ûµÄ          |
+| prudent     | ½÷É÷µÄ              |
+| deliberate  | ÉîË¼ÊìÂÇµÄ£¬¹ÊÒâµÄ  |
+| inadvertent | ²»×¢ÒâµÄ£¬ÊèºöµÄ    |
+| amateur     | ÒµÓà°®ºÃÕß          |
+| dictator    | ¶À²ÃÕß              |
+| amortize    | ·ÖÆÚ³¥»¹            |
+| condense    | Å¨Ëõ                |
+| paradox     | ×ÔÏàÃ¬¶Ü            |
+| critically  | ÅúÆÀµØ,ÓÃ×êÑÐÑÛ¹âµØ |
+| plural      | ¸´ÊýµÄ              |
+| Pathology   | ²¡Àí£¬·´³£          |
+| hazard      | Ã°ÏÕ£¬Î£ÏÕ          |
+| rummage     | ×ÐÏ¸¼ì²é£¬ËÑ²é      |
+|             |                     |
 
 ** Reading
 *** »î·¨
@@ -3075,9 +3244,22 @@ while (state != NO_PIZZA)  {
    } // switch
 } // while
 
-
 ** About jobs
-[[http://edu.sina.com.cn/j/2009-11-13/1325181092.shtml][±ê  Ìâ: Ö°³¡ÈËÌø²ÛÒª×ñÊØµÄ11ÌõÊØÔò]]
+
+
+
+*** SWOT analyse of Eng/Mgmt/Presale/Consultant/Market/Solution/Product
+
+Engineering:
+- Pros: continuously learning and focus, simple relation and less conflict, stable without too much pressure, pay good
+- Cons: keep yourself in a lockbox?
+
+Mgmt: 
+- Pros: stable and not much pressure, match my interest, develop the team and learn how to manage people and team
+- Cons: 
+
+*** Good collections
+**** [[http://edu.sina.com.cn/j/2009-11-13/1325181092.shtml][±ê  Ìâ: Ö°³¡ÈËÌø²ÛÒª×ñÊØµÄ11ÌõÊØÔò]]
 
 ¡¡¡¡Ìø²Û£¬¼¸ºõÊÇÒ»°ãÈËµÄÖ°ÒµÉúÑÄÖÐ¶¼Òª¾­ÀúµÄÊÂÇé¡£ÕýÈ·µÄÌø²Û£¬»á½«Äã´øÈëÖ°Òµ³É³¤µÄ¿ì³µµÀ£¬¶ø´íÎóµÄÌø²Û£¬Ôò½«Äã´øÍùÖ°ÒµÉúÑÄµÄÍ£³µ³¡¡£ÏÂÃæÊÇ¹ØÓÚÌø²ÛµÄ11Ìõ½¨Òé¡£
 
@@ -3144,7 +3326,16 @@ while (state != NO_PIZZA)  {
 ** Lessons learn from others 										  :THINK:
 *** From Ming
 1. when new member join the team, have 1on1 session to understand each other and communication prefer ways. also discuss about ideas on the project design and ideas.
+2. Find out useful papers about mgmt and share to others
+3. Always search for new modules and debug utilities and add to the atmos
+4. give many comments on others design proposal and discussions
+5. Encourage all team member involvement to learn and share
+6. Actively use bugzilla to track project todo items
 
+Õý·´À¡
+
+Recovery Time Objective (RTO)
+Recovery point objective (RPO)
 
 **** RCA - root cause analyse<2010-02-07 00:01>
 The criticism on 5-why method is that performance of 5-why is highly depends on people. The quality of "why" question is essential to the success. Usually it start with
@@ -3165,7 +3356,7 @@ Only by this way we can try to catch most, if not all, causes. I believe all of 
 
 *RCA process for bug 4742:*
 
-Ask 5 why: 
+*Ask 5 why:* 
 1.	why status is not correct? ¨C non-first master didn¡¯t update
 2.	why master node, not slave node? ¨C non-first master node has a different installation process
 3.	why master node has different task tree? ¨C non-first master node needs to update other node profiles
@@ -3188,6 +3379,8 @@ Action plan:
 3.	ALL - not only send out patch diff but also needs to include root cause analyze and what have been done in the patch (Good example: Denny¡¯s review mail)
 4.	ALL - add meeting agenda before meeting to be more effective
 5.	Ming ¨C Ask Greg/Vinita about bugzilla improvement again ;)
+
+
 
 
 *** From Yubo
@@ -3840,3 +4033,15 @@ DoubanDBµÄµ×²ã´æ´¢ÓÃµÄÊÇTokyoCabinet£¬ÊÇÒ»¸öºÜÇáÁ¿¼¶¡¢¸ßÐ§µÄKey-ValueÊý¾Ý¿â¡£ÎÒÃ
 
 aaa bbb ccc
 * temp
+
+|   |   |   |   |   |
+|---+---+---+---+---|
+|   |   |   |   |   |
+|   |   |   |   |   |
+|   |   |   |   |   |
+|---+---+---+---+---|
+|   |   |   |   |   |
+|   |   |   |   |   |
+
+| col | name |
+|   1 | a    |

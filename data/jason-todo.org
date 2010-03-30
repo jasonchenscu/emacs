@@ -144,15 +144,20 @@ cosuid -c --name uid1 --subtenid st1 --email a@b.com -u ta1 -p 'password' -t t1
 
 
 ** TODOLIST
-*** TODO Read REST code from Yong and give feedbacks
-*** INPROGRESS [#A] decouple genprofile for better organise and rereuse code, consider ip change and reconfiguration together.
-*** INPROGRESS review board review process workflow
+*** INPROGRESS [#B] decouple genprofile for better organise and rereuse code, consider ip change and reconfiguration together.
 *** TODO Test force resync db without restart service
-*** TODO bug 10618 get version from conary command
 *** TODO seperate setnodeinfo to updatenodeinfo and insertnodeinfo, we have met several cases node UUID has changed due to setnodeInfo. bug #10948
 *** TODO Atmos in a box document update - we cannot support clone operation for existing atmos nodes. more detail see bug #10948
 *** TODO Installation /etc/hosts add public ip end mark
+*** TODO reviewboard git diff support
+*** TODO Setup netinstall in subnet 171
 *** TODO check installation negative test cases in testlink
+*** DONE review board review process workflow
+	 CLOSED: [2010-03-29 Mon 13:07]
+*** DONE bug 10618 get version from conary command
+	 CLOSED: [2010-03-29 Mon 13:08]
+*** DONE Read REST code from Yong and give feedbacks
+	 CLOSED: [2010-03-29 Mon 16:17]
 
 ** Atmos 1.4 cycle
 *** [#A] Slony replication for postgres
@@ -207,7 +212,7 @@ Note that as far as slon is concerned, there is no "master" or "slave." They are
 
 Check contents of the tables sl_node and sl_path and sl_listen after two nodes have been configured. 
 
-**** Slony source code workflow
+**** INPROGRESS Slony source code workflow
 
 During configuration and setup:
 
@@ -217,13 +222,26 @@ In slave node:
 
 Slon core threads:
 cheny7@cheny7-desktop ~/source/slony1-2.0.2/src/slon$ tree
-|-- cleanup_thread.c -> Remove old event and log data
-|-- local_listen.c -> Wait for local event and scan for event
-|-- remote_listen.c  (remoteListen_receive_event()) -> Receive event from db tables and pass them to worker thread
-|-- remote_worker.c  (sync_event()) -> Process event provided by remote listen thread
-|-- sync_thread.c -> Generate SYNC event to local
+
+-- cleanup_thread.c -> Remove old event and log data
+-- local_listen.c -> Wait for local event and scan for event
+-- remote_listen.c  (remoteListen_receive_event()) -> Receive event from db tables and pass them to worker thread
+-- remote_worker.c  (sync_event()) -> Process event provided by remote listen thread
+-- sync_thread.c -> Generate SYNC event to local
+
+
+slon.c
+- start event scheduling
+- start a transaction query on sl_node, sl_path, 
+- if the node found in sl_path and node is active, spawn remoteWorkerThread, otherwise, skip
+- if one node found in sl_path and the head of listener thread, need to check node listen_status, if listen_status is SLON_TSTAT_NONE, spawn a remoteListenThread, if listen_status is SLON_TSTAT_DONE, join the remoteListenThread. if node is not the head of listener head, mark as need wakeup.
+- reload listen configuration in sl_listen table and init remoteListenThread/remoteWorkerThread.
+- read configuration from table sl_set and sl_subscribe, then wake up set provider
+- 
+
 
 Remote_worker.c 
+
 - store_confirm_forward -> confirm the received events
 - sync_event -> start process one SYNC
 - 
@@ -232,7 +250,15 @@ Remote_listen.c
 - remoteListen_receive_events -> Retrieve all new events from origin nodes
 - 
 
-**** Good testing tools
+sync_thread.c
+- connect to local db
+- 
+
+scheduler.c
+- spawn scheduling thread which does central select call
+- schedule events in the main loop
+
+**** TODO Good testing tools
 In tools directory:
 test_slony_state.pl and test_slony_state-dbi.pl, described in [[http://www.slony.info/documentation/maintenance.html][here]]. this is recommend to use after adding a node to replication.
 
@@ -272,7 +298,7 @@ Failure case:
 3. master slon down: data cannot sync
 4. master slon come back: data become sync
 
-**** Questions
+**** INPROGRESS Questions
 
 1. Good way to handle sequence id replication?
    - partition id into master and slave
@@ -570,6 +596,8 @@ It will now be restarted as a primary agent.
 
 *** [#B] pylib enhancement
 **** TODO Add one stop wiki page for all system mgmt developement process
+	 SCHEDULED: <2010-03-30 Tue>
+**** TODO refine topology in mauiutility 
 **** Team tea session discussion - I 
 
 Denny is owner of pylib. All code change related to pylib need to get Denny's approval before to commit the code.
@@ -945,6 +973,10 @@ svn copy  https://tvg01.lss.emc.com/svn/maui/trunk  https://tvg01.lss.emc.com/sv
 
 svn copy  https://tvg01.lss.emc.com/svn/maui/branches/atmos-1.2.0  https://tvg01.lss.emc.com/svn/maui/branches/atmos-1.2.5-gui -m "create branch from 1.2.0 (r37176) for gui 1.2.5 getwell projects."
 
+
+*** Debug REST api
+curl -v -k -D ./rcvHeaders.txt -d "" -H "x-atmos-tenantadmin:ta1" -H "x-atmos-tenantadminpassword:password" -H "x-atmos-authType:password" -H "x-atmos-uid:u1" -H "Accept:"  -H "User-Agent:" https://10.32.109.112:443/sysmgmt/tenants/t1/subtenants/t1/uids
+
 *** Debug large scale installation
 
 cat /etc/hosts | grep 10.32 | sort | wc -l
@@ -1091,7 +1123,7 @@ Index: /usr/local/lib/python2.6/dist-packages/ReviewBoard-1.0.5.1-py2.6.egg/revi
 		  if not path:
 			  raise FileNotFoundError(path, revision)
 
-** PIT and mauits setup notes
+** PIT, mauits, netinstall setup notes
 *** New PIT framework usage
 # ssh cheny7@10.32.180.27
 
@@ -1133,6 +1165,116 @@ Index: lib/maap/libmaap.sh
 3. bin/pit.sh -c conf/testbeds/maap/cheny7-upgrade-174.91-150.conf --image /share/pub/MauiImages/atmos-auto-1.3.0.48080-x86_64-disc1.iso os
 4. revert back change of __maap_create_vm to enable create vm os
 5. bin/pit.sh -c conf/testbeds/maap/cheny7-174.11-202.conf --image /share/pub/MauiImages/atmos-auto-1.3.0.48080-x86_64-disc1.iso
+
+*** netinstall setup in RHEL5
+1. install DHCP, get rpm from RHEL ISO
+# wget http://10.32.72.28/share/pub/OSimages/RHEL5.2-x64/extracted/Server/dhcp-3.0.5-13.el5.x86_64.rpm
+# rpm -ivh dhcp-3.0.5-13.el5.x86_64.rpm
+
+2. configure DHCP - add below to /etc/dhcpd.conf
+      1 #
+      2 # DHCP Server Configuration file.
+      3 #   see /usr/share/doc/dhcp*/dhcpd.conf.sample
+      4 #
+      5 ddns-update-style interim;
+      6 subnet 10.32.171.0 netmask 255.255.255.0 {
+      7         range 10.32.171.3 10.32.171.255;
+      8         default-lease-time 3600;
+      9         max-lease-time 4800;
+     10         option routers 10.32.180.1;
+     11         option domain-name-servers 10.32.97.148;
+     12         option subnet-mask 255.255.255.0;
+     13         filename "pxelinux.0";
+     14         next-server 10.32.171.181;
+     15 }       
+3. install tftp, xinetd rpm package from ISO
+# wget http://10.32.72.28/share/pub/OSimages/RHEL5.2-x64/extracted/Server/tftp-server-0.42-3.1.x86_64.rpm 
+# wget http://10.32.72.28/share/pub/OSimages/RHEL5.2-x64/extracted/Server/xinetd-2.3.14-10.el5.x86_64.rpm
+ 
+4. configure tftp
+modify /etc/xinetd.d/tftp and change _disable_ to *no*
+
+5. copy pxelinux.0
+cp /usr/lib/syslinux/pxelinux.0 /tftpboot
+
+6. make sure httpd service is running, if not installed, get rpm and install
+# wget http://10.32.72.28/share/pub/OSimages/RHEL5.2-x64/extracted/Server/httpd-2.2.3-11.el5_1.3.x86_64.rpm
+
+7. follow netinstall step in [[https://tvg01.lss.emc.com/mediawiki/index.php/Netinstall#Installation_Guide][wiki page]]
+   svn co https://tvg01.lss.emc.com/svn/mauitools/trunk/QA/CAT-Project/CAT-code/netinstall
+   cd netinstall
+   su                                  # Need root permission
+   ./install.sh                        # Run without argument to see usage
+   ./install.sh netinstall             # Install to "netinstall" under web root
+
+8. modify netinstall configuration file
+
+9. test netinstall in debug mode
+
+- netinstall debug message:
+------------------------------- spliter -------------------------------
+DEBUG: tftpboot_root: /tftpboot
+DEBUG: install_tag: atmos-dev-21__00-22-19-b1-03-26
+DEBUG: ks_cfg: /var/www/html/netinstall/data/atmos-dev-21__00-22-19-b1-03-26/ks.cfg
+DEBUG: pxe_cfg: /tftpboot/pxelinux.cfg/01-00-22-19-b1-03-26
+DEBUG: pxe_cfg_upper: /tftpboot/pxelinux.cfg/01-00-22-19-B1-03-26
+DEBUG: boot_label: atmos-dev-21__00-22-19-b1-03-26
+DEBUG: pxe_bootdir_abs: /tftpboot/netinstall/atmos-dev-21__00-22-19-b1-03-26
+DEBUG: pxe_bootdir: /netinstall/atmos-dev-21__00-22-19-b1-03-26
+DEBUG: image_path: /iso/,mnt,nfs45,iso_tools,adk-1.3.1.0-x86_64-disc1.iso/isolinux
+DEBUG: dest_vmlinuz: /tftpboot/netinstall/atmos-dev-21__00-22-19-b1-03-26/vmlinuz
+DEBUG: dest_initrd: /tftpboot/netinstall/atmos-dev-21__00-22-19-b1-03-26/initrd.img
+[1] vmlinuz copied from /iso/,mnt,nfs45,iso_tools,adk-1.3.1.0-x86_64-disc1.iso/isolinux/vmlinuz to/tftpboot/netinstall/atmos-dev-21__00-22-19-b1-03-26/vmlinuz
+
+[2] initrd.img copied from /iso/,mnt,nfs45,iso_tools,adk-1.3.1.0-x86_64-disc1.iso/isolinux/initrd.img to /tftpboot/netinstall/atmos-dev-21__00-22-19-b1-03-26/initrd.img
+
+DEBUG: content of /var/www/html/netinstall/data/atmos-dev-21__00-22-19-b1-03-26/ks.cfg:
+# Kickstart file generated by netinstall
+
+install
+text
+lang en_US.UTF-8
+keyboard us
+timezone America/New_York
+skipx
+network --device eth0 --onboot yes --hostname atmos-dev-21 --bootproto static --ip 10.32.171.21 --netmask 255.255.255.0 --gateway 10.32.171.1 --nameserver 10.32.97.148
+url --url http://10.32.171.181/iso/,mnt,nfs45,iso_tools,adk-1.3.1.0-x86_64-disc1.iso
+rootpw "ChangeMe"
+firewall --disabled
+selinux --disabled
+authconfig --enableshadow --enablemd5
+bootloader --location=mbr --append quiet
+clearpart --all --initlabel
+part /boot --fstype ext3 --size=100 --ondisk=sda --asprimary
+part swap --size=1024 --ondisk=sda --asprimary
+part / --fstype ext3 --size=512 --grow --ondisk=sda --asprimary
+reboot
+
+%packages
+@everything
+
+%post
+[3] Kickstart config written to /var/www/html/netinstall/data/atmos-dev-21__00-22-19-b1-03-26/ks.cfg
+
+DEBUG: content of /tftpboot/pxelinux.cfg/01-00-22-19-b1-03-26:
+default atmos-dev-21__00-22-19-b1-03-26
+label atmos-dev-21__00-22-19-b1-03-26
+    kernel /netinstall/atmos-dev-21__00-22-19-b1-03-26/vmlinuz
+    append loglevel=debug nokill ks=http://10.32.171.181/netinstall/data/atmos-dev-21__00-22-19-b1-03-26/ks.cfg initrd=/netinstall/atmos-dev-21__00-22-19-b1-03-26/initrd.img devfs=nomount ramdisk_size=16384 ksdevice=00:22:19:b1:03:26
+[4] pxelinux config written to /tftpboot/pxelinux.cfg/01-00-22-19-b1-03-26
+
+DEBUG: content of /tftpboot/pxelinux.cfg/01-00-22-19-B1-03-26:
+default atmos-dev-21__00-22-19-b1-03-26
+label atmos-dev-21__00-22-19-b1-03-26
+    kernel /netinstall/atmos-dev-21__00-22-19-b1-03-26/vmlinuz
+    append loglevel=debug nokill ks=http://10.32.171.181/netinstall/data/atmos-dev-21__00-22-19-b1-03-26/ks.cfg initrd=/netinstall/atmos-dev-21__00-22-19-b1-03-26/initrd.img devfs=nomount ramdisk_size=16384 ksdevice=00:22:19:b1:03:26
+[5] Pxelinux config written to /tftpboot/pxelinux.cfg/01-00-22-19-B1-03-26
+
+[6] Now power on your machine and boot from network
+
+Succeed.
+------------------------------- spliter -------------------------------
+
 
 *** Preparation setup - by Yue:
 1) Prepare pit config file or even pit extend config file. 
@@ -2556,6 +2698,7 @@ Emacs Tip: Install Ispell on Windows
 **** set archive mode
 if not use frequently, use archive mode (c-c c-x c-a), use same command can unarchive
 
+C-u Number command - execute "command" in "Number" times
 ** Git use
 
 *** Github.com - my online git backup home
@@ -2999,6 +3142,7 @@ Record what I need to learn and improve for my self. (Internal motivated.)<2009-
 
 ** English words
 
+|-------------+---------------------|
 | stamina     | ¾«Á¦                |
 | hypothesis  | ¼ÙÉè                |
 | notion      | ¹ÛÄî£¬Ïë·¨          |
@@ -3622,6 +3766,8 @@ DoubanDBµÄµ×²ã´æ´¢ÓÃµÄÊÇTokyoCabinet£¬ÊÇÒ»¸öºÜÇáÁ¿¼¶¡¢¸ßÐ§µÄKey-ValueÊý¾Ý¿â¡£ÎÒÃ
 ÄÇÏÖ³¡µÄ¹ÛÖÚÓÐÃ»ÓÐÊ²Ã´ÎÊÌâ£¿ÆäËû¼ÇÕß£ºÎÒÊÇ½Ó×ÅÉçÇøÄÇ¸ö»°ÌâÎÊÒ»ÏÂ£¬¶¹°êÏÖÔÚÓÐÁËºÜ¶àµÄ»ýÀÛ£¬ÓÐºÜ¶à¶«Î÷¶¼ÒÑ¾­³ÉÐÎÁË£¬ÓÐÃ»ÓÐ¿¼ÂÇËµ¿ª·ÅÒ»Ð©ÏîÄ¿£¿
 ÎÒÃÇÊÇÓÐÕâ¸ö¼Æ»®µÄ¡£±ÈÈçËµDoubanDB£¬Êµ¼ÊÉÏÎÒÃÇÔÚ´´Á¢Õâ¸öÏîÄ¿µÄÊ±ºò£¬¾ÍÊÇËµÕâ¸öÏîÄ¿ÎÒÃÇ×ö³öÀ´ºóÊÇÒª¿ªÔ´µÄ£¬µ½ÏÖÔÚ»¹Ã»¿ªÔ´£¬ÊÇÒòÎªÕâ¸öÏîÄ¿»¹ÔÚ±ä»¯Ö®ÖÐ¡£ÓÉÓÚ¿ª·¢µÄÊ±¼äÉÏµÄÏÞÖÆ£¬ËùÒÔÏÖÔÚ»¹ºÍ¶¹°ê±¾ÉíµÄÊý¾Ý°óµÃÌ«½ô£¬ÎÒÃÇ¶øÇÒÒ²ÊÇÔÚ²»¶ÏµØµ÷Õû£¬ÏÖÔÚ»¹ÔÚµ÷ÕûµÄ¹ý³Ìµ±ÖÐ¡£ÕÒÒ»¸öºÏÊÊÊ±»ú£¬ÎÒÃÇ»á°ÑËü¸úµÄ¶¹°êµÄÊý¾Ý°þÀë³öÀ´£¬³ÉÎªÒ»¸ö¿ÉÒÔ¶ÀÁ¢µØÈ¥°²×°¡¢ÔËÐÐµÄÓ¦ÓÃµÄÊ±ºò£¬¾Í»á°ÑËüÄÃ³öÀ´£¬ÎÒÏëÓ¦¸ÃºÜ¿ì¾ÍÄÜ¹»×öµ½Õâµã¡£
 
+*** ¡°´´Òµ½Ì¸¸¡±ÂíÔÆ:CEOµÄ±¾ÊÂ¾ÍÊÇ»áÓÃ±ðÈËµÄÄÔ´ü 
+http://business.sohu.com/20100108/n269457870.shtml
 ** Year 2009
 *** Summary from outlook
 .

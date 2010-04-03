@@ -145,12 +145,14 @@ cosuid -c --name uid1 --subtenid st1 --email a@b.com -u ta1 -p 'password' -t t1
 
 ** TODOLIST
 *** INPROGRESS [#B] decouple genprofile for better organise and rereuse code, consider ip change and reconfiguration together.
+*** INPROGRESS Organize db related bugs and make fix plan
 *** TODO Test force resync db without restart service
 *** TODO seperate setnodeinfo to updatenodeinfo and insertnodeinfo, we have met several cases node UUID has changed due to setnodeInfo. bug #10948
 *** TODO Atmos in a box document update - we cannot support clone operation for existing atmos nodes. more detail see bug #10948
 *** TODO Installation /etc/hosts add public ip end mark
 *** TODO reviewboard git diff support
-*** TODO Setup netinstall in subnet 171
+*** DONE Setup netinstall in subnet 171
+	 CLOSED: [2010-04-03 Sat 20:44]
 *** TODO check installation negative test cases in testlink
 *** DONE review board review process workflow
 	 CLOSED: [2010-03-29 Mon 13:07]
@@ -224,10 +226,30 @@ Slon core threads:
 cheny7@cheny7-desktop ~/source/slony1-2.0.2/src/slon$ tree
 
 -- cleanup_thread.c -> Remove old event and log data
--- local_listen.c -> Wait for local event and scan for event
+-- local_listen.c -> Wait for local event and scan for event. Here the events don't include SYNC event. 
 -- remote_listen.c  (remoteListen_receive_event()) -> Receive event from db tables and pass them to worker thread
--- remote_worker.c  (sync_event()) -> Process event provided by remote listen thread
+-- remote_worker.c  (sync_event()) -> Process event provided by remote listen thread, process SYNC event
 -- sync_thread.c -> Generate SYNC event to local
+
+
+Global data:
+- SlonSet    *rtcfg_set_list_head = NULL;
+- SlonSet    *rtcfg_set_list_tail = NULL;
+- SlonNode   *rtcfg_node_list_head = NULL;
+- SlonNode   *rtcfg_node_list_tail = NULL;
+
+Static data 
+
+static ScheduleStatus	sched_status = SCHED_STATUS_OK;
+static int	sched_numfd = 0;
+static fd_set sched_fdset_read;
+static fd_set sched_fdset_write;
+static SlonConn *sched_waitqueue_head = NULL;
+static SlonConn *sched_waitqueue_tail = NULL;
+static pthread_t sched_main_thread;
+static pthread_t sched_scheduler_thread;
+static pthread_mutex_t sched_master_lock;
+static pthread_cond_t sched_master_cond;
 
 
 slon.c
@@ -236,12 +258,14 @@ slon.c
 - if the node found in sl_path and node is active, spawn remoteWorkerThread, otherwise, skip
 - if one node found in sl_path and the head of listener thread, need to check node listen_status, if listen_status is SLON_TSTAT_NONE, spawn a remoteListenThread, if listen_status is SLON_TSTAT_DONE, join the remoteListenThread. if node is not the head of listener head, mark as need wakeup.
 - reload listen configuration in sl_listen table and init remoteListenThread/remoteWorkerThread.
-- read configuration from table sl_set and sl_subscribe, then wake up set provider
-- 
+- read configuration from table sl_set, then store set and wake up remoteWorker by signal message_cond
+- read configuration from table sl_subscribe, then store subscription and wake up remoteWorker by signal message_cond, if the subscription is active, then enable the subscription by wake up remote nodes worker thread.
+- read last know local event sequence and put to global value rtcfg_lastevent
+- spawn local listen thread if no other slon daemon running
+- spawn cleanup thread and sync thread
 
 
 Remote_worker.c 
-
 - store_confirm_forward -> confirm the received events
 - sync_event -> start process one SYNC
 - 
@@ -251,8 +275,9 @@ Remote_listen.c
 - 
 
 sync_thread.c
-- connect to local db
+- generate local SYNC event to DB and in a configured sync_interval.
 - 
+
 
 scheduler.c
 - spawn scheduling thread which does central select call
@@ -319,7 +344,7 @@ Yubo suggestion:
 Action items:
 1. Think about above suggestion and send a proposal to Yubo
 
-*** [#B] Installation code refactor
+*** INPROGRESS [#B] Installation code refactor
 **** Refactor checklist
 
 find a good way to handle node.cfg, not just use dictionary
@@ -401,6 +426,130 @@ persist to disk
 simply for other work like dns config or cosrestore, etc.
  
 Ming
+*** TODO [#A] Installation restore procedure
+
+**** Restore services and service related data
+- ais: 
+  - private IP address needs to be considered
+  - /etc/passwd add one more user ais (it's ok to not remove this user)
+  - # mauirexec "grep bindnetaddr /etc/maui/qpid/openais.conf" mauirexec "grep bindnetaddr /etc/maui/qpid/openais.conf"
+- authsrv:
+  - slapd configuration should be reverted
+  - mauiauthcfg should be reverted
+  - need further check with Liping
+- mauicc:
+  - remove from chkconfig list
+- claas:
+  - remove from chkconfig list
+- mauifs:
+  - restore configuration file items
+	- Client_Mountpoint /var/local/maui/mauifsmtpt <-- should be cleanup
+	- location
+	- tenant_id
+  - remove mnt point /mnt/mauifs
+  - remove from chkconfig list
+- ganglia:
+  - restore config (/usr/local/maui/ganglia/etc/ganglia/gmetad.conf)j
+	- RM_GMETAD
+	- CLUSTER_NAME
+	- RM_DATA_SOURCE
+	- Location
+	- MCAST_CHANNEL
+	- RMS_List
+	- enableGmondPort
+  - rrd config
+	- remove directory /var/lib/ganglia/rrds (optional)
+  - restore ganglia web config to httpd (optional)
+  - remove srv from chkconfig list (gmetad, gmond)
+- mauijs:
+  - restore config (/etc/maui/js_cfg.xml)
+	- QpidHost
+	- QpidBackupHost
+	- JsSet
+  - remove srv from chkconfig (mauijs)
+- mauimdls:
+  - remove config (/etc/maui/mdls_cfg.xml)
+  - remove srv from chkconfig
+- mauimds:
+  - restore config ()
+	- MDS_MntPt
+	- MDS_Master
+	- MDS_Replication
+	- HOST_IP
+	- TENANT_ID
+	- MDS_IP
+	- MDS_RootOwner
+	- RMS_IP
+	- Location
+  - restore sys config()
+	- comm_port
+	- mds_doc_cache
+	- dbb_env_cache
+  - remove srv from chkconfig
+- ntp:
+  - /etc/ntp.conf (can be reentrant)
+- postgres:
+- qpid:
+  - remove srv from chkconfig (qpidd)
+- mauirms:
+  - remove config
+	- RMS_DBDir
+	- RMS_Loglevel
+	- CLUSTER_NAME
+	- RM_DATA_SOURCE
+	- RMS_LIST
+	- RM_ALLOW_EH
+	- RM_COMPRESSION
+	- RM_METRIC_SRC_LIST
+	- RM_METRIC_SRC
+	- enableGmondPort
+  - remove srv from chkconfig (mauirms)
+- mauiss:
+  - remove seda config
+	- port
+	- dbtype
+	- dbdir
+  - remove ss config
+	- numdisks
+	- action
+	- placement
+	- disklist
+	- reserve
+	- loglevel
+  - remove srv from chkconfig (mauiss)
+  - remove ssdir /mauiss-db/ssbdb
+  - remove ssdiskloc /mauiss-disks
+- mauissproxy:
+  - remove srv from chkconfig
+- spread:
+  - remove config (/etc/eventservice/spread.conf)
+	- Spread_Segment
+  - remove config (/etc/eventservice/es.location)
+  - remove srv from chkconfig
+- mauiws:
+  - restore configuration file items (/etc/maui/mauiws_cfg.xml)
+	- location
+	- tenant_id
+  - restore config (/usr/local/maui/axis2c/services/V1/metadataws.wsdl and /usr/local/maui/axis2c/services/V1/objectws.wsdl)
+	- location in soap11:address and soap12:address 
+  - remove srv from chkconfig
+  - remove /etc/httpd/conf.d/maui.conf /etc/httpd/conf.d/wsstats.conf
+
+*Discuss with Ming about restore utility:* <2010-02-10 12:28>
+
+cleanup segment informaiton nodecfg should be generated from existing information
+
+nodecfgs table redundent? can we generate node.cfg on the fly? need to think about what field is unnesssary.
+
+if we have the source data and generate functions for the new data, it's better to not store these data persistently. The good way is to generate on the fly. prerequisite is generate cost is not big and use frequently.
+
+make file system in git control to check.
+
+try as much as possible to split existing code into small scripts and utility. these small utilities can be used in many places, e.g. put to lightweight task engine
+
+_Review process:_ Try to get Ming involved as early as possible.
+
+first keep original function not change, keep diff as small as possible, which is easy for review, test, patch
 *** [#C] setup autostart
 [root@Jason-130A-001 bin]# export FT_DIR=/etc/autostart/EAS_5.3SP3.patch/Linux/bin
 [root@Jason-130A-001 bin]# export FT_DIR=/etc/autostart/EAS_5.3SP3.patch/Linux
@@ -714,131 +863,6 @@ set config Atmos_PC3public_0v02.cfg
 add ip int=vlan103 ip=dhcp
 
 
-*** INPROGRESS Installation restore procedure
-
-**** Restore services and service related data
-- ais: 
-  - private IP address needs to be considered
-  - /etc/passwd add one more user ais (it's ok to not remove this user)
-  - # mauirexec "grep bindnetaddr /etc/maui/qpid/openais.conf" mauirexec "grep bindnetaddr /etc/maui/qpid/openais.conf"
-- authsrv:
-  - slapd configuration should be reverted
-  - mauiauthcfg should be reverted
-  - need further check with Liping
-- mauicc:
-  - remove from chkconfig list
-- claas:
-  - remove from chkconfig list
-- mauifs:
-  - restore configuration file items
-	- Client_Mountpoint /var/local/maui/mauifsmtpt <-- should be cleanup
-	- location
-	- tenant_id
-  - remove mnt point /mnt/mauifs
-  - remove from chkconfig list
-- ganglia:
-  - restore config (/usr/local/maui/ganglia/etc/ganglia/gmetad.conf)j
-	- RM_GMETAD
-	- CLUSTER_NAME
-	- RM_DATA_SOURCE
-	- Location
-	- MCAST_CHANNEL
-	- RMS_List
-	- enableGmondPort
-  - rrd config
-	- remove directory /var/lib/ganglia/rrds (optional)
-  - restore ganglia web config to httpd (optional)
-  - remove srv from chkconfig list (gmetad, gmond)
-- mauijs:
-  - restore config (/etc/maui/js_cfg.xml)
-	- QpidHost
-	- QpidBackupHost
-	- JsSet
-  - remove srv from chkconfig (mauijs)
-- mauimdls:
-  - remove config (/etc/maui/mdls_cfg.xml)
-  - remove srv from chkconfig
-- mauimds:
-  - restore config ()
-	- MDS_MntPt
-	- MDS_Master
-	- MDS_Replication
-	- HOST_IP
-	- TENANT_ID
-	- MDS_IP
-	- MDS_RootOwner
-	- RMS_IP
-	- Location
-  - restore sys config()
-	- comm_port
-	- mds_doc_cache
-	- dbb_env_cache
-  - remove srv from chkconfig
-- ntp:
-  - /etc/ntp.conf (can be reentrant)
-- postgres:
-- qpid:
-  - remove srv from chkconfig (qpidd)
-- mauirms:
-  - remove config
-	- RMS_DBDir
-	- RMS_Loglevel
-	- CLUSTER_NAME
-	- RM_DATA_SOURCE
-	- RMS_LIST
-	- RM_ALLOW_EH
-	- RM_COMPRESSION
-	- RM_METRIC_SRC_LIST
-	- RM_METRIC_SRC
-	- enableGmondPort
-  - remove srv from chkconfig (mauirms)
-- mauiss:
-  - remove seda config
-	- port
-	- dbtype
-	- dbdir
-  - remove ss config
-	- numdisks
-	- action
-	- placement
-	- disklist
-	- reserve
-	- loglevel
-  - remove srv from chkconfig (mauiss)
-  - remove ssdir /mauiss-db/ssbdb
-  - remove ssdiskloc /mauiss-disks
-- mauissproxy:
-  - remove srv from chkconfig
-- spread:
-  - remove config (/etc/eventservice/spread.conf)
-	- Spread_Segment
-  - remove config (/etc/eventservice/es.location)
-  - remove srv from chkconfig
-- mauiws:
-  - restore configuration file items (/etc/maui/mauiws_cfg.xml)
-	- location
-	- tenant_id
-  - restore config (/usr/local/maui/axis2c/services/V1/metadataws.wsdl and /usr/local/maui/axis2c/services/V1/objectws.wsdl)
-	- location in soap11:address and soap12:address 
-  - remove srv from chkconfig
-  - remove /etc/httpd/conf.d/maui.conf /etc/httpd/conf.d/wsstats.conf
-
-*Discuss with Ming about restore utility:* <2010-02-10 12:28>
-
-cleanup segment informaiton nodecfg should be generated from existing information
-
-nodecfgs table redundent? can we generate node.cfg on the fly? need to think about what field is unnesssary.
-
-if we have the source data and generate functions for the new data, it's better to not store these data persistently. The good way is to generate on the fly. prerequisite is generate cost is not big and use frequently.
-
-make file system in git control to check.
-
-try as much as possible to split existing code into small scripts and utility. these small utilities can be used in many places, e.g. put to lightweight task engine
-
-_Review process:_ Try to get Ming involved as early as possible.
-
-first keep original function not change, keep diff as small as possible, which is easy for review, test, patch
-
 ** Atmos IMPROVEMENT areas
 *** Cluster Task module redesign - sync framework
 Design consideration:
@@ -864,6 +888,7 @@ If we want to have a common library for others to use, we should improve followi
 - Have owner to review all codes related to pylib
 
 ** Debug command collection
+*** MISC commands
 select id, call, input, status, retval from tasks order by id;
 select id,scope, scopeuuid, call, input, status, retval from tasks where id>10 and call='synclb' order by id;
 
@@ -973,9 +998,28 @@ svn copy  https://tvg01.lss.emc.com/svn/maui/trunk  https://tvg01.lss.emc.com/sv
 
 svn copy  https://tvg01.lss.emc.com/svn/maui/branches/atmos-1.2.0  https://tvg01.lss.emc.com/svn/maui/branches/atmos-1.2.5-gui -m "create branch from 1.2.0 (r37176) for gui 1.2.5 getwell projects."
 
+tcpdump -vXn -s 1500 port 80 -i lo
 
-*** Debug REST api
+*** Debug REST API
 curl -v -k -D ./rcvHeaders.txt -d "" -H "x-atmos-tenantadmin:ta1" -H "x-atmos-tenantadminpassword:password" -H "x-atmos-authType:password" -H "x-atmos-uid:u1" -H "Accept:"  -H "User-Agent:" https://10.32.109.112:443/sysmgmt/tenants/t1/subtenants/t1/uids
+*** Debug POX API test
+login and create cookie for sysadmin
+# curl -d "auth_type=local&auth_addr=&username=MauiAdmin_pit&password=password" -k https://10.32.171.51:443/mgmt_login/verify -v -H "Accept:application/xml" -c sysadmin_cookie
+
+list tenant by sysadmin - need to specify cookied just generated.
+# curl -d "auth_type=local&auth_addr=&username=MauiAdmin_pit&password=password" -k https://10.32.171.51:443/maui_admin/list_tenant -v -H "Accept:application/xml" -b sysadmin_cookie
+
+assign node for NFS access - need cookie
+# curl -k https://10.32.171.51:443/maui_admin/submit_assign_tenant_node -v -H "Accept:application/xml" -b sysadmin_cookie -d "tenant_name=t1&nodes[auto-130A-004]=on&fs[auto-130A-004]=nfs"
+
+assign node for WS access - need cookie
+# curl -k https://10.32.171.51:443/maui_admin/submit_assign_tenant_node -v -H "Accept:application/xml" -b sysadmin_cookie -d "tenant_name=t1&nodes[auto-130A-004]=on&ws[auto-130A-004]=on"
+
+create cookie for tenantadmin
+# curl -d "tenant_name=t1&username=t1a&password=password" -k https://10.32.171.51:443/user/verify -v -H "Accept:application/xml" -c tenantadmin_cookie
+
+create nfs share under tenant t1 - need cookie
+# curl -k https://10.32.171.51:443/sub_tenant_admin/submit_add_node_nfs -v -H "Accept:application/xml" -b tenantadmin_cookie -d "node_uuid=50288D1B-47AE-77A6-875D-EAE4855F1F73&subtenant_name=t1&share_path=nfs_path&host=*&io=rw&squash=no_root_squash&sync=no&idmap=&secure=no&anonuid=&anongid=&squash_uids=&squash_gids=&sub_tenant_name=t1"
 
 *** Debug large scale installation
 
@@ -1208,10 +1252,12 @@ cp /usr/lib/syslinux/pxelinux.0 /tftpboot
    ./install.sh netinstall             # Install to "netinstall" under web root
 
 8. modify netinstall configuration file
+# cd /var/www/html/netinstall/
+# vi index-defs.php
+  change pxe_subnets, maap_iso_dirs, cap_iso_dirs and rhel_iso_dirs.
 
 9. test netinstall in debug mode
-
-- netinstall debug message:
+   - netinstall debug message:
 ------------------------------- spliter -------------------------------
 DEBUG: tftpboot_root: /tftpboot
 DEBUG: install_tag: atmos-dev-21__00-22-19-b1-03-26
@@ -1312,7 +1358,18 @@ Succeed.
 
 Verify result: see email which mauits has sent out.
 
-*** Set up large scale testbed for mgmt DB test
+*** Set up large scale testbed - NEW
+# ssh cheny7@10.32.180.27
+
+# cd /opt/pit-framework/
+
+# bin/pit.sh -c conf/testbeds/maap/cheny7-174.11-202.conf --image /share/pub/MauiImages/atmos-1.3.1/atmos-auto-1.3.1.50016-x86_64-disc1.iso -i cheny7 os product
+
+*** Set up large scale testbed for mgmt DB test - OLD
+------------------------------- spliter -------------------------------
+DONT USE THIS WAY. It's for old PIT.
+------------------------------- spliter -------------------------------
+
 1. ssh cheny7@10.32.109.95 password
 2. Go to pit directory
 3. Prepare configuration files
@@ -2075,7 +2132,6 @@ Short term
 - whether we need to do this 
 - many changes to web service, client and mds side
 
-
 ** Mgmt DB roadmap TODO list										:ARCHIVE:
 *** CANCELED Think about divide db data and log to different disks which we can leverage external DAE disks
 	 CLOSED: [2010-02-12 Fri 11:24]
@@ -2112,7 +2168,6 @@ Upgrade:
 	 CLOSED: [2010-02-12 Fri 11:22]
 *** CANCELED Can we consider add more postgresql nodes to pgcluster to improve availability
 	 CLOSED: [2010-02-12 Fri 11:22]
-
 
 ** Upgrade develop and check process								:ARCHIVE:
 *** Be the owner of upgrade 
@@ -2923,6 +2978,16 @@ Upgrade process: (From management station client to trigger)
 
 * Learning 															  :THINK:
 ** !!!Five minutes!!!
+*** <2010-04-01 18:02>
+After some days thinks about on the future career development, I have talked with Yubo and Kenny about my thought on the future development - mgmt track focus. I do not think i'm suitable for the real technical person and deep into it. I like to communicate and work in the open mind team. the team is highly promoted and motived by the things everyday they're doing. I also share my three strength to Yubo:
+1. Hard working
+2. Like to communication
+3. Always be initiative
+
+After these two talks, I feel really easy on my frustrated mind for over 3 months. I do think to have a big challenge job not only on technical. Rather than find a new job inside or outside, if have good oppotunities on internal team which match my interest, this should be a win-win status.
+
+Above is not a fool. :) I'm serious! haha...
+
 *** <2010-03-25 10:26>
 Rich's go to detail set me a really good example on review things. I should always verify my words before speak it out. Otherwize, they may not trust you if you make the same mistake several times.
 
@@ -3142,27 +3207,38 @@ Record what I need to learn and improve for my self. (Internal motivated.)<2009-
 
 ** English words
 
-|-------------+---------------------|
-| stamina     | 精力                |
-| hypothesis  | 假设                |
-| notion      | 观念，想法          |
-| cumulative  | 累积的              |
-| corollary   | 推论                |
-| reckless    | 不计后果的          |
-| prudent     | 谨慎的              |
-| deliberate  | 深思熟虑的，故意的  |
-| inadvertent | 不注意的，疏忽的    |
-| amateur     | 业余爱好者          |
-| dictator    | 独裁者              |
-| amortize    | 分期偿还            |
-| condense    | 浓缩                |
-| paradox     | 自相矛盾            |
-| critically  | 批评地,用钻研眼光地 |
-| plural      | 复数的              |
-| Pathology   | 病理，反常          |
-| hazard      | 冒险，危险          |
-| rummage     | 仔细检查，搜查      |
-|             |                     |
+|--------------+---------------------|
+| word         | meaning             |
+|--------------+---------------------|
+| stamina      | 精力                |
+| hypothesis   | 假设                |
+| notion       | 观念，想法          |
+| cumulative   | 累积的              |
+| corollary    | 推论                |
+| reckless     | 不计后果的          |
+| prudent      | 谨慎的              |
+| deliberate   | 深思熟虑的，故意的  |
+| inadvertent  | 不注意的，疏忽的    |
+| amateur      | 业余爱好者          |
+| dictator     | 独裁者              |
+| amortize     | 分期偿还            |
+| condense     | 浓缩                |
+| paradox      | 自相矛盾            |
+| critically   | 批评地,用钻研眼光地 |
+| plural       | 复数的              |
+| Pathology    | 病理，反常          |
+| hazard       | 冒险，危险          |
+| rummage      | 仔细检查，搜查      |
+| adjacent     | 邻近的              |
+| spatial      | 空间的              |
+| conjecture   | 猜想                |
+| interleaving | 交叉,交错           |
+| obstructive  | 阻碍，妨碍          |
+| coalesce     | 接合                |
+| amortize     | 分期偿还            |
+|              |                     |
+
+
 
 ** Reading
 *** 活法
@@ -3464,7 +3540,12 @@ Mgmt:
 一时一事
 这个简单的习惯为我节约了大量时间。首先，它使我对每项任务全神贯注，做起来效率就很高。转换任务会浪费很多时间，因为你不得不重新了解和熟悉它们。单独处理使得切换任务所耗费的时间最小化。实际上，如果可能我会把某一特定主题的任务集中在一起，然后一次完成它们。所以我一次性连续做完我的数学作业。然后去做所有的编程作业。然后去做综合作业。这样，我使我的大脑处于数学思维，编程思维，写作思维，还有艺术思维的状态，并且保持尽可能长时间的保持单一的模式。第二，我觉得这个习惯使我没有拘束也没有压力，我的思维不会因为过多要做的东西而混乱。这种每次只做一件事的习惯，让我忘掉现在任务之外的所有东西。
 
-
+*** My advantage
+1. Diligent
+2. Communication
+3. Initiative
+4. Pay into details
+   
 *** 能够迅速进入专注状态，以及能够长期保持专注状态，是高效学习的两个最重要习惯。
 
 ** Lessons learn from others 										  :THINK:
@@ -3526,6 +3607,8 @@ Action plan:
 
 
 
+**** DoE - Design of experiments<2010-04-02 00:15>
+
 
 *** From Yubo
 1. how to motivate people? (e.g. if move Caihua to do another high priority thing and suspend current ongoing projects, caihua may have concern, what are good points to motivate?)
@@ -3533,6 +3616,14 @@ Action plan:
    - This is also a good chance for you to involve design discussion and think about improvements, a good practice chance
    - This is also good for you to learn from others during the daily upgrade review status meeting. Learn from Yubo how to organize and analyze existing issues and make a clear day by day. 
 
+1on1 with Yubo <2010-04-02 16:03>
+After Kenny joins the team, need to think about my next step focus and development areas I need in the career development. Below are some areas I need to think about to improve, not mean you have this problem but need to pay more attention on these.
+- Keep focus
+- Communication with Caihua, more listening and influence to accept your ideas
+- Communication with peers like Longda/Hang/Lizhong, influence peers to let them know your ideas and agree with you, jump up your mind to a higher level for the next level
+- build influence. build your trust in the team (from impersonality and subjective)
+- improve code quality. from a higher level, even code is ok and easy to read but design is not good as expected, like installation should revisit and accumulate more experiences. from customer point of view to think about problems.
+- database. the biggest issue would be you don't know what you don't know. how you convience Rich and yourself to provide a stable db solution? how to leverage more senior resources and how to ensure db is OK?
 
 *** From Pat Gelsinger
 What's the secret of a succesful career?
@@ -3550,6 +3641,18 @@ BTW, if we need make any improvement, please track it in bugzilla and update the
 
 Think jump out of box - e.g. refine task module or think about another simple solution like state machine to solve
 
+*** Management style from Kenny
+Notes from Ying, why Kenny is suitable for this position:
+1. People focus.
+2. Communication. Not only with US side and direct reports, but will individual engineers. 
+3. Process & Execution. Intel style.
+
+First 1on1 impression
+- don't say much word and 表情严肃
+- continue ask questions about facts. e.g. can you give me an example? 
+- no others :(
+- overall looks direct and deep thinking, need further confirmation and track
+
 *** Management style from Bobby
 Recently there have many 1on1 discussion and meeting with Bobby, here are some thoughts which I think are very good habits and ideas:
 1. transparent management for the group, no secret on the people promotion, level
@@ -3559,6 +3662,11 @@ Recently there have many 1on1 discussion and meeting with Bobby, here are some t
 
 *** Management style from Rich
 Here are some notes collection from Rich's mail and concall:
+
+
+- always ask good and right questions. pay into details and truly understand the behavior. 
+  from nfs/cifs review, he really put very deep insight and questions on the parallel and concurrent issues. these parts are something we have ignored by the assumption.
+
 *** How to manage senior people:
 1. They know their worth
 2. They are organizationally savvy

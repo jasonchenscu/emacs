@@ -61,7 +61,26 @@ Profiling Atmos
 2. Improve self influence in the team 
 3. Have a good team culture on sharing
 
+*** tea session discussion <2010-04-09 15:50>
+
+Yubo:
+- code review and quality  - early May
+- XMBC auto get film metadata - reading code and learn its design and implemtation
+  - brainstorming about some feature design
+  - then learn others how to implement this
+
+Jason:
+- Cassadra - 
+- I/O stack and performance tuning - mid May
+
+Lizhong:
+- Hadoop
+
+Others pick up topics with their preferences
+
 *** Team discussion on next phase topics
+In summary, we want the tea session can have the most effectiveness with specific focus and improve two-way discussion instead of basic knowledge sharing and one-way communication. This would not only save the efforts on preparation for both host and guests, but also have more discussions if guests are fully prepared. 
+
 _<2009-09-07>_
 1. refine existing module architecture
 2. technical related, expericed engineer recommend technical books, everyone read one session and share with other, writing code experience - Yubo
@@ -145,21 +164,30 @@ cosuid -c --name uid1 --subtenid st1 --email a@b.com -u ta1 -p 'password' -t t1
 
 ** TODOLIST
 *** INPROGRESS [#B] decouple genprofile for better organise and rereuse code, consider ip change and reconfiguration together.
-*** INPROGRESS Organize db related bugs and make fix plan
-*** TODO Test force resync db without restart service
+*** DONE Organize db related bugs and make fix plan
+	 CLOSED: [2010-04-09 Fri 09:56]
+*** CANCELED Test force resync db without restart service
+	 CLOSED: [2010-04-07 Wed 16:28]
+*** INPROGRESS eBay migration DC planning
 *** TODO seperate setnodeinfo to updatenodeinfo and insertnodeinfo, we have met several cases node UUID has changed due to setnodeInfo. bug #10948
-*** TODO Atmos in a box document update - we cannot support clone operation for existing atmos nodes. more detail see bug #10948
-*** TODO Installation /etc/hosts add public ip end mark
+*** DONE Atmos in a box document update - we cannot support clone operation for existing atmos nodes. more detail see bug #10948
+	 CLOSED: [2010-04-07 Wed 17:39]
+*** CANCELED Installation /etc/hosts add public ip end mark
+	 CLOSED: [2010-04-07 Wed 16:29]
 *** TODO reviewboard git diff support
 *** DONE Setup netinstall in subnet 171
 	 CLOSED: [2010-04-03 Sat 20:44]
-*** TODO check installation negative test cases in testlink
+*** DONE check installation negative test cases in testlink
+	 CLOSED: [2010-04-07 Wed 16:29]
+*** TODO Hold installation/serviceability join meeting to discuss unify disk mgmt seperate from configuration
 *** DONE review board review process workflow
 	 CLOSED: [2010-03-29 Mon 13:07]
 *** DONE bug 10618 get version from conary command
 	 CLOSED: [2010-03-29 Mon 13:08]
 *** DONE Read REST code from Yong and give feedbacks
 	 CLOSED: [2010-03-29 Mon 16:17]
+*** DONE Add a patch to change mongrel session config to memory store
+	 CLOSED: [2010-04-07 Wed 16:23]
 
 ** Atmos 1.4 cycle
 *** [#A] Slony replication for postgres
@@ -323,7 +351,7 @@ Failure case:
 3. master slon down: data cannot sync
 4. master slon come back: data become sync
 
-**** INPROGRESS Questions
+**** TODO Questions
 
 1. Good way to handle sequence id replication?
    - partition id into master and slave
@@ -344,7 +372,8 @@ Yubo suggestion:
 Action items:
 1. Think about above suggestion and send a proposal to Yubo
 
-*** INPROGRESS [#B] Installation code refactor
+*** [#B] Installation code refactor
+	 CLOSED: [2010-04-09 Fri 09:56]
 **** Refactor checklist
 
 find a good way to handle node.cfg, not just use dictionary
@@ -745,7 +774,6 @@ It will now be restarted as a primary agent.
 
 *** [#B] pylib enhancement
 **** TODO Add one stop wiki page for all system mgmt developement process
-	 SCHEDULED: <2010-03-30 Tue>
 **** TODO refine topology in mauiutility 
 **** Team tea session discussion - I 
 
@@ -1095,6 +1123,9 @@ ipmictl -H 192.168.13.140 -U root -P passwd power_status
 ipmitool -H 192.168.17.11 -U root -P passwd power status
 
 for i in `seq 1 10`; do ipmictl -H 192.168.13.141 power_status;ipmitool -H 192.168.13.141 -U root -P passwd power status;date;sleep 2; done
+
+Check ipmi mgmt controller status
+# ipmitool mc info
 
 
 ** Reviewboard setup notes in Ubuntu
@@ -2753,6 +2784,8 @@ Emacs Tip: Install Ispell on Windows
 **** set archive mode
 if not use frequently, use archive mode (c-c c-x c-a), use same command can unarchive
 
+*** Commands set collection
+M-< M-> go to top and bottom of file
 C-u Number command - execute "command" in "Number" times
 ** Git use
 
@@ -2978,6 +3011,9 @@ Upgrade process: (From management station client to trigger)
 
 * Learning 															  :THINK:
 ** !!!Five minutes!!!
+*** <2010-04-08 21:37>
+From secret - always think what you want to be in your mind! Simple word, huge power! 
+
 *** <2010-04-01 18:02>
 After some days thinks about on the future career development, I have talked with Yubo and Kenny about my thought on the future development - mgmt track focus. I do not think i'm suitable for the real technical person and deep into it. I like to communicate and work in the open mind team. the team is highly promoted and motived by the things everyday they're doing. I also share my three strength to Yubo:
 1. Hard working
@@ -3188,6 +3224,20 @@ Sukwoo recommend me to review paper on ACM transaction on Storage. it's a exciti
   - Be a supervisor and 20w year package
 2. Family
 
+*** Activities
+
+**** Brainstorming - about 80s
+***** 报名
+ 80后，硕士毕业后从成都来了上海打拼快三年了，成了家也有了自己的孩子，目前在外企做软件研发工作。一直很喜欢头脑风暴节目，喜欢看嘉宾对同样问题的争论和不同的精彩意见，同样也喜欢看袁岳在头脑风暴中解决冲突，理清思路的过程。
+
+本人对《体制内外》的讨论更感兴趣，自己虽然有份还算不错的工作，但是最近一直在思考将来的职业生涯和自己对社会对家庭的价值，象牙塔里的研发工作可以让我们的生活单纯，简单，但是当需要面对真正的社会更多的挑战，我发现自己还很差的很远。希望能够参加讨论并使自己对下面的困惑有一些更深入的了解和解答。我的邮件是yunfeng82@gmail.com。希望能够参加节目的讨论。
+
+体制内外的挑战和机会是什么？
+下一个五年或十年的机会在哪里？体制内还是体制外？
+如何让自己得到更多的锻炼，挑战和机会？
+。。。
+
+
 ** My learning plan
 Record what I need to learn and improve for my self. (Internal motivated.)<2009-12-13 21:05>
 *** Technical
@@ -3232,10 +3282,22 @@ Record what I need to learn and improve for my self. (Internal motivated.)<2009-
 | adjacent     | 邻近的              |
 | spatial      | 空间的              |
 | conjecture   | 猜想                |
-| interleaving | 交叉,交错           |
+| interleaving | 交叉,交错       |
 | obstructive  | 阻碍，妨碍          |
 | coalesce     | 接合                |
-| amortize     | 分期偿还            |
+| heuristic    | 启发式的            |
+| commence     | 开始，着手          |
+| contend      | 竞争                |
+| arbitrate    | 仲裁, 公断          |
+| induce       | 导致，引起          |
+| accompany    | 陪伴，伴奏          |
+| likewise     | 同样的              |
+| stagger      | 交错                |
+| proximal     | 最接近的            |
+| jeopardize   | 危害                |
+| possess      | 拥有，占有          |
+| mitigate     | 减轻                |
+| empirical    | 实验式，经验主义的  |
 |              |                     |
 
 
@@ -3395,6 +3457,8 @@ The conflict stemmed from the differing priorities of the two sides.  Intent on 
 　　
 　　　　结语：《观止》讲的是一个超人，如何将一群聪明人都变成超人的故事。但是，我始终愿意相信，可以有另外一种方式，来管理一个中上等水平的团队，不是靠小宇宙爆发，而是靠更好的节奏感与控制力，来完成同样复杂的项目。
 
+*** Secret
+吸引力法则 -- always think about things you want to be!!! don't think about other things which made you unhappy.
 
 *** 浮沉 - 1&2
 <2010-02-19 21:07>
@@ -3652,6 +3716,12 @@ First 1on1 impression
 - continue ask questions about facts. e.g. can you give me an example? 
 - no others :(
 - overall looks direct and deep thinking, need further confirmation and track
+
+Daily mgmt style:
+1. send out weekly status update mail to all team members and share his planning to strengthen the communication across different teams
+2. plan have 1on1 with every engineer to know every engineer
+3. resource planning changes. manager in one team has overall team resource planning in order to make correct plan and make sure the priority and schedule/risk can be addressed.
+4. 
 
 *** Management style from Bobby
 Recently there have many 1on1 discussion and meeting with Bobby, here are some thoughts which I think are very good habits and ideas:
@@ -3927,6 +3997,8 @@ http://business.sohu.com/20100108/n269457870.shtml
 先让自己潜下去,只有潜下去之后,才可能更好的浮上来;勇于面对所有的问题,感谢所有给你挫折感的事情和人.当你解决一个又一个问题之后,就是你真正提升和能力拓展之时,然后再去体会.才会有可能感觉到成就感.但是过程一定会有痛苦,而痛苦的程度取决于你的态度,还会影响你修练的成果与境界.....
 
 要勇于创新，不走常规的大多数的道路越有成功的可能性。
+
+Talk is cheap. Show me the code. -- Linus
 
 ** Good Story
 *** [[http://www.chou-yinshi.com/shownews.asp%3FID%3D2736][七个顶级心理寓言]] [2009-12-13 Sun 15:28]
@@ -4299,3 +4371,12 @@ aaa bbb ccc
 
 | col | name |
 |   1 | a    |
+
+
+nnadf sdkfa;s 
+s
+df as
+d 
+asd
+f sd 
+asd f

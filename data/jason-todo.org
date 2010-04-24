@@ -5,7 +5,7 @@
 #+STARTUP: lognotestate
 #+STARTUP: hidestars
 #+TAGS: WORK(w) THINK(t) LIFE(l) EMACS(e) IMPORTANT(i)
-#+SEQ_TODO: TODO INPROGRESS | DONE CANCELED
+#+SEQ_TODO: TODO INPROGRESS DELE-FOLLOW-UP | DONE CANCELED 
 #+AUTHOR: Jason Chen
 #+EMAIL:  chen_jason@emc.com, yunfeng82@gmail.com
 #+DRAWERS: SNIP
@@ -62,7 +62,8 @@ Profiling Atmos
 3. Have a good team culture on sharing
 
 *** tea session discussion <2010-04-09 15:50>
-
+**** DONE Add wiki page to organize all tea session
+	 SCHEDULED: <2010-04-18 Sun> CLOSED: [2010-04-21 Wed 13:52]
 Yubo:
 - code review and quality  - early May
 - XMBC auto get film metadata - reading code and learn its design and implemtation
@@ -75,6 +76,11 @@ Jason:
 
 Lizhong:
 - Hadoop
+
+<2010-04-16 14:57>
+Longda:
+- Fix DAE driver bug - device driver development
+- PCI driver stack
 
 Others pick up topics with their preferences
 
@@ -163,31 +169,86 @@ cosuid -c --name uid1 --subtenid st1 --email a@b.com -u ta1 -p 'password' -t t1
 
 
 ** TODOLIST
-*** INPROGRESS [#B] decouple genprofile for better organise and rereuse code, consider ip change and reconfiguration together.
-*** DONE Organize db related bugs and make fix plan
-	 CLOSED: [2010-04-09 Fri 09:56]
-*** CANCELED Test force resync db without restart service
-	 CLOSED: [2010-04-07 Wed 16:28]
-*** INPROGRESS eBay migration DC planning
+*** TODO Check reviewboard reporting feature
+*** TODO Update bugzilla
+*** TODO Think about how we can actively handle installation failure cases, but not just stay on the restore utility. If so, there is no need to wait for the installation failure and then we provide a workaround. Read some paper from lisa (large linux system administration)
+- introduce git / svn design
+*** TODO follow up C++ db connection issue - CM db connection module improvement to reduce dependency to system db availability
+*** TODO share atmosconfig and new db pylib module in the installation refactoring process
+*** DELE-FOLLOW-UP Hold installation/serviceability join meeting to discuss unify disk mgmt seperate from configuration
 *** TODO seperate setnodeinfo to updatenodeinfo and insertnodeinfo, we have met several cases node UUID has changed due to setnodeInfo. bug #10948
-*** DONE Atmos in a box document update - we cannot support clone operation for existing atmos nodes. more detail see bug #10948
-	 CLOSED: [2010-04-07 Wed 17:39]
+*** TODO reviewboard git diff support
 *** CANCELED Installation /etc/hosts add public ip end mark
 	 CLOSED: [2010-04-07 Wed 16:29]
-*** TODO reviewboard git diff support
+*** CANCELED Test force resync db without restart service
+	 CLOSED: [2010-04-07 Wed 16:28]
+*** DONE Atmos in a box document update - we cannot support clone operation for existing atmos nodes. more detail see bug #10948
+	 CLOSED: [2010-04-07 Wed 17:39]
 *** DONE Setup netinstall in subnet 171
 	 CLOSED: [2010-04-03 Sat 20:44]
 *** DONE check installation negative test cases in testlink
 	 CLOSED: [2010-04-07 Wed 16:29]
-*** TODO Hold installation/serviceability join meeting to discuss unify disk mgmt seperate from configuration
 *** DONE review board review process workflow
 	 CLOSED: [2010-03-29 Mon 13:07]
+*** DONE Organize db related bugs and make fix plan
+	 CLOSED: [2010-04-09 Fri 09:56]
 *** DONE bug 10618 get version from conary command
 	 CLOSED: [2010-03-29 Mon 13:08]
 *** DONE Read REST code from Yong and give feedbacks
 	 CLOSED: [2010-03-29 Mon 16:17]
+*** DONE compare reviewboard 1.0.5 and 0.9.0, then send to Yubo comments
+	 CLOSED: [2010-04-21 Wed 13:52]
 *** DONE Add a patch to change mongrel session config to memory store
 	 CLOSED: [2010-04-07 Wed 16:23]
+
+** Atmos 1.2.7 cycle
+*** TODO Setup MaaS similar testbed and try to reproduce random subtenant creation issues
+*** DONE fix pgdbsetup dup record - wait Yubo response
+	 CLOSED: [2010-04-20 Tue 11:23]
+*** DONE eBay migration DC planning
+	 CLOSED: [2010-04-20 Tue 11:23]
+------------------------------- spliter -------------------------------
+first draft 
+-	eBay migration plan process
+	Add 3rd RMG
+	Migrate data/metadata
+	Remove old RMG
+
+-	Project scope
+	Provide the procedure to remove RMG after data migration finished from management database and service configuration
+
+-	Project WBS
+	Procedure for removing RMG information from system database
+	Procedure for reconfiguring existing nodes based on new deployment after remove old RMG
+	Reconfigure MDLS, AS and RMS services in all nodes
+	Procedure for verify system behavior from management perspective
+	Setup similar testbed to eBay
+	Test all procedures
+	Verify system behavior from management perspective
+
+-      Estimate efforts – totally two weeks
+	Write procedure of removing RMG information and reconfigure services – one week
+	Write procedure of verify system behavior – two days
+	Setup and testbed and verify procedures – three days
+
+------------------------------- spliter -------------------------------
+
+** Atmos 1.3.2 cycle
+*** TODO Follow up on corbis installation
+Hi Sukwoo, Ming,
+
+Based on supporting Corbis installation issue, I think we can have below two improvements to follow up. Please let me know your comments. 
+
+1.	Add one limitation on the installation admin guide document. Customer / User can ONLY change the hostname during configuring hostname prefix when adding RMG/segment. Other ways are not supported and might cause hostname resolution issue. We can add this improvement into 1.3.2 document (not sure whether we can still make change for 1.3.1 document).
+2.	Another improvement is we might also need additional precheck step before user configures the system. Current precheck in installation process is not enough in this case. If we can check hostname consistency before trigger CM from GUI, then we can report error as early as possible. 
+
+Thanks,
+Jason
+
+*** INPROGRESS Mongrel session clear cronjob patch
+*** TODO Improve installation error log on CM side. bug #11860
+*** Review mgmt DB related bugs and make planning
+**** DELE-FOLLOW-UP pgdbcheck related bugs should be fixed in 1.3.2
 
 ** Atmos 1.4 cycle
 *** [#A] Slony replication for postgres
@@ -241,6 +302,102 @@ Normally SYNC is always an incremental thing. The only time that Slony-I "synchr
 Note that as far as slon is concerned, there is no "master" or "slave." They are just nodes. 
 
 Check contents of the tables sl_node and sl_path and sl_listen after two nodes have been configured. 
+**** One analyze after have verbose log
+sl_log_1 has the same record in both nodes. 
+1;1094;2;2;"I";"("id","sitename","mcast_addr","uuid","capacity","location") values ('1','site_a','0.0.0.0','0df8b6c2-8905-438d-8405-818d1421bc90','0','sh')"
+1;1098;2;3;"I";"("id","sitename","mcast_addr","uuid","capacity","location") values ('2','site_b','0.0.0.0','0df8b6c2-8905-438d-8405-818d1421bca0','0','sh')"
+
+------------------------------- spliter -------------------------------
+
+sl_event records
+
+1;5000000091;"2010-04-22 11:38:39.648539";"1099:1099:";"SYNC";"";""
+
+1;5000000091;"2010-04-22 11:38:39.648539";"1099:1099:";"SYNC";"";"";
+
+------------------------------- spliter -------------------------------
+
+
+sl_confirm
+
+1;2;5000000091;"2010-04-22 11:38:41.85021"
+
+------------------------------- spliter -------------------------------
+
+sl_sequence has same data in two nodes
+
+34;16410;"sites_id_seq";"public";1;"sites id seq"
+35;16426;"clusters_id_seq";"public";1;"clusters id seq"
+36;16442;"ipranges_id_seq";"public";1;"ipranges id seq"
+37;16453;"nodes_id_seq";"public";1;"nodes id seq"
+38;16466;"nodecfgs_id_seq";"public";1;"nodecfgs id seq"
+39;16488;"faultdomains_id_seq";"public";1;"failtdomains id seq"
+41;16502;"systemjobs_id_seq";"public";1;"systemjobs id seq"
+42;16515;"syncinfos_id_seq";"public";1;"syncinfos id seq"
+43;16527;"conditions_id_seq";"public";1;"conditions id seq"
+44;16538;"tasks_id_seq";"public";1;"tasks id seq"
+45;16565;"alerts_id_seq";"public";1;"alerts id seq"
+46;16578;"dispositions_id_seq";"public";1;"dispositions id seq"
+47;16591;"users_id_seq";"public";1;"users id seq"
+48;16605;"roles_id_seq";"public";1;"roles id seq"
+50;16619;"tenants_id_seq";"public";1;"tenants id seq"
+51;16637;"tenantapps_id_seq";"public";1;"tenantapps id seq"
+52;16648;"subtenants_id_seq";"public";1;"subtenants id seq"
+53;16662;"subtenantpolicies_id_seq";"public";1;"subtenantpolicies id seq"
+54;16673;"exportlists_id_seq";"public";1;"exportlists id seq"
+55;16684;"operationlogs_id_seq";"public";1;"operationlogs id seq"
+56;16697;"authsrvfailover_id_seq";"public";1;"authsrvfailover id seq"
+58;16716;"groups_id_seq";"public";1;"groups id seq"
+60;16732;"policyfiles_id_seq";"public";1;"policyfiles id seq"
+61;16743;"policyinfos_id_seq";"public";1;"policyinfos id seq"
+62;16754;"batchinfos_id_seq";"public";1;"batchinfos id seq"
+63;16767;"batchdescs_id_seq";"public";1;"batchdescs id seq"
+64;16780;"nfsentries_id_seq";"public";1;"nfsentries id seq"
+
+------------------------------- spliter -------------------------------
+sl_seqlog
+
+master doesn't have 5000000091, below is slave about 5000000091
+
+44;1;5000000091;1
+47;1;5000000091;1
+37;1;5000000091;1
+43;1;5000000091;1
+56;1;5000000091;1
+62;1;5000000091;1
+58;1;5000000091;1
+48;1;5000000091;1
+45;1;5000000091;1
+63;1;5000000091;1
+46;1;5000000091;1
+42;1;5000000091;1
+51;1;5000000091;1
+64;1;5000000091;1
+33;1;5000000091;1
+38;1;5000000091;1
+34;1;5000000091;1
+35;1;5000000091;1
+39;1;5000000091;1
+53;1;5000000091;1
+55;1;5000000091;1
+60;1;5000000091;1
+41;1;5000000091;1
+50;1;5000000091;1
+61;1;5000000091;1
+52;1;5000000091;1
+54;1;5000000091;1
+36;1;5000000091;1
+
+------------------------------- spliter -------------------------------
+sl_setsync
+
+master is empty, below is slave table info
+
+1;1;5000000091;"1099:1099:";"''"
+
+------------------------------- spliter -------------------------------
+
+
 
 **** INPROGRESS Slony source code workflow
 
@@ -248,7 +405,35 @@ During configuration and setup:
 
 In master node:
 
+1. insert one record in sites table
+2. after trigger work and generate
+3. localListenThread get new local event from sl_event table (to local table or both local/remote? should be only local)
+
+....
+
+4. after slave finish sync? remoteListen thread get sl_event and sl_confirm from slave and forward confirm query to remoteWorkerThread
+5. remoteWorkerThread get the event from remoteListen and call sp forwardConfirm to store into local sl_confirm table
+
+remoteListen 
+
 In slave node:
+1. remoteListenThread (remoteListen_receive_events) get one SYNC event from sl_event table (from local or remote? should be remote) and put to worker queue. Here reload SYNC event large group maxsize is 100 by code default.
+2. remoteWorkerThread (remoteWorkerThread_main) receives SYNC event from remoteListenThread and insert event to local sl_event table
+3. remoteWorkerThread (sync_event) invoke remoteHelpThread to (where is sl_log_status?) read from sl_log_x table for the real data
+   e.g: 1;22070;2;11;"I";"(id,sitename,mcast_addr,uuid,capacity,"location") values ('5','site_c','0.0.0.0','0df8b6c2-8905-438d-8405-818d1421bcaa','0','sh')"
+4. remoteHelpThread will get the data from local db and apply to the local table, then wait in another loop for WorkerGroupData
+5. remoteWorkerThread (sync_event) will set seqid, seq_last_value and setsync table for seqno and snapshot
+
+
+
+
+Master running threads:
+syncThread_main
+cleanupThread_main
+remoteListenThread_main
+remoteWorkerThread_main
+localListenThread_main
+
 
 Slon core threads:
 cheny7@cheny7-desktop ~/source/slony1-2.0.2/src/slon$ tree
@@ -299,7 +484,7 @@ Remote_worker.c
 - 
 
 Remote_listen.c
-- remoteListen_receive_events -> Retrieve all new events from origin nodes
+- remoteListen_receive_events -> Retrieve all new events from origin nodes and forward to remoteWorkerThread
 - 
 
 sync_thread.c
@@ -311,10 +496,35 @@ scheduler.c
 - spawn scheduling thread which does central select call
 - schedule events in the main loop
 
-**** TODO Good testing tools
+Runtime_config.c
+- mgmt operations for node, path, listen, set, subscription-
+- startStopNodeThread: 
+  - check current node worker status and start remoteWorkerThread if needed.
+  - check current node listen head and active status, then spawn remoteListenThread 
+
+
+**** Good testing tools
 In tools directory:
 test_slony_state.pl and test_slony_state-dbi.pl, described in [[http://www.slony.info/documentation/maintenance.html][here]]. this is recommend to use after adding a node to replication.
 
+**** Debugging commands
+INSERT INTO sites VALUES ( 1, 'site_a', '0.0.0.0', '0df8b6c2-8905-438d-8405-818d1421bc90', '0', 'sh');
+
+select * from _system.sl_node;
+
+Check postgresql database information for each table
+# SELECT * from pg_tables order by schemaname;
+
+**** Other learnings
+Schema in database: A schema is essentially a namespace: it contains named objects (tables, data types, functions, and operators) whose names can duplicate those of other objects existing in other schemas. Named objects are accessed either by “qualifying” their names with the schema name as a prefix, or by setting a search path that includes the desired schema(s). A CREATE command specifying an unqualified object name creates the object in the current schema (the one at the front of the search path, which can be determined with the function current_schema). 
+
+There are several reasons why one might want to use schemas: 
+
+To allow many users to use one database without interfering with each other. 
+
+To organize database objects into logical groups to make them more manageable. 
+
+Third-party applications can be put into separate schemas so they cannot collide with the names of other objects. 
 
 
 **** Slony important links
@@ -351,7 +561,7 @@ Failure case:
 3. master slon down: data cannot sync
 4. master slon come back: data become sync
 
-**** TODO Questions
+**** Questions
 
 1. Good way to handle sequence id replication?
    - partition id into master and slave
@@ -359,7 +569,15 @@ Failure case:
    - not replicate sequence, just adjust them when slave promote master
 2. What monitoring or troubleshooting tools we need if any error happens in service and data corruption?
 3. When run MOVE SET, what's the potential issues we might meet? locking? no service? data lost?
-4. 
+4. sometimes master doesn't have confirm for some events number
+
+
+what's most common slony failure scenarios or limitation? 
+what's use case we should not use slony?
+what's most worst case when slony fails? data lost? any other things we can imagine?
+can slony be used in WAN? if we have master-slave in LAN, is it easy to add second slave in WAN? if easy to add, how about failover operations?
+
+
 
 *** [#A] Task module improvement
 
@@ -411,6 +629,9 @@ db instance should be better since we may not use db at all in future. module fu
 4. table driven implementation to tolerate future changes without main code change. See svn #49839 on how to handle more switches OID in the future. (From Ming)
 
 first take out all db operations from main control logic, like genprofile, netconfig
+
+5. should not depend on sequence by id, but by content. -- from Yubo
+
 **** nodecfg consideration from ming
 HI Jason
  
@@ -456,7 +677,7 @@ simply for other work like dns config or cosrestore, etc.
  
 Ming
 *** TODO [#A] Installation restore procedure
-
+**** INPROGRESS [#B] decouple genprofile for better organise and rereuse code, consider ip change and reconfiguration together.
 **** Restore services and service related data
 - ais: 
   - private IP address needs to be considered
@@ -819,6 +1040,29 @@ Open questions:
 **** DONE initDB -  --no-locale --encoding=EUC_JP
 	 CLOSED: [2010-02-12 Fri 10:15]
 
+** VISION - Database server/client 
+*** For DB API layer
+1st phase: hide the db deployment details to the client application
+- separate application and database 
+- existing db api layer function routine
+- have sql in the functions. 
+- C++ and python may can share the same logic by using adapter, but need more investigation and tradeoff
+
+2nd phase: have some small object level abstraction
+- for new created object can have a try on the object modeling for the eventually object modeling of data store layer
+
+3rd phase: provide ORM layer for the data store access
+- hide db deployment details also to the db api layer but into db connection side
+- easy to change data store type to other... like memcache, file, etc.
+*** For DB server layer
+- Replication: Slony
+- Connection pool: pgpool
+
+** VISION - Installation
+
+phase:
+
+- make big logic into small module. small module is easy to handle error handing and extend
 
 ** Installtion collection
 *** Switch configuration
@@ -903,7 +1147,6 @@ AMQP model:
 - Client subscriber
 - Publisher
 
-
 how to decouple task execute engine and detail task command ?
 if there has any relations between tasks, should these task be *divided* into several small tasks?
 
@@ -914,6 +1157,125 @@ If we want to have a common library for others to use, we should improve followi
 - Have a common standard convention to enhance and maintain pylib source code, easy to maintain and extend
 - Good document to find out API easily (sphinix?)
 - Have owner to review all codes related to pylib
+
+
+*** DB related
+**** db connection timeout for C++ and python
+From Yubo:
+
+Sounds good.
+
+_____________________________________________
+From: Chen, Jason (CIG) 
+Sent: Tuesday, April 13, 2010 10:57 AM
+To: Yin, Caihua; Zhao, Yubo
+Subject: RE: The way to set connection timeout for C and python library
+
+
+From my understanding, postgresql C library doesn’t provide this kind of capability from its document. 
+
+For GUI, we all depends on ActiveRecords to handle db connection and execution. We need to dig into its implementation to check whether we can handle timeout during sql execution time. Currently when GUI access DB each time, db connection interface will have a try on update db records to check whether it can be accessible.
+
+For CM, I agree with Caihua, we need to handle this log in an upper level. This can reduce the issue happen frequency rate but not totally solve it. Another improvement is use transactions for some time consuming job to ensure data consistency. Till now we don’t have much trouble on this side but it’s one area we need to improve. We will put this one into db improvement roadmap and consider after we finish existing slony things. 
+
+Thanks,
+Jason
+_____________________________________________
+From: Yin, Caihua 
+Sent: Tuesday, April 13, 2010 9:09 AM
+To: Zhao, Yubo; Chen, Jason (CIG)
+Subject: RE: The way to set connection timeout for C and python library
+
+
+Rummage this topic via Google, but don't get any useful information. Jason, do you have any idea about this?
+
+As I think, for both GUI and CM, we can avoid long held connection at application level. Take log collection for example, let's assume a time consuming job which need access db during its execution, we can change the application flow as follows reduce the hang rate:
+….
+Connect db
+Time consuming job
+Operation on db
+Close db
+...
+	|
+	|
+           V
+….
+Time consuming job
+Connect db
+Operation on db
+Close db
+…
+
+However, it's just an alternative way to bypass this issue. It will be better if we can solve it on db side.
+
+_____________________________________________ 
+From: 	Zhao, Yubo  
+Sent:	2010年4月12日 19:55
+To:	Yin, Caihua; Chen, Jason (CIG)
+Subject:	RE: RE: The way to set connection timeout for C and python library
+
+I assume this problem exists for GUI and CM as well.
+It’s not a blocking issue for now, but it will be great if we can decrease the timeout value to less one minutes. For example, in GUI, if the DB get down in the middle of log collection, it will like hang there, which is not user friendly. Not sure whether there is any place to configure this value, did you find there are similar issue reports on internet?
+
+_____________________________________________
+From: Yin, Caihua 
+Sent: Monday, April 12, 2010 5:25 PM
+To: Zhao, Yubo; Chen, Jason (CIG)
+Subject: RE: The way to set connection timeout for C and python library
+
+
+
+Late follow up.
+
+For the case that connection is established successfully and then node is down or network is disconnected, we still met the hang issue during the process of transaction( For python library, it will hang for around 15 minutes. ) 
+
+Since currently we don't have any long held connections for daemon applications, this case may rarely happen. Therefore, I think we can simply keep this issue in mind and just add the timeout logic for connection operation. What's your opinion?
+
+-----Original Message-----
+From: Yin, Caihua 
+Sent: 2010年4月2日 21:21
+To: Zhao, Yubo; Chen, Jason (CIG)
+Subject: RE: The way to set connection timeout for C and python library
+
+Only cover the connection test now, need further verification for that case. Thanks for pointing it out.
+
+Thanks,
+Caihua
+
+--- original message ---
+From: "Zhao, Yubo" <Zhao_Yubo@emc.com>
+Subject: RE: The way to set connection timeout for C and python library
+Date: 02nd April 2010
+Time: 8:18:54 
+
+Good job! Thanks Caihua.
+
+Does this timeout work on a transaction in process? I mean if the slave node get down when a transaction is in progress.
+
+_____________________________________________
+From: Yin, Caihua 
+Sent: Friday, April 02, 2010 5:48 PM
+To: Chen, Jason (CIG)
+Cc: Zhao, Yubo
+Subject: The way to set connection timeout for C and python library
+
+
+Hi Jason,
+
+We can set the connection time out for both C/C++ and python library. This morning's talk recalls me something about this in postgresql doc. The solution is as follows:
+
+For C( libpq ):
+	Use the DSN like this: "host=10.32.171.148 dbname=system.db user=postgres connect_timeout=5"
+	Then when the app tries to connect a postgresql which is down there, it will be timeout after 5 seconds, not hang there for a long while as follows.
+	
+For python: 
+	There's no such parameter connect_timeout in python library, but another way: set PGCONNECT_TIMEOUT=5 as environment variable before connecting to the db. 
+
+
+It seems both the CM and db.py don't have this setting, it will be helpful to reduce the hang time by this.
+
+Thanks,
+Caihua
 
 ** Debug command collection
 *** MISC commands
@@ -1007,6 +1369,9 @@ find . -type d -name '.svn' -exec rm -rf {} \;
 find . -name "*.rhtml" -type f -exec grep Maui -Hn {} \;
 find . -exec grep -q "itf" '{}' \; -print | xargs sed -i 's/itf/production/g'
 
+# Find files which older than 5 minutes and delete
+find /path/to/files* -mtime +5 -exec rm {} \;
+
 develop your own grep example : (~/bin/greps)
 #!/bin/bash
 find . -type f \{ -name "*.c" -o -name "*.h"\} - print | xargs grep "$@"
@@ -1065,6 +1430,9 @@ mauirexec "grep TaskUUIDList /var/log/maui/cm.log " > TaskUUIDList_stat
 Jumpbox: 
   - id: kangs5@bos01-cig02.emcatmos.com
   - passwd: Steel4Celery66
+
+  - id: chenj15@bos01-cig02.emcatmos.com
+  - passwd: pass@word1
 
 Master node: 
   - id: wangc14@172.16.16.80
@@ -2823,6 +3191,65 @@ C-u Number command - execute "command" in "Number" times
 
 
 ** Linux tips and good tools
+*** Good debugging tools
+**** blktrace
+blktrace is a block layer IO tracing mechanism which provides detailed information about request queue operations up to user space. it is like a micro level iostat which can tell exactly which application send what kind of io. the io offset, timestamp 
+
+http://git.kernel.org/?p=linux/kernel/git/axboe/blktrace.git;a=blob;f=README
+
+**** systemtap
+Linux Dtrace solution. if you know the power of dtrace in solaris, then you know how powerful it is. see this
+
+http://sourceware.org/systemtap/wiki/HomePage 
+
+**** iptraf
+IPTraf is a console-based network statistics utility for Linux. It gathers a variety of figures such as TCP connection packet and byte counts, interface statistics and activity indicators, TCP/UDP traffic breakdowns, and LAN station packet and byte counts.
+
+http://iptraf.seul.org/ 
+
+**** iotop
+a utility show how many io per process does. 
+
+http://guichaz.free.fr/iotop/
+
+**** screen
+
+a linxu window manager allow multiple console share same window. poor man's webex. also it can help to save all commands entered and their output. so it is great for capture operation logs. 
+
+http://www.gnu.org/software/screen/
+
+A good screen guide:
+  http://en.gentoo-wiki.com/wiki/Screen
+
+screen rc from Matt...
+
+# screen -c <rcfile>
+# sessionname mauits
+autodetach on
+vbell off
+defscrollback 99999
+bindkey -k kP copy
+
+hardstatus alwayslastline "%-Lw%{= BW}%50>%n%f* %t%{-}%+Lw%<"
+
+screen -t run 0
+#screen -t x53 1 ssh -i .ssh/mauits.sshkey -l root 10.32.73.53
+#screen -t x54 2 ssh -i .ssh/mauits.sshkey -l root 10.32.73.54
+#screen -t x55 3 ssh -i .ssh/mauits.sshkey -l root 10.32.73.55
+#screen -t x56 4 ssh -i .ssh/mauits.sshkey -l root 10.32.73.56
+#screen -t mauits 5
+
+
+*** Get public IP by not depend on any config files
+
+Previous we use 
+# sed -n 's/IPADDR=\(.*\)/\1/p' /etc/sysconfig/network-scripts/ifcfg-eth1
+
+Above method is highly depend on release type. E.g, CAP has but SUSE doesn't have that config
+
+Better way to get this is through below command
+# ip route get 223.255.254.254 | grep 'dev .* src ' | sed 's/.*src//'
+
 
 *** Good cmd utility from commandlinefu.com
 
@@ -2942,6 +3369,7 @@ dmesg -c > log (-c mean clear)
 Ctrl-Alt-f1 -> console
 Alt-f7 -> GUI
 
+*** One good book - self service Linux - from Ming
 ** Good cluster management solution
 *** [[http://reductivelabs.com/products/puppet/][Puppet]] - Puppet helps accomplish the goal of a hands-off, automated infrastructure. 
 The benefits of automated infrastructure go beyond policy-enforced consistency and auditing.  The impact of hardware failure and other disaster scenarios can be mitigated, as services can be quickly restored by Puppet.
@@ -3011,6 +3439,17 @@ Upgrade process: (From management station client to trigger)
 
 * Learning 															  :THINK:
 ** !!!Five minutes!!!
+*** <2010-04-09 22:34>
+Today during my lunch session with Stephen, he gave me many very suggestion. here is summary
+1. emc sales this year is tough due to expo 2010sh
+2. always be active to do the work, think about how to improve and talk to your manager for support
+3. smile and be optimistic on your work, have passion to do things
+4. think about what you can improve and you want to do. ask people who can support you
+
+From Yubo 1on1
+1. still need to learn how to deal with your manager. 
+2. have a list of priority things you want to do and always keep in mind 
+
 *** <2010-04-08 21:37>
 From secret - always think what you want to be in your mind! Simple word, huge power! 
 
@@ -3223,6 +3662,9 @@ Sukwoo recommend me to review paper on ACM transaction on Storage. it's a exciti
 1. Job
   - Be a supervisor and 20w year package
 2. Family
+  - Wife
+  - Dudu
+  - Parents
 
 *** Activities
 
@@ -3243,11 +3685,18 @@ Record what I need to learn and improve for my self. (Internal motivated.)<2009-
 *** Technical
 - Programming language
   - C++
-  - STL
-  - Python
+  - STL - 
+  - Python - 
 - Design
   - Design pattern
   - Large system design
+- Linux
+  - Kernel (file system to device driver to block device)
+  - Debugging - self service linux learning
+- Code reading
+  - reviewboard
+  - Slony
+  - Any C++ good source code?
 
 *** Management
 
@@ -3282,7 +3731,7 @@ Record what I need to learn and improve for my self. (Internal motivated.)<2009-
 | adjacent     | 邻近的              |
 | spatial      | 空间的              |
 | conjecture   | 猜想                |
-| interleaving | 交叉,交错       |
+| interleaving | 交叉,交错           |
 | obstructive  | 阻碍，妨碍          |
 | coalesce     | 接合                |
 | heuristic    | 启发式的            |
@@ -3298,6 +3747,10 @@ Record what I need to learn and improve for my self. (Internal motivated.)<2009-
 | possess      | 拥有，占有          |
 | mitigate     | 减轻                |
 | empirical    | 实验式，经验主义的  |
+| malicious    | 恶意的              |
+| steer        | 驾驶，掌舵          |
+| mobilize     | 动员                |
+| reveal       | 展示，揭露          |
 |              |                     |
 
 
@@ -3621,6 +4074,11 @@ Mgmt:
 5. Encourage all team member involvement to learn and share
 6. Actively use bugzilla to track project todo items
 
+
+Think about how to manage up! -- match with your stakeholder priority.
+
+Fix bugs root cause but no just synmptom, here need a tradeoff. but should go as much as close to fix the real problem rather than hide the root cause. Should raise level to fix root cause gradually.
+
 正反馈
 
 Recovery Time Objective (RTO)
@@ -3672,7 +4130,9 @@ Action plan:
 
 
 **** DoE - Design of experiments<2010-04-02 00:15>
-
+- 基于统计学，利用一些工具来设计试验
+- 如果试验有n个factor，如何利用工具能够让试验的影响范围因子远远的小于2的n次方
+- 尽量缩小试验的范围
 
 *** From Yubo
 1. how to motivate people? (e.g. if move Caihua to do another high priority thing and suspend current ongoing projects, caihua may have concern, what are good points to motivate?)
@@ -3949,7 +4409,7 @@ http://business.sohu.com/20100108/n269457870.shtml
 ** Year 2009
 *** Summary from outlook
 .
-* Personal															   :LIFE:
+* Personal 															   :LIFE:
 *** 买房
 -- 明确目标
 1. 总价

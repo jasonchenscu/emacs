@@ -5,7 +5,7 @@
 #+STARTUP: lognotestate
 #+STARTUP: hidestars
 #+TAGS: WORK(w) THINK(t) LIFE(l) EMACS(e) IMPORTANT(i)
-#+SEQ_TODO: TODO INPROGRESS DELE-FOLLOW-UP | DONE CANCELED 
+#+SEQ_TODO: TODO INPROGRESS DELE-FOLLOW-UP | DONE DELEGATED CANCELED 
 #+AUTHOR: Jason Chen
 #+EMAIL:  chen_jason@emc.com, yunfeng82@gmail.com
 #+DRAWERS: SNIP
@@ -14,6 +14,76 @@
 * Non-project related
 ** Initialtive on effective daily work
 *** Effective code review by using ReviewBoard
+
+**** INPROGRESS Reviewforge improvement TODO list [18/24]
+***** INPROGRESS Prepare guidelines for team members on use new ReviewBoard
+***** TODO Add maintainance work in ReviewBoard host (cronjob to backup database, regenerate index)
+***** TODO Remove "Analyze by SCA" and meeting review during create review request
+***** TODO Remove feature?
+***** TODO Idenfity weekly review metrics KPI
+***** TODO Hold kickoff meeting to introduce ReviewBoard
+***** DONE Apply hostname for new ReviewBoard host to be easily used by team members (e.g. review.cigsh.lss.emc.com)
+	  CLOSED: [2010-06-03 Thu 21:48]
+***** DONE Update update document link 
+	  CLOSED: [2010-06-03 Thu 21:48]
+***** DONE Maintain Reviewboard host machine
+	  CLOSED: [2010-06-03 Thu 21:48]
+***** DONE Add new wiki page here
+	  CLOSED: [2010-06-03 Thu 21:48]
+***** DELEGATED Should remove all none-CIG user accounts, right now there at least 11 user accounts had the admin privilege.
+	  CLOSED: [2010-06-01 Tue 15:58]
+***** DELEGATED Should remove all review drafts
+	  CLOSED: [2010-06-01 Tue 15:58]
+***** DELEGATED Should remove all none-CIG repositories
+	  CLOSED: [2010-06-01 Tue 15:58]
+***** DELEGATED Should remove all comments
+	  CLOSED: [2010-06-01 Tue 15:58]
+***** DELEGATED Should remove SME list (Navi uses this for domain expert list which CIG doesn't have currently)
+	  CLOSED: [2010-06-01 Tue 15:58]
+***** DELEGATED Should remove clearcase diff tools during create new review request
+	  CLOSED: [2010-06-01 Tue 15:58]
+***** DELEGATED Should replace logo for EMC CIG
+	  CLOSED: [2010-06-01 Tue 15:58]
+***** DELEGATED Should remove all review requests before ‘4547’, which was our first review request (for testing)
+	  CLOSED: [2010-06-01 Tue 15:58]
+***** DONE Should remove all none-CIG groups  -- [Alex] done.
+	  CLOSED: [2010-06-01 Tue 14:59]
+***** DONE Should remove all none-CIG features   -- [Alex] done.
+	  CLOSED: [2010-06-01 Tue 14:59]
+***** DONE Should remove banner ‘please use firefox ….’  -- [Alex] done.
+	  CLOSED: [2010-06-01 Tue 14:59]
+***** DONE No idea about the link of ‘SME Lists’ from the dashboard, probably should disable it before we have idea about it  -- [Alex] done.
+	  CLOSED: [2010-06-01 Tue 14:57]
+***** CANCELED Write a document about how to review a document. It seems like currently only send out the request and nothing else.
+	  CLOSED: [2010-06-01 Tue 15:56]
+***** CANCELED Should refine document review types
+	  CLOSED: [2010-06-01 Tue 15:56]
+
+
+**** Maintain reviewforge (cigreview.lss.emc.com)
+
+# mysql
+mysql -uroot -p
+/usr/bin/mysqladmin -u root password 'newpassord';
+mysqladmin -h 10.32.109.87 -u root -p password 'pass@word1'
+grant all on *.* to root@'cnrdchenx10l1c.corp.emc.com' identified by 'navichina';
+
+# Change password to handle ERROR 1045: Access denied for user 'root'@'localhost'
+$find / -type f -name "mysql"
+
+Based on the result navigate to the dir then type
+$mysql
+and you will be inside the mysql prompt, then set the root password for mysql
+
+mysql>use mysql;
+mysql>update user set Password=PASSWORD('NewPass') where User='root';
+mysql> flush privileges;
+mysql>exit
+
+# memcache
+/usr/local/bin/memcached -d -m 1024 -u root -l <ip> -p 11211
+
+
 *** Effective meeting
 Preparation
 
@@ -27,7 +97,6 @@ meeting minutes
 
 *** Technical talk sharing
 
-
 *** Effective coding
 High quality code
 
@@ -37,11 +106,7 @@ Debugging Atmos best practice???
 
 Profiling Atmos
 
-
 *** Need more investigation on initialtive
-*** Think about CI for Atmos on long run systems
-
-*** More discussion from Ming
 
 ** Tea session - knowledge sharing in team wide
 
@@ -129,7 +194,7 @@ commit r48851 without review, approval and comments
 •	Later when the assignee has finished the fix work and send the code for reviewing, we can change the keyword to [UnderReviewing];
 •	Other wise the keyword should be removed so others know that the bug is not currently active;
 
-**** Break history
+**** Break history													:ARCHIVE:
 Chunjie - bug 8094 - no UnderReviewing
 Chunjie - bug 10016 - comment from Yubo
 I don’t think we’re doing well for bug 10016 in the below aspects: 
@@ -141,7 +206,7 @@ I will reiterate those principle in dealing with a bug in Bugzilla, but I need e
 
 Thanks,
 Yubo 
-*** Break build/smoke testing
+*** Break build/smoke testing										:ARCHIVE:
 Jiang: commit bug 7898 in revision r40845/40846 <2009-09-19 16:25>
 Chunjie: commit bug 8094 in revision r44833 and fix in 44874 <2009-12-04 21:39>
 Jiang: commit bug 9122 in revision r45005 and fix in 45033 <2009-12-09 17:00>
@@ -151,6 +216,7 @@ Ming: commit bug 10439 in revision r46628 - break slave node installation <2010-
 *** Receive positive feedbacks
 *** Perform good communication
 *** Show initiative and leadership
+
 
 * Project development 												   :WORK:
 ** Command Atmos mgmt command
@@ -168,24 +234,30 @@ cossubtenant -c --name st1 --authtype local -u ta1 -p 'password' -t t1
 cosuid -c --name uid1 --subtenid st1 --email a@b.com -u ta1 -p 'password' -t t1
 
 
-** TODOLIST
-*** TODO Update bugzilla
+** TODOLIST [17/20]
+
 *** TODO Think about how we can actively handle installation failure cases, but not just stay on the restore utility. If so, there is no need to wait for the installation failure and then we provide a workaround. Read some paper from lisa (large linux system administration)
 - introduce git / svn design
 *** TODO follow up C++ db connection issue - CM db connection module improvement to reduce dependency to system db availability
-*** TODO share atmosconfig and new db pylib module in the installation refactoring process
-*** DELE-FOLLOW-UP Hold installation/serviceability join meeting to discuss unify disk mgmt seperate from configuration
 *** TODO seperate setnodeinfo to updatenodeinfo and insertnodeinfo, we have met several cases node UUID has changed due to setnodeInfo. bug #10948
-*** CANCELED reviewboard git diff support
-	 CLOSED: [2010-04-26 Mon 12:00]
 *** DONE Check reviewboard reporting feature
-	 CLOSED: [2010-04-26 Mon 12:00]
+	 CLOSED: [2010-06-01 Tue 14:53]
 *** CANCELED Installation /etc/hosts add public ip end mark
 	 CLOSED: [2010-04-07 Wed 16:29]
+*** CANCELED reviewboard git diff support
+	 CLOSED: [2010-04-26 Mon 12:00]
 *** CANCELED Test force resync db without restart service
 	 CLOSED: [2010-04-07 Wed 16:28]
+*** DONE share atmosconfig and new db pylib module in the installation refactoring process
+	 CLOSED: [2010-06-06 Sun 20:43]
 *** DONE Atmos in a box document update - we cannot support clone operation for existing atmos nodes. more detail see bug #10948
 	 CLOSED: [2010-04-07 Wed 17:39]
+*** DONE Hold installation/serviceability join meeting to discuss unify disk mgmt seperate from configuration
+	 CLOSED: [2010-05-16 Sun 21:02]
+*** DONE collect team member tech sharing topics to Teng Yu
+	 CLOSED: [2010-05-25 Tue 15:45]
+*** DONE Update bugzilla
+	 CLOSED: [2010-05-24 Mon 15:26]
 *** DONE Setup netinstall in subnet 171
 	 CLOSED: [2010-04-03 Sat 20:44]
 *** DONE check installation negative test cases in testlink
@@ -203,14 +275,13 @@ cosuid -c --name uid1 --subtenid st1 --email a@b.com -u ta1 -p 'password' -t t1
 *** DONE Add a patch to change mongrel session config to memory store
 	 CLOSED: [2010-04-07 Wed 16:23]
 
-** Atmos 1.2.7 cycle
-*** TODO Setup MaaS similar testbed and try to reproduce random subtenant creation issues
+** Atmos 1.2.7 cycle [1/3]
+*** INPROGRESS Setup MaaS similar testbed and try to reproduce random subtenant creation issues
 *** DONE fix pgdbsetup dup record - wait Yubo response
 	 CLOSED: [2010-04-20 Tue 11:23]
-*** DONE eBay migration DC planning
-	 CLOSED: [2010-04-20 Tue 11:23]
-------------------------------- spliter -------------------------------
-first draft 
+*** INPROGRESS [#A] eBay migration DC planning
+**** Planning
+
 -	eBay migration plan process
 	Add 3rd RMG
 	Migrate data/metadata
@@ -233,8 +304,211 @@ first draft
 	Write procedure of verify system behavior – two days
 	Setup and testbed and verify procedures – three days
 
-------------------------------- spliter -------------------------------
+**** eBay setup naming tree
 
+- site name
+  - cluster name
+	- node name
+
+- PHX
+  - PHX-IS-1
+    - phxobstor001-001
+    - phxobstor001-002
+    - ...
+    - phxobstor001-008
+  - PHX-IS-2
+	- phxobstor002-001
+	- phxobstor002-002
+	- ...
+	- phxobstor002-008
+  - PHX-IS-3
+  - ...
+  - PHX-IS-6
+	- phxobstor006-001
+	- phxobstor006-002
+	- ...
+	- phxobstor006-008
+- SQW
+  - SQW-IS-1
+	- sqwobstor001-001
+	- sqwobstor001-002
+	- ...
+	- sqwobstor001-008
+  - SQW-IS-2
+  - ...
+  - SQW-IS-6
+	- sqwobstor006-001
+	- ...
+	- sqwobstor006-008
+- SLC
+  - SLC-IS-1
+	- slcobstor001-001
+	- ...
+	- slcobstor001-008
+  - SLC-IS-2
+  - ...
+  - SLC-IS-6
+	- slcobstor006-001
+	- ...
+	- slcobstor006-008
+
+**** FIX procedure
+
+***** DB error fix
+- clusters table
+  - remove subnetmask, gateway, pubiprange, priviprange
+
+- nodes table
+  - remove ipmiip, cluster_id, privip, pubip
+
+- nodecfgs table
+  - all records, seg_heads, mdls_list, as_list not correct
+  - id 1 - 80, 
+	- rms_ip not correct (should be its own hostname)
+	- services not correct
+  - some nodes (seg6 in PHX, all nodes in SLC)
+	- ss_disklist is not correct (need to check the root cause)
+	- mds_replication is not correct (all should be true)
+	- mds_port is not correct (should clean up all to empty)
+  - phxobstor001-007
+	- services (add PGS)
+***** node.cfg error fix
+- 6th segment in both PHX and SLC RMG: SS_DiskList and SS_DiskLocation are not correct
+
+PGS_LIST incorrect in 
+  1 ./config-phxobstor001-001/maui/node.cfg:PGS_LIST=phxobstor001-001,phxobstor001-007
+  2 ./config-phxobstor001-007/maui/node.cfg:PGS_LIST=phxobstor001-001,phxobstor001-007
+  3 ./config-phxobstor001-008/maui/node.cfg:PGS_LIST=phxobstor001-001,sqwobstor001-001
+
+***** service config error fix
+
+***** MISC collection
+SS related
+1. fix ss_disklist in nodecfgs table of SLC RMG
+
+
+**** Questions: [10/10]
+***** DONE Confirm whether we need to deploy ssproxy/cc in first 5 IS of PHX RMG
+	  CLOSED: [2010-06-06 Sun 20:44]
+***** DONE Ask arun to get pxe.logs to check why ss_disklist is not updated in SLC RMG
+	  CLOSED: [2010-06-06 Sun 20:44]
+***** DONE Check chkconfig status on 80 nodes which services are wrong in node.cfg
+	  CLOSED: [2010-06-06 Sun 20:44]
+***** DONE Confirm Rossen whether master node is master AS
+	  CLOSED: [2010-06-06 Sun 20:44]
+***** DONE Confirm JS conflict with Chen 
+	  CLOSED: [2010-06-06 Sun 20:44]
+***** DONE Confirm DB nodes hostname and node.cfg (services)
+	  CLOSED: [2010-05-25 Tue 17:43]
+
+all cm.conf contains below two nodes for DB server:
+phxobstor001-001
+phxobstor001-007
+***** DONE Confirm who will handle the change of MDS (MDS_IP, MDS_Ports, MDS_RootOwner) info in node.cfg
+	  CLOSED: [2010-05-25 Tue 15:38]
+
+1. DB - handle above error data
+2. node.cfg 
+   - consistent with DB data 
+   - MDS_Ports means all enabled MDS, no need to change
+3. service.cfg (mds_cfg.xml)
+   - consistent with node.cfg and all services run well
+
+***** DONE Confirm ss_disklist, ss_disknum, ss_disklocation is used or not?
+	  CLOSED: [2010-05-25 Tue 15:39]
+
+node.cfg SS info update process:
+1. ss_disklocation is only in node.cfg but not in nodecfgs table which is updated during partition process
+2. ss_disklist, ss_disknum are also updated during disk partition
+
+***** DONE Ask arun about the purpose of 6th segment
+	  CLOSED: [2010-05-25 Tue 15:39]
+
+From Rossen:
+ We have one IS in RMG1 (PHX) and RMG2 (SLC) with the different MDS:SS ratio. The IS's were installed with a 10:5 ratio but then manually configuring all of the disks for MDS. One of the biggest issues at eBay has been the MDS performance. With the new rack we wanted to add more resources to the MDS
+
+***** DONE Confirm multicast or unicast? no change here.
+	  CLOSED: [2010-05-25 Tue 15:39]
+
+
+
+
+
+**** Follow up in 1.2.7 [1/3]
+
+***** TODO confirm whether MDLS_List updated need to reconfigure MDLS service
+***** TODO confirm detail changes for below config items
+4	/root/diff/maui_authsrv_authsrv_cfg.xml	S3		Jason	Denny	[phxobstor001-002] Check: backendAddr
+update config
+001-002 chkconfig add, mauiconfig, start service
+00x-001 chkconfig del (No service stop)
+
+5	/root/diff/maui_cst_Config.xml	S3		Jason	Denny	[phxobstor001-002] Check: ServerName
+ignore - Liping
+
+6	/root/diff/maui_disks.map	S3		Jason	Denny	[phxobstor003-001] Check
+ignore - Chen
+
+7	/root/diff/maui_handler-selector.xml	S3		Jason	Denny	[All nodes] Check: selector id
+ignore - Chen, just example, no impact
+
+8	/root/diff/maui_provision	S3		Jason	Denny	[Master nodes] Fix: Update IS2-001, IS3-001, IS4-001, IS5-001, IS6-001
+
+
+9	/root/diff/maui_pm-selector.xml	S2		Jason	Denny	[All nodes] Check: selector id; Copyright not handled by upgrade,
+ignore
+
+11	/root/diff/maui_ss_cfg.xml	S1		Jason	Denny	[All nodes] Check: 
+reservepercent from 10 to 5. scope is PHX RMG, 6th segment in SLC RMG. - Only change config, don't restart service
+device  PHX 002-004, 003-001 - ignore
+mount, 
+randominc0sdid from on to off  - keep
+changeStatOnCheckpoint from on to off   - keep
+DiskRecovery - check?
+
+
+12	/root/diff/maui_mauiws_cfg.xml	S1		Jason	Denny	[All nodes] Check: 
+tenantid - ignore
+SedaStatsEnabled - 
+Logstats -
+LogStatsSecondsInterval -
+ JustReplicaReaload, SedaStatsEnabled, SessionRequestTimeOut, MapUidToName, LoggingPluginPath, DestroyTimeout, SkipcloseSession, RandomizeRequestPerchild, FastCreateEnabled, Perferlocation
+
+- ignore
+***** DONE find MDS diff in mds_cfg/mds_sys
+	  CLOSED: [2010-05-31 Mon 13:40]
+mds_cfg.xml diff
+
+All nodes:
+
+IGNORE:
+- tenantId 
+- bdbxmlEnvRoot
+- masterHost
+- RootOwner
+
+ADD:
+RecoverAsyncUninitReplica
+
+DELETE:
+
+DIFF:
+RecoverAsyncReplica from on to off
+
+masterReplicationPort=0000
+masterReplicationPort=10501/10503/10505
+(10601/10602/10603)
+- because testbed doesn't configure remote MDS replication
+
+mds_sys.diff - can be ignored, confirmed by Chen
+
+
+**** Follow up in 1.4.0 nodecfg
+- remove mds_port in nodecfgs table
+- consistent in node.cfg (why not have the same keys in all node.cfg?)
+
+
+  
 ** Atmos 1.3.2 cycle
 *** TODO Follow up on corbis installation
 Hi Sukwoo, Ming,
@@ -250,7 +524,8 @@ Jason
 *** INPROGRESS Mongrel session clear cronjob patch
 *** TODO Improve installation error log on CM side. bug #11860
 *** Review mgmt DB related bugs and make planning
-**** DELE-FOLLOW-UP pgdbcheck related bugs should be fixed in 1.3.2
+**** DONE pgdbcheck related bugs should be fixed in 1.3.2
+	 CLOSED: [2010-05-16 Sun 21:02]
 
 ** Atmos 1.4 cycle
 *** [#A] Slony replication for postgres
@@ -664,7 +939,7 @@ export PAGER=less
 export LESS=i
 
 psql -U postgres system.db
-set search_path = _slony
+set search_path = 1_slony
 select * from sl_listen;
 select * from sl_path;
 select * from sl_event;
@@ -1474,6 +1749,8 @@ cstadmin sign-file /etc/maui/cst/auth_db.xml -passphrase=#1Password
 logcopy --lclevel ALL --srchosts ALL --dstdir /root --dsthost 10.32.109.238 --dstuser root --dstpass ChangeMe
 
 svn pd svn:executable *
+svn propset svn:executable '' post_node_clear_rails_session_v1.3.1.py 
+svn proplist post_node_clear_rails_session_v1.3.1.py 
 
 valgrind --tool=memcheck --leak-check=full --show-reachable=yes --trace-children=yes --max-stackframe=3000000 --num-callers=50 -v --log-file=memleak.log cm -s /etc/maui/cm_sys.xml -c /etc/maui/cm_cfg.xml -g /var/local/maui/sysmgmtdb/ses_db -d &
 
@@ -1656,6 +1933,29 @@ for i in `seq 1 10`; do ipmictl -H 192.168.13.141 power_status;ipmitool -H 192.1
 
 Check ipmi mgmt controller status
 # ipmitool mc info
+
+# omreport system version Version Report
+
+---------------------
+Main System Chassis
+---------------------
+
+Name       : BIOS
+Version    : 1.3.6
+Updateable : N/A
+
+
+Name       : iDRAC6
+Version    : 1.30
+Updateable : N/A
+
+# ethtool -i eth1
+driver: bnx2
+version: 1.9.3
+firmware-version: 5.0.11 NCSI 2.0.5
+bus-info: 0000:01:00.1
+
+based on bug 9308, can you update NIC FW to 5.0.12 and try it again? thanks.
 
 
 ** Reviewboard setup notes in Ubuntu
@@ -3351,8 +3651,17 @@ C-u Number command - execute "command" in "Number" times
 4. # git commit -m 'comment'
 *** git with svn in Atmos use - wiki from Ming
 
-
 ** Linux tips and good tools
+*** sed example
+delete lines: # sed "/$pattern/d" $file
+
+delete lines start with #
+# sed "/^#/d" $file  
+delete all empty lines
+# sed /^$/d $file
+delete first character
+# sed 's/.\(.*\)/\1/'
+
 *** Good debugging tools
 **** blktrace
 blktrace is a block layer IO tracing mechanism which provides detailed information about request queue operations up to user space. it is like a micro level iostat which can tell exactly which application send what kind of io. the io offset, timestamp 
@@ -3406,6 +3715,37 @@ Add below line in service init script.
 
 DAEMON_COREFILE_LIMIT=unlimited
 
+above line will be used in /etc/init.d/functions  (ulimit -S -c ${DAEMON_COREFILE_LIMIT:-0} >/dev/null 2>&1)
+
+we can also directly call *ulimit -c unlimited* to generate core dump
+
+below link has a complete information:
+[[http://www.novell.com/support/viewContent.do%3FexternalId%3D3054866&sliceId%3D1][How to obtain application core dumps]]
+
+[[http://aplawrence.com/Linux/limit_core_files.html][Controlling core files (Linux)]]
+
+**** CASE study: pgreplicate cannot generate core dump
+1. change #1: add DAEMON_COREFILE_LIMIT=unlimited or ulimit -c unlimited in postgresql init script
+- but it does not work when receive below segfault
+kern.info<6>: May 25 08:12:13 nehalem-bj-r2s1-001 kernel: pgreplicate[8625]: segfault at 0 ip 00007fea38b6df60 sp 00000000415a2f80 error 4 in libc-2.5.so[7fea38a8d000+146000]
+
+2. change #2: check how the process is started and coredump pattern
+
+It use     daemon --user $PGUSER "$REPDAEMON -D $PGDATA -l &" >>$PGLOG 2>&1 (*NOTICE:* here use postgres user to start process)
+
+[root@nehalem-bj-r2s1-001 ~]# cat /proc/sys/kernel/core_pattern 
+/var/cores/%e.%p.%t.%s
+
+[root@nehalem-bj-r2s1-001 ~]# ls /var/ -l
+...
+drwxr-xr-x  3 root root 4096 2010-05-25 08:43 cores <-- core dump directory only writable to root user
+...
+
+3. change #3: change core dump directory mod to 777
+
+use below command to test and succeed to generate core dump!
+# kill -s SIGSEGV <pid>
+
 *** Get public IP by not depend on any config files
 
 Previous we use 
@@ -3452,6 +3792,9 @@ Simple tool to share screen and open multiple session in one terminal.
 
 Good introduction is here. http://en.gentoo-wiki.com/wiki/Screen
 
+**** solve terminfo of screen.rxvt
+
+**** solve the bashrc
 
 
 *** linux如何修改主机名 - change hostname
@@ -3589,7 +3932,6 @@ When the Cluster Service needs to perform an operation on a resource, it sends t
 http://pypi.python.org/pypi/celery/1.0.0
 http://www.aditam.org/
 
-
 ** Windows
 *** cygwin + rxvt
 Change cygwin.bat with following configuration:
@@ -3628,10 +3970,6 @@ Upgrade process: (From management station client to trigger)
 4. Run rules (Precheck / Health check based on different rules and suggestion)
 5. Non-disruptive upgrade (NDU) call
 6. Post tasks to recover to previous environment
-** Interest soft focus
-*** DONE see version control soft "Mercurial"
-	 CLOSED: [2009-09-02 Wed 13:14]
-
 * Learning 															  :THINK:
 ** !!!Five minutes!!!
 *** <2010-04-09 22:34>
@@ -3882,7 +4220,9 @@ Record what I need to learn and improve for my self. (Internal motivated.)<2009-
   - C++
 	- smart pointer deep into
 	- virtual functions (virtual table layout inside the memory)
-	- how new really works inside
+	- how new really works inside, operator new
+	- stack/heap difference
+	- how os create the stack
 	- singleton pattern
 	- operator overload, a++, ++a, =
 	- ctor, dtor, copy ctor
@@ -3904,6 +4244,31 @@ Record what I need to learn and improve for my self. (Internal motivated.)<2009-
   - Slony
   - PIT?
   - Any C++ good source code?
+
+*** Good JD
+
+**** From digg
+JD at digg? cool...
+
+    Digg is looking for a Lead Software Engineer with extensive experience in distributed infrastructure systems to lead our infrastructure Team. Think: *Cassandra, Hadoop, RabbitMQ, Zookeeper, Thrift, HDFS*
+Responsibilities
+
+        * Lead the development of Digg's infrastructure components
+        * Find elegant solutions to complicated problems
+        * Define and build high-performance, high-availability web infrastructure
+        * Optimize and troubleshoot complex distributed systems
+        * Advance open-source infrastructure projects
+
+Qualifications
+
+        * Experience with large web infrastructure including leading teams.
+        * Low-level knowledge of Unix
+        * Networking and TCP/IP, UDP or specific protocols
+        * Expert knowledge developing and debugging in C/C++ or Java on *nix
+        * Experience with operating system internals, filesystems, programming language design, compilers, distributed systems, and/or server architectures
+        * Masters degree or higher in Computer Science and or similar/relevant field preferred
+        * Previous open source contribution a plus
+
 
 *** Management
 
@@ -3973,6 +4338,12 @@ Record what I need to learn and improve for my self. (Internal motivated.)<2009-
 | charisma     | 感召力                 |
 | acumen       | 敏锐, 聪明             |
 | stagnation   | 停滞                   |
+| steer        | 指引                   |
+| abundance    | 富裕，充裕             |
+| arrogance    | 傲慢，自大             |
+| congruent    | 适合的                 |
+| intimate     | 亲密的，固有的         |
+| etiquette    | 礼节                 |
 |              |                        |
 
 
@@ -3986,6 +4357,12 @@ Record what I need to learn and improve for my self. (Internal motivated.)<2009-
 *** Learning python
 *** LKD
 *** Self service Linux
+**** how to solve a problem and build your skills? - chapter 1
+1. Initial investigation using your own skills.
+2. Search for answers using the Internet or other resource.
+3. Begin deeper investigation.
+4. Ask a subject matter expert for help
+
 *** Pthread
 *** ULK
 *** Phychology of computing programming
@@ -4219,9 +4596,6 @@ while (state != NO_PIZZA)  {
 } // while
 
 ** About jobs
-
-
-
 *** SWOT analyse of Eng/Mgmt/Presale/Consultant/Market/Solution/Product
 
 Engineering:
@@ -4321,6 +4695,11 @@ Fix bugs root cause but no just synmptom, here need a tradeoff. but should go as
 Recovery Time Objective (RTO)
 Recovery point objective (RPO)
 
+
+why do management?
+1. software are more complex and not easy to do that in a single efforts, need many smart people work together. how to manage and organize the people better?
+2. 
+
 **** RCA - root cause analyse<2010-02-07 00:01>
 The criticism on 5-why method is that performance of 5-why is highly depends on people. The quality of "why" question is essential to the success. Usually it start with
 
@@ -4386,6 +4765,17 @@ After Kenny joins the team, need to think about my next step focus and developme
 - improve code quality. from a higher level, even code is ok and easy to read but design is not good as expected, like installation should revisit and accumulate more experiences. from customer point of view to think about problems.
 - database. the biggest issue would be you don't know what you don't know. how you convience Rich and yourself to provide a stable db solution? how to leverage more senior resources and how to ensure db is OK?
 
+
+*** From Ray Tang
+**** Organize work properly and demostrate the work
+E.g. QA works architecture
+|----------------+------+-------+---------+----------+----------+------------+---------+------|
+| MauiTS         |      | 1.3.x |         |          |          | 1.2.x      |         |      |
+| Tools          | Load |  Perf |         | vLab     | Upgrade  | QA Metrics |         | Misc |
+| Framework      | PIT  |       | Grinder |          | TeamCity |            | TETWare |      |
+| Infrastructure | Wiki |       |         | Bugzilla |          | Testlink   |         |      |
+|----------------+------+-------+---------+----------+----------+------------+---------+------|
+
 *** From Pat Gelsinger
 What's the secret of a succesful career?
 1. *Do you best in the current job position.* Make yourself outstanding
@@ -4424,6 +4814,7 @@ Daily mgmt style:
 3. resource planning changes. manager in one team has overall team resource planning in order to make correct plan and make sure the priority and schedule/risk can be addressed.
 4. hand-on to be release lead and understand every bug
 5. Control resource need to have a balance. Not mean control strictly but can offer some help to others while not add overload to the team members. So when planning, add buffer time is very important
+6. Put staff meeting notes to public share folder for all team members who are interested in to see
 
 *** Management style from Bobby
 Recently there have many 1on1 discussion and meeting with Bobby, here are some thoughts which I think are very good habits and ideas:
@@ -5078,3 +5469,5 @@ d
 asd
 f sd 
 asd f
+
+

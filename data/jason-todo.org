@@ -217,7 +217,6 @@ Ming: commit bug 10439 in revision r46628 - break slave node installation <2010-
 *** Perform good communication
 *** Show initiative and leadership
 
-
 * Project development 												   :WORK:
 ** Command Atmos mgmt command
 cossetup -u SecurityAdmin -p '#1Passwd' --userpass 'password' --userinfo n --local
@@ -434,10 +433,15 @@ From Rossen:
 
 
 
-**** Follow up in 1.2.7 [1/3]
+**** Follow up in 1.2.7 [3/3]
 
-***** TODO confirm whether MDLS_List updated need to reconfigure MDLS service
-***** TODO confirm detail changes for below config items
+***** DONE confirm whether MDLS_List updated need to reconfigure MDLS service
+	  CLOSED: [2010-06-06 Sun 20:48]
+
+No need to update after confirm with Chen
+
+***** DONE confirm detail changes for below config items
+	  CLOSED: [2010-06-06 Sun 20:48]
 4	/root/diff/maui_authsrv_authsrv_cfg.xml	S3		Jason	Denny	[phxobstor001-002] Check: backendAddr
 update config
 001-002 chkconfig add, mauiconfig, start service
@@ -508,9 +512,15 @@ mds_sys.diff - can be ignored, confirmed by Chen
 - consistent in node.cfg (why not have the same keys in all node.cfg?)
 
 
-  
+
+**** Testing scripts
+
+***** Recover db
+ALTER TABLE clusters ADD COLUMN subnetmask text, ADD COLUMN gateway text , ADD COLUMN pubiprange text;
+   
 ** Atmos 1.3.2 cycle
-*** TODO Follow up on corbis installation
+*** DONE Follow up on corbis installation
+	 CLOSED: [2010-06-06 Sun 20:49]
 Hi Sukwoo, Ming,
 
 Based on supporting Corbis installation issue, I think we can have below two improvements to follow up. Please let me know your comments. 
@@ -521,9 +531,11 @@ Based on supporting Corbis installation issue, I think we can have below two imp
 Thanks,
 Jason
 
-*** INPROGRESS Mongrel session clear cronjob patch
+*** DONE Mongrel session clear cronjob patch
+	 CLOSED: [2010-06-06 Sun 20:49]
 *** TODO Improve installation error log on CM side. bug #11860
-*** Review mgmt DB related bugs and make planning
+*** DONE Review mgmt DB related bugs and make planning
+	 CLOSED: [2010-06-06 Sun 20:49]
 **** DONE pgdbcheck related bugs should be fixed in 1.3.2
 	 CLOSED: [2010-05-16 Sun 21:02]
 
@@ -1015,18 +1027,6 @@ what's most worst case when slony fails? data lost? any other things we can imag
 can slony be used in WAN? if we have master-slave in LAN, is it easy to add second slave in WAN? if easy to add, how about failover operations?
 
 poll sleep and interval for remoteWorkerThread? this is important since it cannot be configured and directly determine the data lost chances
-
-*** [#A] Task module improvement
-
-Yubo suggestion:
-1. Need to think about how to describle the issue properly and push the improvement in the group. 
-2. Do we need to reconsider priority of this since only us understand the details and issues?
-3. What can we learn from policy sync mechanism?
-4. Do not need to rewrite. Just solve the existing issues.
-
-Action items:
-1. Think about above suggestion and send a proposal to Yubo
-
 *** [#B] Installation code refactor
 	 CLOSED: [2010-04-09 Fri 09:56]
 **** Refactor checklist
@@ -1081,8 +1081,7 @@ class atmosconfig
  
 a compute() method that can generate a list of nodecfg with hostname as key and nodecfg as value
  
- 
-classe nodecfg has load_from_file(), load_from_db(), save_to_file() save_to_db() methods
+class nodecfg has load_from_file(), load_from_db(), save_to_file() save_to_db() methods
  
 also has nodeconfig1.merge(nodeconfig2)
  
@@ -1108,7 +1107,6 @@ nodeconfig.load_from_file()
 merging again.
 persist to disk
 .apply() to figure out what changed and then config services and files.
- 
  
 simply for other work like dns config or cosrestore, etc.
  
@@ -1429,6 +1427,16 @@ Starting Agent...
 This agent has been promoted while it was down.
 It will now be restarted as a primary agent.
 [root@Jason-130A-002 bin]# ping 10.32.171.80
+*** [#C] Task module improvement
+
+Yubo suggestion:
+1. Need to think about how to describle the issue properly and push the improvement in the group. 
+2. Do we need to reconsider priority of this since only us understand the details and issues?
+3. What can we learn from policy sync mechanism?
+4. Do not need to rewrite. Just solve the existing issues.
+
+Action items:
+1. Think about above suggestion and send a proposal to Yubo
 
 *** [#B] pylib enhancement
 **** TODO Add one stop wiki page for all system mgmt developement process
@@ -1928,6 +1936,8 @@ A snippet from the setup script that is part of the installation is below:
 
 ipmictl -H 192.168.13.140 -U root -P passwd power_status
 ipmitool -H 192.168.17.11 -U root -P passwd power status
+
+ipmiscan -d  -e eth0:0 1234 interface eth0:0
 
 for i in `seq 1 10`; do ipmictl -H 192.168.13.141 power_status;ipmitool -H 192.168.13.141 -U root -P passwd power status;date;sleep 2; done
 
@@ -3662,6 +3672,9 @@ delete all empty lines
 delete first character
 # sed 's/.\(.*\)/\1/'
 
+replace string in file
+# sed -i s/STRING1/STRING2 $file (-i will make the change)
+
 *** Good debugging tools
 **** blktrace
 blktrace is a block layer IO tracing mechanism which provides detailed information about request queue operations up to user space. it is like a micro level iostat which can tell exactly which application send what kind of io. the io offset, timestamp 
@@ -3796,6 +3809,8 @@ Good introduction is here. http://en.gentoo-wiki.com/wiki/Screen
 
 **** solve the bashrc
 
+*** dos2unix
+Dos2Unix is filter used to convert plain texts from DOS (CR/LF) format to UNIX format (CR) and vice versa.
 
 *** linux如何修改主机名 - change hostname
 
@@ -5075,6 +5090,14 @@ http://business.sohu.com/20100108/n269457870.shtml
 
 *防守好于进攻。* 巴菲特写道，虽然我们在某些市场上扬的年头里落后于标普指数，但在标普指数下跌的11个年头里，我们的表现一直好过这一指数；换句话说，我们的防守一直好于进攻，这种情况可能会继续下去。在动荡年代，巴菲特的这些建议都是符合时宜的。
 
+*** 教育
+1、经历比名次重要
+2、对话比对立重要
+3、激励比指责重要
+4、成人比成功重要
+5、成长比成绩重要
+6、榜样比命令重要
+
 * Wisdom 															  :THINK:
 ** Good Words
 通过规划利用好现有的能力远比挖掘所谓的潜能更重要。
@@ -5088,6 +5111,71 @@ http://business.sohu.com/20100108/n269457870.shtml
 要勇于创新，不走常规的大多数的道路越有成功的可能性。
 
 Talk is cheap. Show me the code. -- Linus
+
+“The key is not to prioritize what's on your schedule, but to schedule your priorities.” -- Stephen R. Covey
+
+
+*** from Linda Qiu's farewell letter
+
+Wish you enjoy the excerpt below...
+ 
+ 
+ 
+Today we have higher buildings and wider highways, but
+shorter temperaments and narrower points of view.
+ 
+We spend more, but enjoy less.
+We have bigger houses, but smaller families.
+We have more compromises, but less time.
+We have more knowledge, but less judgment.
+We have more medicines but less health.
+ 
+We have multiplied our possessions, but reduced our value.
+We talk much, we only love a little and we hate too much.
+ 
+ 
+We reached the Moon and come back, but 
+we find it troublesome to cross our own street and meet our neighbors.
+We have conquered the outer space but 
+not our inner space.
+ 
+We have high income, but less morals.
+These are times with more liberty, but less joy
+We have much more food but less nutrition.
+ 
+ 
+These are the days in which it takes two salaries for each home, but
+divorces increase.
+These are times of finer houses, but more broken homes.
+ 
+ 
+That's why I propose, that as of today,
+You do not keep anything for a special occasion, because
+every day that you live is a special occasion. 
+ 
+ 
+Spend more time with your family and friends,
+   Eat your favorite foods, visit the places you love.
+ 
+ 
+Life is a chain of moments of enjoyment; not only about survival.
+Use your crystal goblets. Do not save your best perfume,
+and use it every time you feel you want it.
+ 
+ 
+Remove from your vocabulary phrases like 
+"one of these days" and "someday".
+Let's write that letter we thought of writing " one of these days".
+ 
+Let's tell our families and friends how much we love them.
+Do not delay anything that adds laughter and joy to your life. 
+ 
+ 
+If  you are too busy to take the time 
+to write to your friends how much you appreciate them, 
+and you tell yourself you will write it "one of these days". Just think
+"one of these days" you may not be here to write it  
+
 
 ** Good Story
 *** [[http://www.chou-yinshi.com/shownews.asp%3FID%3D2736][七个顶级心理寓言]] [2009-12-13 Sun 15:28]

@@ -13,15 +13,48 @@
 
 * Non-project related
 ** Initialtive on effective daily work
-*** Effective code review by using ReviewBoard
 
-**** INPROGRESS Reviewforge improvement TODO list [18/24]
-***** INPROGRESS Prepare guidelines for team members on use new ReviewBoard
-***** TODO Add maintainance work in ReviewBoard host (cronjob to backup database, regenerate index)
-***** TODO Remove "Analyze by SCA" and meeting review during create review request
-***** TODO Remove feature?
-***** TODO Idenfity weekly review metrics KPI
-***** TODO Hold kickoff meeting to introduce ReviewBoard
+*** Effective meeting
+Preparation
+
+send out agenda before the meeting
+
+understand the goal
+
+action plan
+
+meeting minutes
+
+*** Technical talk sharing
+
+*** Effective coding
+High quality code
+
+*** Effective troubleshooting
+
+Debugging Atmos best practice???
+
+Profiling Atmos
+
+*** Need more investigation on initialtive
+
+** Effective code review by using ReviewBoard
+
+**** INPROGRESS Reviewforge improvement TODO list [24/26]
+***** TODO Collect good review comment
+***** TODO Collect individual review efforts
+***** DONE Prepare guidelines for team members on use new ReviewBoard
+	  CLOSED: [2010-06-21 Mon 19:13]
+***** DONE Add maintainance work in ReviewBoard host (cronjob to backup database, regenerate index)
+	  CLOSED: [2010-06-21 Mon 19:13]
+***** DONE Remove "Analyze by SCA" and meeting review during create review request
+	  CLOSED: [2010-06-21 Mon 19:13]
+***** DONE Remove feature?
+	  CLOSED: [2010-06-21 Mon 19:13]
+***** DONE Idenfity weekly review metrics KPI
+	  CLOSED: [2010-06-21 Mon 19:13]
+***** DONE Hold kickoff meeting to introduce ReviewBoard
+	  CLOSED: [2010-06-21 Mon 19:13]
 ***** DONE Apply hostname for new ReviewBoard host to be easily used by team members (e.g. review.cigsh.lss.emc.com)
 	  CLOSED: [2010-06-03 Thu 21:48]
 ***** DONE Update update document link 
@@ -59,7 +92,6 @@
 ***** CANCELED Should refine document review types
 	  CLOSED: [2010-06-01 Tue 15:56]
 
-
 **** Maintain reviewforge (cigreview.lss.emc.com)
 
 # mysql
@@ -83,30 +115,25 @@ mysql>exit
 # memcache
 /usr/local/bin/memcached -d -m 1024 -u root -l <ip> -p 11211
 
+**** Good review comment
+***** In 4726 on how to get key and value from dict in python from Ming
+http://www.daniweb.com/code/snippet217019.html
+***** 
 
-*** Effective meeting
-Preparation
+**** Reviewboard metrics collection
 
-send out agenda before the meeting
+Get total review requests:
+# select id from reviews_reviewrequest where time_added > '2010-06-24 00:00:00' order by id;
 
-understand the goal
-
-action plan
-
-meeting minutes
-
-*** Technical talk sharing
-
-*** Effective coding
-High quality code
-
-*** Effective troubleshooting
-
-Debugging Atmos best practice???
-
-Profiling Atmos
-
-*** Need more investigation on initialtive
+Get total review comments (defects, accepted, major)
+select 
+count(id)
+#commenttype_id, commentstate_id, commentseverity_id 
+from reviews_comment 
+where review_request_id in (select id from reviews_reviewrequest where time_added > '2010-06-24 00:00:00') 
+and commenttype_id = 1 
+and commentstate_id = 2 
+#and (commentseverity_id = 2 or commentseverity_id = 1);
 
 ** Tea session - knowledge sharing in team wide
 
@@ -220,8 +247,8 @@ Ming: commit bug 10439 in revision r46628 - break slave node installation <2010-
 * Project development 												   :WORK:
 ** Command Atmos mgmt command
 cossetup -u SecurityAdmin -p '#1Passwd' --userpass 'password' --userinfo n --local
-cosuser -u SecurityAdmin -p 'password' -c --userid MauiAdmin --userpass 'password' --local
-cossysadmin -u SecurityAdmin -p 'password' -a --userid MauiAdmin --authtype local --local
+cosuser -u SecurityAdmin -p '#1Passwd' -c --userid MauiAdmin --userpass 'password' --local
+cossysadmin -u SecurityAdmin -p '#1Passwd' -a --userid MauiAdmin --authtype local --local
 
 ssh_do 10.32.182.197 'cosrmg -u MauiAdmin_pit -p '\''password'\'' --local         -a --rmgname '\''trunk4-r1'\'' --rmgloc '\''Boston'\'' --transtype unicast         --enablesmtp n --userpass '\''ChangeMe'\''         --host 10.32.182.197 --startip 10.32.182.197 --endip 10.32.182.198         --gateway 10.32.180.1 --subnetmask 255.255.252.0         --hostprefix '\''trunk4-r1s1'\'' --dnsserver 10.32.97.148         --dnssuffix lss.emc.com --ntpserver external --ntpaddress 10.32.72.28 --ssmode manual         --diskratio '\''1:4'\'' --sspattern '\''default_pattern'\''         --placement '\''optimal,optimal'\'' --acttype '\''n,c'\'' --plattype 0'
 
@@ -232,15 +259,15 @@ costenantadmin -a --userid ta1 --tenid t1 -u MauiAdmin_pit -p 'password' --local
 cossubtenant -c --name st1 --authtype local -u ta1 -p 'password' -t t1
 cosuid -c --name uid1 --subtenid st1 --email a@b.com -u ta1 -p 'password' -t t1
 
+** TODOLIST [18/20]
 
-** TODOLIST [17/20]
-
-*** TODO Think about how we can actively handle installation failure cases, but not just stay on the restore utility. If so, there is no need to wait for the installation failure and then we provide a workaround. Read some paper from lisa (large linux system administration)
-- introduce git / svn design
 *** TODO follow up C++ db connection issue - CM db connection module improvement to reduce dependency to system db availability
 *** TODO seperate setnodeinfo to updatenodeinfo and insertnodeinfo, we have met several cases node UUID has changed due to setnodeInfo. bug #10948
 *** DONE Check reviewboard reporting feature
 	 CLOSED: [2010-06-01 Tue 14:53]
+*** CANCELED Think about how we can actively handle installation failure cases, but not just stay on the restore utility. If so, there is no need to wait for the installation failure and then we provide a workaround. Read some paper from lisa (large linux system administration)
+	 CLOSED: [2010-06-29 Tue 22:46]
+- introduce git / svn design
 *** CANCELED Installation /etc/hosts add public ip end mark
 	 CLOSED: [2010-04-07 Wed 16:29]
 *** CANCELED reviewboard git diff support
@@ -273,274 +300,19 @@ cosuid -c --name uid1 --subtenid st1 --email a@b.com -u ta1 -p 'password' -t t1
 	 CLOSED: [2010-04-21 Wed 13:52]
 *** DONE Add a patch to change mongrel session config to memory store
 	 CLOSED: [2010-04-07 Wed 16:23]
-
-** Atmos 1.2.7 cycle [1/3]
-*** INPROGRESS Setup MaaS similar testbed and try to reproduce random subtenant creation issues
-*** DONE fix pgdbsetup dup record - wait Yubo response
-	 CLOSED: [2010-04-20 Tue 11:23]
-*** INPROGRESS [#A] eBay migration DC planning
-**** Planning
-
--	eBay migration plan process
-	Add 3rd RMG
-	Migrate data/metadata
-	Remove old RMG
-
--	Project scope
-	Provide the procedure to remove RMG after data migration finished from management database and service configuration
-
--	Project WBS
-	Procedure for removing RMG information from system database
-	Procedure for reconfiguring existing nodes based on new deployment after remove old RMG
-	Reconfigure MDLS, AS and RMS services in all nodes
-	Procedure for verify system behavior from management perspective
-	Setup similar testbed to eBay
-	Test all procedures
-	Verify system behavior from management perspective
-
--      Estimate efforts – totally two weeks
-	Write procedure of removing RMG information and reconfigure services – one week
-	Write procedure of verify system behavior – two days
-	Setup and testbed and verify procedures – three days
-
-**** eBay setup naming tree
-
-- site name
-  - cluster name
-	- node name
-
-- PHX
-  - PHX-IS-1
-    - phxobstor001-001
-    - phxobstor001-002
-    - ...
-    - phxobstor001-008
-  - PHX-IS-2
-	- phxobstor002-001
-	- phxobstor002-002
-	- ...
-	- phxobstor002-008
-  - PHX-IS-3
-  - ...
-  - PHX-IS-6
-	- phxobstor006-001
-	- phxobstor006-002
-	- ...
-	- phxobstor006-008
-- SQW
-  - SQW-IS-1
-	- sqwobstor001-001
-	- sqwobstor001-002
-	- ...
-	- sqwobstor001-008
-  - SQW-IS-2
-  - ...
-  - SQW-IS-6
-	- sqwobstor006-001
-	- ...
-	- sqwobstor006-008
-- SLC
-  - SLC-IS-1
-	- slcobstor001-001
-	- ...
-	- slcobstor001-008
-  - SLC-IS-2
-  - ...
-  - SLC-IS-6
-	- slcobstor006-001
-	- ...
-	- slcobstor006-008
-
-**** FIX procedure
-
-***** DB error fix
-- clusters table
-  - remove subnetmask, gateway, pubiprange, priviprange
-
-- nodes table
-  - remove ipmiip, cluster_id, privip, pubip
-
-- nodecfgs table
-  - all records, seg_heads, mdls_list, as_list not correct
-  - id 1 - 80, 
-	- rms_ip not correct (should be its own hostname)
-	- services not correct
-  - some nodes (seg6 in PHX, all nodes in SLC)
-	- ss_disklist is not correct (need to check the root cause)
-	- mds_replication is not correct (all should be true)
-	- mds_port is not correct (should clean up all to empty)
-  - phxobstor001-007
-	- services (add PGS)
-***** node.cfg error fix
-- 6th segment in both PHX and SLC RMG: SS_DiskList and SS_DiskLocation are not correct
-
-PGS_LIST incorrect in 
-  1 ./config-phxobstor001-001/maui/node.cfg:PGS_LIST=phxobstor001-001,phxobstor001-007
-  2 ./config-phxobstor001-007/maui/node.cfg:PGS_LIST=phxobstor001-001,phxobstor001-007
-  3 ./config-phxobstor001-008/maui/node.cfg:PGS_LIST=phxobstor001-001,sqwobstor001-001
-
-***** service config error fix
-
-***** MISC collection
-SS related
-1. fix ss_disklist in nodecfgs table of SLC RMG
-
-
-**** Questions: [10/10]
-***** DONE Confirm whether we need to deploy ssproxy/cc in first 5 IS of PHX RMG
-	  CLOSED: [2010-06-06 Sun 20:44]
-***** DONE Ask arun to get pxe.logs to check why ss_disklist is not updated in SLC RMG
-	  CLOSED: [2010-06-06 Sun 20:44]
-***** DONE Check chkconfig status on 80 nodes which services are wrong in node.cfg
-	  CLOSED: [2010-06-06 Sun 20:44]
-***** DONE Confirm Rossen whether master node is master AS
-	  CLOSED: [2010-06-06 Sun 20:44]
-***** DONE Confirm JS conflict with Chen 
-	  CLOSED: [2010-06-06 Sun 20:44]
-***** DONE Confirm DB nodes hostname and node.cfg (services)
-	  CLOSED: [2010-05-25 Tue 17:43]
-
-all cm.conf contains below two nodes for DB server:
-phxobstor001-001
-phxobstor001-007
-***** DONE Confirm who will handle the change of MDS (MDS_IP, MDS_Ports, MDS_RootOwner) info in node.cfg
-	  CLOSED: [2010-05-25 Tue 15:38]
-
-1. DB - handle above error data
-2. node.cfg 
-   - consistent with DB data 
-   - MDS_Ports means all enabled MDS, no need to change
-3. service.cfg (mds_cfg.xml)
-   - consistent with node.cfg and all services run well
-
-***** DONE Confirm ss_disklist, ss_disknum, ss_disklocation is used or not?
-	  CLOSED: [2010-05-25 Tue 15:39]
-
-node.cfg SS info update process:
-1. ss_disklocation is only in node.cfg but not in nodecfgs table which is updated during partition process
-2. ss_disklist, ss_disknum are also updated during disk partition
-
-***** DONE Ask arun about the purpose of 6th segment
-	  CLOSED: [2010-05-25 Tue 15:39]
-
-From Rossen:
- We have one IS in RMG1 (PHX) and RMG2 (SLC) with the different MDS:SS ratio. The IS's were installed with a 10:5 ratio but then manually configuring all of the disks for MDS. One of the biggest issues at eBay has been the MDS performance. With the new rack we wanted to add more resources to the MDS
-
-***** DONE Confirm multicast or unicast? no change here.
-	  CLOSED: [2010-05-25 Tue 15:39]
-
-
-
-
-
-**** Follow up in 1.2.7 [3/3]
-
-***** DONE confirm whether MDLS_List updated need to reconfigure MDLS service
-	  CLOSED: [2010-06-06 Sun 20:48]
-
-No need to update after confirm with Chen
-
-***** DONE confirm detail changes for below config items
-	  CLOSED: [2010-06-06 Sun 20:48]
-4	/root/diff/maui_authsrv_authsrv_cfg.xml	S3		Jason	Denny	[phxobstor001-002] Check: backendAddr
-update config
-001-002 chkconfig add, mauiconfig, start service
-00x-001 chkconfig del (No service stop)
-
-5	/root/diff/maui_cst_Config.xml	S3		Jason	Denny	[phxobstor001-002] Check: ServerName
-ignore - Liping
-
-6	/root/diff/maui_disks.map	S3		Jason	Denny	[phxobstor003-001] Check
-ignore - Chen
-
-7	/root/diff/maui_handler-selector.xml	S3		Jason	Denny	[All nodes] Check: selector id
-ignore - Chen, just example, no impact
-
-8	/root/diff/maui_provision	S3		Jason	Denny	[Master nodes] Fix: Update IS2-001, IS3-001, IS4-001, IS5-001, IS6-001
-
-
-9	/root/diff/maui_pm-selector.xml	S2		Jason	Denny	[All nodes] Check: selector id; Copyright not handled by upgrade,
-ignore
-
-11	/root/diff/maui_ss_cfg.xml	S1		Jason	Denny	[All nodes] Check: 
-reservepercent from 10 to 5. scope is PHX RMG, 6th segment in SLC RMG. - Only change config, don't restart service
-device  PHX 002-004, 003-001 - ignore
-mount, 
-randominc0sdid from on to off  - keep
-changeStatOnCheckpoint from on to off   - keep
-DiskRecovery - check?
-
-
-12	/root/diff/maui_mauiws_cfg.xml	S1		Jason	Denny	[All nodes] Check: 
-tenantid - ignore
-SedaStatsEnabled - 
-Logstats -
-LogStatsSecondsInterval -
- JustReplicaReaload, SedaStatsEnabled, SessionRequestTimeOut, MapUidToName, LoggingPluginPath, DestroyTimeout, SkipcloseSession, RandomizeRequestPerchild, FastCreateEnabled, Perferlocation
-
-- ignore
-***** DONE find MDS diff in mds_cfg/mds_sys
-	  CLOSED: [2010-05-31 Mon 13:40]
-mds_cfg.xml diff
-
-All nodes:
-
-IGNORE:
-- tenantId 
-- bdbxmlEnvRoot
-- masterHost
-- RootOwner
-
-ADD:
-RecoverAsyncUninitReplica
-
-DELETE:
-
-DIFF:
-RecoverAsyncReplica from on to off
-
-masterReplicationPort=0000
-masterReplicationPort=10501/10503/10505
-(10601/10602/10603)
-- because testbed doesn't configure remote MDS replication
-
-mds_sys.diff - can be ignored, confirmed by Chen
-
-
-**** Follow up in 1.4.0 nodecfg
-- remove mds_port in nodecfgs table
-- consistent in node.cfg (why not have the same keys in all node.cfg?)
-
-
-
-**** Testing scripts
-
-***** Recover db
-ALTER TABLE clusters ADD COLUMN subnetmask text, ADD COLUMN gateway text , ADD COLUMN pubiprange text;
-   
-** Atmos 1.3.2 cycle
-*** DONE Follow up on corbis installation
-	 CLOSED: [2010-06-06 Sun 20:49]
-Hi Sukwoo, Ming,
-
-Based on supporting Corbis installation issue, I think we can have below two improvements to follow up. Please let me know your comments. 
-
-1.	Add one limitation on the installation admin guide document. Customer / User can ONLY change the hostname during configuring hostname prefix when adding RMG/segment. Other ways are not supported and might cause hostname resolution issue. We can add this improvement into 1.3.2 document (not sure whether we can still make change for 1.3.1 document).
-2.	Another improvement is we might also need additional precheck step before user configures the system. Current precheck in installation process is not enough in this case. If we can check hostname consistency before trigger CM from GUI, then we can report error as early as possible. 
-
-Thanks,
-Jason
-
-*** DONE Mongrel session clear cronjob patch
-	 CLOSED: [2010-06-06 Sun 20:49]
-*** TODO Improve installation error log on CM side. bug #11860
-*** DONE Review mgmt DB related bugs and make planning
-	 CLOSED: [2010-06-06 Sun 20:49]
-**** DONE pgdbcheck related bugs should be fixed in 1.3.2
-	 CLOSED: [2010-05-16 Sun 21:02]
-
 ** Atmos 1.4 cycle
 *** [#A] Slony replication for postgres
+**** INPROGRESS Installation intergration
+
+***** TODO add GUI error restart DB page and action
+
+***** TODO test init database
+
+***** TODO remove db_util.rb
+
+***** TODO 
+
+
 **** Mgmt expection
 
 1st phase - basic installation and replication
@@ -685,9 +457,8 @@ master is empty, below is slave table info
 
 ------------------------------- spliter -------------------------------
 
-
-
-**** INPROGRESS Slony source code workflow
+**** DONE Slony source code workflow
+	 CLOSED: [2010-06-21 Mon 19:11]
 
 During configuration and setup:
 
@@ -803,7 +574,6 @@ Runtime_config.c
 - startStopNodeThread: 
   - check current node worker status and start remoteWorkerThread if needed.
   - check current node listen head and active status, then spawn remoteListenThread 
-
 
 **** Good testing tools
 Configuration perl tools are also provided by --with-perltools configure options. These perl tools are used to manage Slony configurations. 
@@ -951,7 +721,7 @@ export PAGER=less
 export LESS=i
 
 psql -U postgres system.db
-set search_path = 1_slony
+set search_path = _slony
 select * from sl_listen;
 select * from sl_path;
 select * from sl_event;
@@ -968,7 +738,6 @@ To allow many users to use one database without interfering with each other.
 To organize database objects into logical groups to make them more manageable. 
 
 Third-party applications can be put into separate schemas so they cannot collide with the names of other objects. 
-
 
 **** Slony important links
 
@@ -990,7 +759,6 @@ Sections which can skip since these are out of date:
 4. Slony Upgrade: http://www.slony.info/documentation/slonyupgrade.html
 5. Using Slony-I for PostgreSQL Upgrades: http://www.slony.info/documentation/versionupgrade.html
 
-
 **** First review with Caihua, tests need to do: <2010-03-19 14:18>
 1. Check sl_log1/2 table cleanup mechanism
 2. Check slon master and slave port and network connection behavior
@@ -1004,9 +772,6 @@ Failure case:
 3. master slon down: data cannot sync
 4. master slon come back: data become sync
 
-**** Slony follow up
-think about total solution on slony failure scenario, like what we will do on handle master failure, how to monitor, more from customer perspective. 
-what we can do better for slony than cybercluster for failure scenario?
 
 **** Slony bug
 in remote_worker.c
@@ -1027,6 +792,60 @@ what's most worst case when slony fails? data lost? any other things we can imag
 can slony be used in WAN? if we have master-slave in LAN, is it easy to add second slave in WAN? if easy to add, how about failover operations?
 
 poll sleep and interval for remoteWorkerThread? this is important since it cannot be configured and directly determine the data lost chances
+
+**** Slony long run testing about memleak by using 2.0.4 rc2
+***** Setup procedure
+1. Install Slony in both nodes (10.32.169.215/216)
+# wget http://lists.slony.info/downloads/2.0/source/slony1-2.0.4.tar.bz2
+# tar jxvf slony1-2.0.4.tar.bz2 
+# cd slony1-2.0.4
+# service slon stop
+# ./configure --prefix=/usr/local/slony1
+# make
+# make install
+
+2. Build slony cluster
+In master node:
+# mgmtdbsetup  -r master -t system -m 192.168.11.11
+In slave node:
+# mgmtdbsetup -r slave -t system -m 192.168.11.11 -s 192.168.11.12
+
+Check postgresql and slon service status to make sure they have been started successfully.
+
+3. Start client load
+In master node:
+# nohup /root/50_client.sh
+
+4. Start monitoring 
+# ssh root@10.32.109.45
+# cd monitor_169_215/
+# nohup ./monitor &
+# nohup ./monitor_service_consistency &
+
+**** Slony setup fail cases
+
+***** setup slave failure due to setup twice
+
+Create system.db...
+Import system_db_create.sql for system...
+Set master and origin id as 1 for slon_tools.conf.system...
+Add node for system.db...
+ERROR: Add node for system.db failed.
+
+Failed to setup PostgreSQL and Slony slave node at Wed Jul  7 12:59:17 UTC 2010
+
+
+
+NOTICE:  CREATE TABLE / PRIMARY KEY will create implicit index "exrec_pkey" for table "exrecs"
+NOTICE:  CREATE TABLE / UNIQUE will create implicit index "exrecs_id_key" for table "exrecs"
+CREATE TABLE
+Wed Jul  7 12:59:16 UTC 2010 INFO: Set master and origin id as 1 for slon_tools.conf.system...
+Wed Jul  7 12:59:17 UTC 2010 INFO: Add node for system.db...
+<stdin>:6: NOTICE:  subscribe set: omit_copy=f
+<stdin>:6: PGRES_FATAL_ERROR select "_slony".storeNode(2, 'slave'); select "_slony".enableNode(2);  - ERROR:  Slony-I: node 2 is already active
+Wed Jul  7 12:59:17 UTC 2010 ERROR: Add node for system.db failed.
+
+
 *** [#B] Installation code refactor
 	 CLOSED: [2010-04-09 Fri 09:56]
 **** Refactor checklist
@@ -1111,7 +930,64 @@ persist to disk
 simply for other work like dns config or cosrestore, etc.
  
 Ming
-*** TODO [#A] Installation restore procedure
+
+more discussion on this <2010-06-23 15:05>
+
+ 
+ more formal configuration policy
+ 
+ plug-in method
+ 
+ detect tool? daily - weekly tool to validate nodecfg? if change, send out alert.
+ 
+ node configuration life-cycle mgmt
+ 
+ mauiconfig
+ - utility function
+ - service specific
+ - a ring to link all service config
+ 
+**** nodecfg planning after remove eBay RMG
+
+Hi Yubo,
+
+As we’ve almost finished all eBay RMG removal related work, it’s a good time to summarize the lesson learn and think about the valuable work moving forward. As you’ve already known, this time we have followed a better way for eBay work to make sure most of our deliverables can be reused in the long run but not just one time effort. So far, we have developed a list of tools for eBay purpose. If we can have more time and efforts to improve the remain work, these tools should be also very useful for the current release (1.3.x/1.4.0). After discussed with Denny/Ming, here is our proposal for the necessary work moving forward. 
+
+Goals:
+	Make nodecfg.py as a common module to handle node configuration more flexible. 
+	Make nodecfg.py easy to maintain and extend with clean code. 
+	Provide handy tools to handle nodecfg re-generation, validation, and repair. 
+	Provide flexible configuration changes on add/remove/reconfigure node.
+	Remove duplicate data in configuration and make it easier to maintain.
+	Unify node configuration life cycle management include node.cfg and service configuration.
+
+Work Breakdown Structure:
+To achieve the goals above, we have divide working items into two phases. Phase I contains all necessary items if we need to fully support 1.3.x/1.4 with a good shape. Phase I total efforts will need about 4 man weeks within buffer time consideration. Regarding to phase II, these items are remain work we also need to consider after 1.4, especially for restore tool development.
+
+Phase I – Will support 1.3.x/1.4 release
+1.	Collect all necessary raw data to generate complete node.cfg -> 4 days
+2.	Generate nodecfgs table and node.cfg by raw data (based on existing work for more options) -> 3 days
+3.	Generalize the common workaround (sorting sequence, value convention, etc.) -> 3 days
+4.	Provide one unified tool – atmoscfgmgr which has validate, repair methods for node.cfg/nodecfgs table -> 3 days
+5.	Add unit test cases for all public methods -> 3 days
+6.	Bug fix: Change RMS_List to RMS_LIST -> 0.5 day
+
+Phase II – After 1.4 release improvement areas 
+1.	Restore tool based on nodecfg module and task engine
+2.	Remove the assumption on id sequence dependency since id may change
+3.	Enhance mauiverify - After AtmosCfg ready, integrate node configuration check (nodecfgs table, node.cfg) into mauiverify
+4.	Make node.cfg has the same keys in different nodes. 
+5.	Cleanup useless keys in node.cfg (e.g. MDLS_LIST)
+6.	Remove generated items from nodecfgs table, only keep original inputs in DB. All generated value will put to node.cfg
+7.	Improve mauiconfig on service configuration validation check. This could be used by mauiverify to check service configuration consistency. 
+8.	Add validate method to update_xml_conf after load xml file.
+
+At this time just after finish eBay work, we suggest continuing to work on phase I and finish this in 1.4.0 release to reduce the project switch/warm up efforts. Could you please have a review and let us know your consideration and comments?
+
+Thanks,
+Jason
+
+*** [#A] Installation restore procedure
 **** INPROGRESS [#B] decouple genprofile for better organise and rereuse code, consider ip change and reconfiguration together.
 **** Restore services and service related data
 - ais: 
@@ -1235,7 +1111,62 @@ try as much as possible to split existing code into small scripts and utility. t
 _Review process:_ Try to get Ming involved as early as possible.
 
 first keep original function not change, keep diff as small as possible, which is easy for review, test, patch
-*** [#C] setup autostart
+*** [#C] Task module improvement
+
+Yubo suggestion:
+1. Need to think about how to describle the issue properly and push the improvement in the group. 
+2. Do we need to reconsider priority of this since only us understand the details and issues?
+3. What can we learn from policy sync mechanism?
+4. Do not need to rewrite. Just solve the existing issues.
+
+Action items:
+1. Think about above suggestion and send a proposal to Yubo
+
+*** [#B] pylib enhancement
+**** TODO Add one stop wiki page for all system mgmt developement process
+**** TODO refine topology in mauiutility 
+**** Team tea session discussion - I 
+
+Denny is owner of pylib. All code change related to pylib need to get Denny's approval before to commit the code.
+
+Action items:
+1. check pylib db disconnection behavior - Caihua
+2. add example to code style - Denny
+3. define prefix word for error code, const - Denny
+4. add pydoc module docstring to code convention - Denny
+5. exception module needs to be refined for details - Denny
+6. move svc_util.py to pylib, seperate into different classes, e.g. fstab, drives, mounts - Longda
+7. refine topology in mauiutility - Jason
+8. need to add log in pylib. investigate how to log in pylib - Yubo
+9. add module division to wiki page - Denny & Jason
+*** Patch management
+
+solve common copy
+
+it's can be easiliy done by python parsing, or simple DSL engine. 
+
+we can think it in a wide scope, whether other feature or script can leverage this scope.
+
+prototype
+
+有几个简单的原语就可以模拟整个的流程：
+BACKUP
+COPY
+EXEC
+
+Open questions:
+1. can we retry or restart from failure point? or all commands operations are reentrant?
+2. do we consider rollback?
+3. verify consideration?
+4. how to do kernel patch?
+5. can we solve package dependency?
+6. do we get rid of conary css ability?
+7. relation with upgrade? - not scope for this
+
+*** Postgresql changes												:ARCHIVE:
+**** DONE initDB -  --no-locale --encoding=EUC_JP
+	 CLOSED: [2010-02-12 Fri 10:15]
+*** setup autostart													:ARCHIVE:
 [root@Jason-130A-001 bin]# export FT_DIR=/etc/autostart/EAS_5.3SP3.patch/Linux/bin
 [root@Jason-130A-001 bin]# export FT_DIR=/etc/autostart/EAS_5.3SP3.patch/Linux
 [root@Jason-130A-001 bin]# vi ft_setup
@@ -1427,63 +1358,6 @@ Starting Agent...
 This agent has been promoted while it was down.
 It will now be restarted as a primary agent.
 [root@Jason-130A-002 bin]# ping 10.32.171.80
-*** [#C] Task module improvement
-
-Yubo suggestion:
-1. Need to think about how to describle the issue properly and push the improvement in the group. 
-2. Do we need to reconsider priority of this since only us understand the details and issues?
-3. What can we learn from policy sync mechanism?
-4. Do not need to rewrite. Just solve the existing issues.
-
-Action items:
-1. Think about above suggestion and send a proposal to Yubo
-
-*** [#B] pylib enhancement
-**** TODO Add one stop wiki page for all system mgmt developement process
-**** TODO refine topology in mauiutility 
-**** Team tea session discussion - I 
-
-Denny is owner of pylib. All code change related to pylib need to get Denny's approval before to commit the code.
-
-Action items:
-1. check pylib db disconnection behavior - Caihua
-2. add example to code style - Denny
-3. define prefix word for error code, const - Denny
-4. add pydoc module docstring to code convention - Denny
-5. exception module needs to be refined for details - Denny
-6. move svc_util.py to pylib, seperate into different classes, e.g. fstab, drives, mounts - Longda
-7. refine topology in mauiutility - Jason
-8. need to add log in pylib. investigate how to log in pylib - Yubo
-9. add module division to wiki page - Denny & Jason
-
-
-*** Patch management
-
-solve common copy
-
-it's can be easiliy done by python parsing, or simple DSL engine. 
-
-we can think it in a wide scope, whether other feature or script can leverage this scope.
-
-prototype
-
-有几个简单的原语就可以模拟整个的流程：
-BACKUP
-COPY
-EXEC
-
-Open questions:
-1. can we retry or restart from failure point? or all commands operations are reentrant?
-2. do we consider rollback?
-3. verify consideration?
-4. how to do kernel patch?
-5. can we solve package dependency?
-6. do we get rid of conary css ability?
-7. relation with upgrade? - not scope for this
-
-*** Postgresql changes												:ARCHIVE:
-**** DONE initDB -  --no-locale --encoding=EUC_JP
-	 CLOSED: [2010-02-12 Fri 10:15]
 
 ** VISION - Database server/client 
 *** For DB API layer
@@ -1502,7 +1376,6 @@ Open questions:
 *** For DB server layer
 - Replication: Slony
 - Connection pool: pgpool
-
 ** VISION - Installation
 
 phase:
@@ -1578,8 +1451,6 @@ set config Atmos_PC3public_0v02.cfg
 ------------------------------- spliter -------------------------------
 
 add ip int=vlan103 ip=dhcp
-
-
 ** Atmos IMPROVEMENT areas
 *** Cluster Task module redesign - sync framework
 Design consideration:
@@ -1721,7 +1592,6 @@ It seems both the CM and db.py don't have this setting, it will be helpful to re
 
 Thanks,
 Caihua
-
 ** Debug command collection
 *** MISC commands
 select id, call, input, status, retval from tasks order by id;
@@ -1966,78 +1836,6 @@ firmware-version: 5.0.11 NCSI 2.0.5
 bus-info: 0000:01:00.1
 
 based on bug 9308, can you update NIC FW to 5.0.12 and try it again? thanks.
-
-
-** Reviewboard setup notes in Ubuntu
-1. Package setup follow instructions in [[http://www.reviewboard.org/docs/manual/1.0/admin/installation/linux/][RB site]]
-   - # sudo apt-get install python-setuptools libapache2-mod-python
-   - # sudo apt-get install memcached libmemcache-dev patch
-   - # easy_install ReviewBoard
-   - # sudo apt-get install subversion python-svn
-   - # easy_install nose Sphinx
-2. Configuration changes in [[http://www.reviewboard.org/docs/manual/1.0/admin/sites/creating-sites/#creatingsites][RB site]]
-   - # rb-site install /var/www/<site_name> - input local IP as Domain Name, just follow prompt to finish the wizard. DO remember the admin's password which will be used later
-   - # chown -R www-data:www-data /var/www/<site-name>
-   - # cd /etc/apache2/sites-available
-   - # cp /var/www/<site_name>/conf/apache-modpython.conf <site_name>.conf
-   - # cd ../sites-enabled
-   - # ln -s ../sites-available/<site_name>.conf .
-   - # rm 000-default
-   - Restart apache (# apache2ctl restart)
-3. Need one patch for Atmos subversion since it's use HTTPS -- Avoid HTTPS svn repository certificate issue.
-   - Modify file /usr/local/lib/python2.6/dist-packages/ReviewBoard-1.0.5.1-py2.6.egg/reviewboard/scmtools/svn.py
- 47         SCMTool.__init__(self, repository)
- 48    
- 49         # Modified by Jason
- 50         # Add this function to avoid callback ssl trust check
- 51         def ssl_server_trust_prompt(trust_dict):
- 52             return True, 1, True
- 53         
- 54         import pysvn
- 55         self.client = pysvn.Client()
- 56         self.client.callback_ssl_server_trust_prompt = ssl_server_trust_prompt
- 57         
-4. Manage RB
-   1. Login management GUI console: http://<local IP>/admin (admin is the user you created in rb-site command)
-   2. After login Review Board administration GUI, you can add groups, reviewer, repository in your desired way. The most important setting is repository settings. Click repository and then click add repositoy in the right top side. Here is one typical Atmos trunk repository setting.
-	 - Name: Atmos trunk
-	 - Path: https://tvg01.lss.emc.com/svn/maui/trunk
-	 - Repository Type: Choose Subversion
-	 - Bug tracker URL: https://tvg01.lss.emc.com/bugzilla/show_bug.cgi?id=%s
-	 - Authentication: input your UNIX account information for SVN login
-5. Use RB
-   1. Login RB GUI dashboard http://<local IP>/
-   2. Register one user with password and email address
-   3. Then you can see all review requests in RB and your incoming review
-   4. Other usage are relatively straight forward. You can take a few minutes to take a look at offical [[http://www.reviewboard.org/docs/manual/1.0/users/#usersguide][user guide]]
-
-Another RB install on FC9: [[http://notes.tela-web.com/install_review_board_on_fedora][RB install on FC9]]
-
-Another patch to solve HTTPS subversion certificate issue
-Index: /usr/local/lib/python2.6/dist-packages/ReviewBoard-1.0.5.1-py2.6.egg/reviewboard/scmtools/svn.py
-===================================================================
---- scmtools/svn.py	(revision 1980)
-+++ scmtools/svn.py	(working copy)
-@@ -70,7 +70,18 @@
-                                             # uses 'revision 0'
-             """, re.VERBOSE)
- 
-+ def ssl_server_trust_prompt(trust_dict):
-+ """Callback method to always accept ssl certificate."""
-+ if self.client.get_default_username is None:
-+ userpass = False
-+ else:
-+ userpass = True
-+ return (userpass, 0, True)
-+ 
-+ if repository.allow_all_certs is True:
-+ self.client.callback_ssl_server_trust_prompt = ssl_server_trust_prompt
- 
-+ 
-	  def get_file(self, path, revision=HEAD):
-		  if not path:
-			  raise FileNotFoundError(path, revision)
-
 ** PIT, mauits, netinstall setup notes
 *** New PIT framework usage
 # ssh cheny7@10.32.180.27
@@ -2192,7 +1990,6 @@ label atmos-dev-21__00-22-19-b1-03-26
 Succeed.
 ------------------------------- spliter -------------------------------
 
-
 *** Preparation setup - by Yue:
 1) Prepare pit config file or even pit extend config file. 
 2) Created an account for PIT: pit:password
@@ -2342,7 +2139,6 @@ Already fixed with following solution:
 Please archive this email in case you met this again on new agent.
 
 Matt
-
 ** Project lesson learn 											   :WORK:
 *** Plan
 **** Checklist
@@ -2387,7 +2183,6 @@ Atmos Checklist:
 2. Impact installation (master, slave, add RMG/segment)
 3. Impact CM protocal changes
 4. Impact upgrade changes (db schema, data migration)
-
 ** Best practice
 *** Bugzilla comments and update
 When you update a bug in bugzilla, you need to always check what's most useful and necessary information should be updated.
@@ -2422,7 +2217,342 @@ Suggestion:
 1. Assign task by feature to reduce switch
 2. Divide people into feature/release
 3. If too many new hires, need to change process for the management, like code review...
-** Atmos 1.3 cycle 
+
+** Atmos 1.2.7 cycle [3/3]											:ARCHIVE:
+*** DONE Setup MaaS similar testbed and try to reproduce random subtenant creation issues
+	 CLOSED: [2010-06-29 Tue 22:42]
+*** DONE fix pgdbsetup dup record - wait Yubo response
+	 CLOSED: [2010-04-20 Tue 11:23]
+*** DONE [#A] eBay migration DC planning
+	 CLOSED: [2010-06-29 Tue 22:42]
+**** Planning
+
+-	eBay migration plan process
+	Add 3rd RMG
+	Migrate data/metadata
+	Remove old RMG
+
+-	Project scope
+	Provide the procedure to remove RMG after data migration finished from management database and service configuration
+
+-	Project WBS
+	Procedure for removing RMG information from system database
+	Procedure for reconfiguring existing nodes based on new deployment after remove old RMG
+	Reconfigure MDLS, AS and RMS services in all nodes
+	Procedure for verify system behavior from management perspective
+	Setup similar testbed to eBay
+	Test all procedures
+	Verify system behavior from management perspective
+
+-      Estimate efforts – totally two weeks
+	Write procedure of removing RMG information and reconfigure services – one week
+	Write procedure of verify system behavior – two days
+	Setup and testbed and verify procedures – three days
+
+**** eBay setup naming tree
+
+- site name
+  - cluster name
+	- node name
+
+- PHX
+  - PHX-IS-1
+    - phxobstor001-001
+    - phxobstor001-002
+    - ...
+    - phxobstor001-008
+  - PHX-IS-2
+	- phxobstor002-001
+	- phxobstor002-002
+	- ...
+	- phxobstor002-008
+  - PHX-IS-3
+  - ...
+  - PHX-IS-6
+	- phxobstor006-001
+	- phxobstor006-002
+	- ...
+	- phxobstor006-008
+- SQW
+  - SQW-IS-1
+	- sqwobstor001-001
+	- sqwobstor001-002
+	- ...
+	- sqwobstor001-008
+  - SQW-IS-2
+  - ...
+  - SQW-IS-6
+	- sqwobstor006-001
+	- ...
+	- sqwobstor006-008
+- SLC
+  - SLC-IS-1
+	- slcobstor001-001
+	- ...
+	- slcobstor001-008
+  - SLC-IS-2
+  - ...
+  - SLC-IS-6
+	- slcobstor006-001
+	- ...
+	- slcobstor006-008
+
+**** FIX procedure
+
+***** DB error fix
+- clusters table
+  - remove subnetmask, gateway, pubiprange, priviprange
+
+- nodes table
+  - remove ipmiip, cluster_id, privip, pubip
+
+- nodecfgs table
+  - all records, seg_heads, mdls_list, as_list not correct
+  - id 1 - 80, 
+	- rms_ip not correct (should be its own hostname)
+	- services not correct
+  - some nodes (seg6 in PHX, all nodes in SLC)
+	- ss_disklist is not correct (need to check the root cause)
+	- mds_replication is not correct (all should be true)
+	- mds_port is not correct (should clean up all to empty)
+  - phxobstor001-007
+	- services (add PGS)
+***** node.cfg error fix
+- 6th segment in both PHX and SLC RMG: SS_DiskList and SS_DiskLocation are not correct
+
+PGS_LIST incorrect in 
+  1 ./config-phxobstor001-001/maui/node.cfg:PGS_LIST=phxobstor001-001,phxobstor001-007
+  2 ./config-phxobstor001-007/maui/node.cfg:PGS_LIST=phxobstor001-001,phxobstor001-007
+  3 ./config-phxobstor001-008/maui/node.cfg:PGS_LIST=phxobstor001-001,sqwobstor001-001
+
+***** service config error fix
+
+***** MISC collection
+SS related
+1. fix ss_disklist in nodecfgs table of SLC RMG
+
+
+**** Questions: [10/10]
+***** DONE Confirm whether we need to deploy ssproxy/cc in first 5 IS of PHX RMG
+	  CLOSED: [2010-06-06 Sun 20:44]
+***** DONE Ask arun to get pxe.logs to check why ss_disklist is not updated in SLC RMG
+	  CLOSED: [2010-06-06 Sun 20:44]
+***** DONE Check chkconfig status on 80 nodes which services are wrong in node.cfg
+	  CLOSED: [2010-06-06 Sun 20:44]
+***** DONE Confirm Rossen whether master node is master AS
+	  CLOSED: [2010-06-06 Sun 20:44]
+***** DONE Confirm JS conflict with Chen 
+	  CLOSED: [2010-06-06 Sun 20:44]
+***** DONE Confirm DB nodes hostname and node.cfg (services)
+	  CLOSED: [2010-05-25 Tue 17:43]
+
+all cm.conf contains below two nodes for DB server:
+phxobstor001-001
+phxobstor001-007
+***** DONE Confirm who will handle the change of MDS (MDS_IP, MDS_Ports, MDS_RootOwner) info in node.cfg
+	  CLOSED: [2010-05-25 Tue 15:38]
+
+1. DB - handle above error data
+2. node.cfg 
+   - consistent with DB data 
+   - MDS_Ports means all enabled MDS, no need to change
+3. service.cfg (mds_cfg.xml)
+   - consistent with node.cfg and all services run well
+
+***** DONE Confirm ss_disklist, ss_disknum, ss_disklocation is used or not?
+	  CLOSED: [2010-05-25 Tue 15:39]
+
+node.cfg SS info update process:
+1. ss_disklocation is only in node.cfg but not in nodecfgs table which is updated during partition process
+2. ss_disklist, ss_disknum are also updated during disk partition
+
+***** DONE Ask arun about the purpose of 6th segment
+	  CLOSED: [2010-05-25 Tue 15:39]
+
+From Rossen:
+ We have one IS in RMG1 (PHX) and RMG2 (SLC) with the different MDS:SS ratio. The IS's were installed with a 10:5 ratio but then manually configuring all of the disks for MDS. One of the biggest issues at eBay has been the MDS performance. With the new rack we wanted to add more resources to the MDS
+
+***** DONE Confirm multicast or unicast? no change here.
+	  CLOSED: [2010-05-25 Tue 15:39]
+
+
+
+
+
+**** Follow up in 1.2.7 [3/3]
+
+***** DONE confirm whether MDLS_List updated need to reconfigure MDLS service
+	  CLOSED: [2010-06-06 Sun 20:48]
+
+No need to update after confirm with Chen
+
+***** DONE confirm detail changes for below config items
+	  CLOSED: [2010-06-06 Sun 20:48]
+4	/root/diff/maui_authsrv_authsrv_cfg.xml	S3		Jason	Denny	[phxobstor001-002] Check: backendAddr
+update config
+001-002 chkconfig add, mauiconfig, start service
+00x-001 chkconfig del (No service stop)
+
+5	/root/diff/maui_cst_Config.xml	S3		Jason	Denny	[phxobstor001-002] Check: ServerName
+ignore - Liping
+
+6	/root/diff/maui_disks.map	S3		Jason	Denny	[phxobstor003-001] Check
+ignore - Chen
+
+7	/root/diff/maui_handler-selector.xml	S3		Jason	Denny	[All nodes] Check: selector id
+ignore - Chen, just example, no impact
+
+8	/root/diff/maui_provision	S3		Jason	Denny	[Master nodes] Fix: Update IS2-001, IS3-001, IS4-001, IS5-001, IS6-001
+
+
+9	/root/diff/maui_pm-selector.xml	S2		Jason	Denny	[All nodes] Check: selector id; Copyright not handled by upgrade,
+ignore
+
+11	/root/diff/maui_ss_cfg.xml	S1		Jason	Denny	[All nodes] Check: 
+reservepercent from 10 to 5. scope is PHX RMG, 6th segment in SLC RMG. - Only change config, don't restart service
+device  PHX 002-004, 003-001 - ignore
+mount, 
+randominc0sdid from on to off  - keep
+changeStatOnCheckpoint from on to off   - keep
+DiskRecovery - check?
+
+
+12	/root/diff/maui_mauiws_cfg.xml	S1		Jason	Denny	[All nodes] Check: 
+tenantid - ignore
+SedaStatsEnabled - 
+Logstats -
+LogStatsSecondsInterval -
+ JustReplicaReaload, SedaStatsEnabled, SessionRequestTimeOut, MapUidToName, LoggingPluginPath, DestroyTimeout, SkipcloseSession, RandomizeRequestPerchild, FastCreateEnabled, Perferlocation
+
+- ignore
+***** DONE find MDS diff in mds_cfg/mds_sys
+	  CLOSED: [2010-05-31 Mon 13:40]
+mds_cfg.xml diff
+
+All nodes:
+
+IGNORE:
+- tenantId 
+- bdbxmlEnvRoot
+- masterHost
+- RootOwner
+
+ADD:
+RecoverAsyncUninitReplica
+
+DELETE:
+
+DIFF:
+RecoverAsyncReplica from on to off
+
+masterReplicationPort=0000
+masterReplicationPort=10501/10503/10505
+(10601/10602/10603)
+- because testbed doesn't configure remote MDS replication
+
+mds_sys.diff - can be ignored, confirmed by Chen
+
+**** Follow up in 1.4.0 nodecfg
+- remove mds_port in nodecfgs table
+- consistent in node.cfg (why not have the same keys in all node.cfg?)
+
+**** Testing scripts
+
+***** Recover db
+ALTER TABLE clusters ADD COLUMN subnetmask text, ADD COLUMN gateway text , ADD COLUMN pubiprange text;
+   
+** Atmos 1.3.2 cycle [4/4]											:ARCHIVE:
+*** DONE Follow up on corbis installation
+	 CLOSED: [2010-06-06 Sun 20:49]
+Hi Sukwoo, Ming,
+
+Based on supporting Corbis installation issue, I think we can have below two improvements to follow up. Please let me know your comments. 
+
+1.	Add one limitation on the installation admin guide document. Customer / User can ONLY change the hostname during configuring hostname prefix when adding RMG/segment. Other ways are not supported and might cause hostname resolution issue. We can add this improvement into 1.3.2 document (not sure whether we can still make change for 1.3.1 document).
+2.	Another improvement is we might also need additional precheck step before user configures the system. Current precheck in installation process is not enough in this case. If we can check hostname consistency before trigger CM from GUI, then we can report error as early as possible. 
+
+Thanks,
+Jason
+
+*** DONE Mongrel session clear cronjob patch
+	 CLOSED: [2010-06-06 Sun 20:49]
+*** CANCELED Improve installation error log on CM side. bug #11860
+	 CLOSED: [2010-06-29 Tue 22:45]
+*** DONE Review mgmt DB related bugs and make planning
+	 CLOSED: [2010-06-06 Sun 20:49]
+**** DONE pgdbcheck related bugs should be fixed in 1.3.2
+	 CLOSED: [2010-05-16 Sun 21:02]
+
+** Reviewboard setup notes in Ubuntu								:ARCHIVE:
+1. Package setup follow instructions in [[http://www.reviewboard.org/docs/manual/1.0/admin/installation/linux/][RB site]]
+   - # sudo apt-get install python-setuptools libapache2-mod-python
+   - # sudo apt-get install memcached libmemcache-dev patch
+   - # easy_install ReviewBoard
+   - # sudo apt-get install subversion python-svn
+   - # easy_install nose Sphinx
+2. Configuration changes in [[http://www.reviewboard.org/docs/manual/1.0/admin/sites/creating-sites/#creatingsites][RB site]]
+   - # rb-site install /var/www/<site_name> - input local IP as Domain Name, just follow prompt to finish the wizard. DO remember the admin's password which will be used later
+   - # chown -R www-data:www-data /var/www/<site-name>
+   - # cd /etc/apache2/sites-available
+   - # cp /var/www/<site_name>/conf/apache-modpython.conf <site_name>.conf
+   - # cd ../sites-enabled
+   - # ln -s ../sites-available/<site_name>.conf .
+   - # rm 000-default
+   - Restart apache (# apache2ctl restart)
+3. Need one patch for Atmos subversion since it's use HTTPS -- Avoid HTTPS svn repository certificate issue.
+   - Modify file /usr/local/lib/python2.6/dist-packages/ReviewBoard-1.0.5.1-py2.6.egg/reviewboard/scmtools/svn.py
+ 47         SCMTool.__init__(self, repository)
+ 48    
+ 49         # Modified by Jason
+ 50         # Add this function to avoid callback ssl trust check
+ 51         def ssl_server_trust_prompt(trust_dict):
+ 52             return True, 1, True
+ 53         
+ 54         import pysvn
+ 55         self.client = pysvn.Client()
+ 56         self.client.callback_ssl_server_trust_prompt = ssl_server_trust_prompt
+ 57         
+4. Manage RB
+   1. Login management GUI console: http://<local IP>/admin (admin is the user you created in rb-site command)
+   2. After login Review Board administration GUI, you can add groups, reviewer, repository in your desired way. The most important setting is repository settings. Click repository and then click add repositoy in the right top side. Here is one typical Atmos trunk repository setting.
+	 - Name: Atmos trunk
+	 - Path: https://tvg01.lss.emc.com/svn/maui/trunk
+	 - Repository Type: Choose Subversion
+	 - Bug tracker URL: https://tvg01.lss.emc.com/bugzilla/show_bug.cgi?id=%s
+	 - Authentication: input your UNIX account information for SVN login
+5. Use RB
+   1. Login RB GUI dashboard http://<local IP>/
+   2. Register one user with password and email address
+   3. Then you can see all review requests in RB and your incoming review
+   4. Other usage are relatively straight forward. You can take a few minutes to take a look at offical [[http://www.reviewboard.org/docs/manual/1.0/users/#usersguide][user guide]]
+
+Another RB install on FC9: [[http://notes.tela-web.com/install_review_board_on_fedora][RB install on FC9]]
+
+Another patch to solve HTTPS subversion certificate issue
+Index: /usr/local/lib/python2.6/dist-packages/ReviewBoard-1.0.5.1-py2.6.egg/reviewboard/scmtools/svn.py
+===================================================================
+--- scmtools/svn.py	(revision 1980)
++++ scmtools/svn.py	(working copy)
+@@ -70,7 +70,18 @@
+                                             # uses 'revision 0'
+             """, re.VERBOSE)
+ 
++ def ssl_server_trust_prompt(trust_dict):
++ """Callback method to always accept ssl certificate."""
++ if self.client.get_default_username is None:
++ userpass = False
++ else:
++ userpass = True
++ return (userpass, 0, True)
++ 
++ if repository.allow_all_certs is True:
++ self.client.callback_ssl_server_trust_prompt = ssl_server_trust_prompt
+ 
++ 
+	  def get_file(self, path, revision=HEAD):
+		  if not path:
+			  raise FileNotFoundError(path, revision)
+** Atmos 1.3 cycle													:ARCHIVE:
 *** Atmos capacity reporting mechanisms
 
 #!/usr/bin/python2.4
@@ -2486,7 +2616,7 @@ Remind Xin about his improvement in pgpool
 *** DONE Remove Compression+Dedup support in GUI/CLI installation -> To Chunjie
 	 CLOSED: [2009-08-11 Tue 12:59]
 
-** DB testing notes
+** DB testing notes													:ARCHIVE:
 *** Postgres testing tips
 **** Analyse query speed
 http://drupal.org/node/343082
@@ -3340,7 +3470,7 @@ what information has lost?
 
 5. Provide scripts to dump node.cfg to nodecfg table
 
-* Daily work												   :WORK:ARCHIVE:
+* Daily work 												   :WORK:ARCHIVE:
 <2010-01-03 21:53>
 
 ** CANCELED update db wiki about impact areas (files, comments?)
@@ -3619,7 +3749,7 @@ ispell 3.3.02
 International Ispell
 [http://tindorafarms.com/index.php?hl=f5&q=uggc%3A%2F%2Fmxjney.oybtfcbg.pbz%2F2007%2F01%2Frznpf-gvc-vafgnyy-vfcryy-ba-jvaqbjf.ugzy]
 Emacs Tip: Install Ispell on Windows
-
+ 
 *** orgmode
 **** set archive mode
 if not use frequently, use archive mode (c-c c-x c-a), use same command can unarchive
@@ -3627,6 +3757,18 @@ if not use frequently, use archive mode (c-c c-x c-a), use same command can unar
 *** Commands set collection
 M-< M-> go to top and bottom of file
 C-u Number command - execute "command" in "Number" times
+** Python learning
+*** Good code example
+How to get key/value from dict? http://www.daniweb.com/code/snippet217019.html 
+
+*** Good web sites and pages
+*** Books
+**** Dive into python
+**** 
+*** Exception handling
+
+[[http://eli.thegreenplace.net/2008/08/21/robust-exception-handling/][Robust exception handling]] - good description on exception handling in python rather than error code
+
 ** Git use
 
 *** Github.com - my online git backup home
@@ -4227,7 +4369,6 @@ Sukwoo recommend me to review paper on ACM transaction on Storage. it's a exciti
 如何让自己得到更多的锻炼，挑战和机会？
 。。。
 
-
 ** My learning plan
 Record what I need to learn and improve for my self. (Internal motivated.)<2009-12-13 21:05>
 *** Technical
@@ -4293,74 +4434,81 @@ Qualifications
 
 ** English words
 
-|--------------+------------------------|
-| word         | meaning                |
-|--------------+------------------------|
-| stamina      | 精力                   |
-| hypothesis   | 假设                   |
-| notion       | 观念，想法             |
-| cumulative   | 累积的                 |
-| corollary    | 推论                   |
-| reckless     | 不计后果的             |
-| prudent      | 谨慎的                 |
-| deliberate   | 深思熟虑的，故意的     |
-| inadvertent  | 不注意的，疏忽的       |
-| amateur      | 业余爱好者             |
-| dictator     | 独裁者                 |
-| amortize     | 分期偿还               |
-| condense     | 浓缩                   |
-| paradox      | 自相矛盾               |
-| critically   | 批评地,用钻研眼光地    |
-| plural       | 复数的                 |
-| Pathology    | 病理，反常             |
-| hazard       | 冒险，危险             |
-| rummage      | 仔细检查，搜查         |
-| adjacent     | 邻近的                 |
-| spatial      | 空间的                 |
-| conjecture   | 猜想                   |
-| interleaving | 交叉,交错              |
-| obstructive  | 阻碍，妨碍             |
-| coalesce     | 接合                   |
-| heuristic    | 启发式的               |
-| commence     | 开始，着手             |
-| contend      | 竞争                   |
-| arbitrate    | 仲裁, 公断             |
-| induce       | 导致，引起             |
-| accompany    | 陪伴，伴奏             |
-| likewise     | 同样的                 |
-| stagger      | 交错                   |
-| proximal     | 最接近的               |
-| jeopardize   | 危害                   |
-| possess      | 拥有，占有             |
-| mitigate     | 减轻                   |
-| empirical    | 实验式，经验主义的     |
-| malicious    | 恶意的                 |
-| steer        | 驾驶，掌舵             |
-| mobilize     | 动员                   |
-| reveal       | 展示，揭露             |
-| negligible   | 可以忽略的, 不予重视的 |
-| unorthodox   | 非传统的               |
-| legacy       | 遗产                   |
-| elastic      | 弹性的                 |
-| catastrophic | 灾难性的               |
-| unwind       | 展开                   |
-| obligatory   | 必须的                 |
-| deprecate    | 反对，轻视             |
-| esoteric     | 深奥的                 |
-| corollary    | 推论，必然的结果       |
-| resort       | 手段，采取             |
-| assorted     | 多样混合的             |
-| charisma     | 感召力                 |
-| acumen       | 敏锐, 聪明             |
-| stagnation   | 停滞                   |
-| steer        | 指引                   |
-| abundance    | 富裕，充裕             |
-| arrogance    | 傲慢，自大             |
-| congruent    | 适合的                 |
-| intimate     | 亲密的，固有的         |
-| etiquette    | 礼节                 |
-|              |                        |
-
+|--------------+----------------------------|
+| word         | meaning                    |
+|--------------+----------------------------|
+| stamina      | 精力                       |
+| hypothesis   | 假设                       |
+| notion       | 观念，想法                 |
+| cumulative   | 累积的                     |
+| corollary    | 推论                       |
+| reckless     | 不计后果的                 |
+| prudent      | 谨慎的                     |
+| deliberate   | 深思熟虑的，故意的         |
+| inadvertent  | 不注意的，疏忽的           |
+| amateur      | 业余爱好者                 |
+| dictator     | 独裁者                     |
+| amortize     | 分期偿还                   |
+| condense     | 浓缩                       |
+| paradox      | 自相矛盾                   |
+| critically   | 批评地,用钻研眼光地        |
+| plural       | 复数的                     |
+| Pathology    | 病理，反常                 |
+| hazard       | 冒险，危险                 |
+| rummage      | 仔细检查，搜查             |
+| adjacent     | 邻近的                     |
+| spatial      | 空间的                     |
+| conjecture   | 猜想                       |
+| interleaving | 交叉,交错                  |
+| obstructive  | 阻碍，妨碍                 |
+| coalesce     | 接合                       |
+| heuristic    | 启发式的                   |
+| commence     | 开始，着手                 |
+| contend      | 竞争                       |
+| arbitrate    | 仲裁, 公断                 |
+| induce       | 导致，引起                 |
+| accompany    | 陪伴，伴奏                 |
+| likewise     | 同样的                     |
+| stagger      | 交错                       |
+| proximal     | 最接近的                   |
+| jeopardize   | 危害                       |
+| possess      | 拥有，占有                 |
+| mitigate     | 减轻                       |
+| empirical    | 实验式，经验主义的         |
+| malicious    | 恶意的                     |
+| steer        | 驾驶，掌舵                 |
+| mobilize     | 动员                       |
+| reveal       | 展示，揭露                 |
+| negligible   | 可以忽略的, 不予重视的     |
+| unorthodox   | 非传统的                   |
+| legacy       | 遗产                       |
+| elastic      | 弹性的                     |
+| catastrophic | 灾难性的                   |
+| unwind       | 展开                       |
+| obligatory   | 必须的                     |
+| deprecate    | 反对，轻视                 |
+| esoteric     | 深奥的                     |
+| corollary    | 推论，必然的结果           |
+| resort       | 手段，采取                 |
+| assorted     | 多样混合的                 |
+| charisma     | 感召力                     |
+| acumen       | 敏锐, 聪明                 |
+| stagnation   | 停滞                       |
+| steer        | 指引                       |
+| abundance    | 富裕，充裕                 |
+| arrogance    | 傲慢，自大                 |
+| congruent    | 适合的                     |
+| intimate     | 亲密的，固有的             |
+| etiquette    | 礼节                       |
+| reformation  | 改革                       |
+| synthesis    | 综合，合成                 |
+| advocate     | 提倡                       |
+| voracious    | 贪婪的                     |
+| monolithic   | 庞大的，完整的             |
+| gloss        | 掩盖，光泽                 |
+| quorum       | 法定人数，挑选出来的一组人 |
+| skepticism   | 怀疑论                     |
+|              |                            |
 
 
 ** Reading
@@ -4691,6 +4839,75 @@ Mgmt:
    
 *** 能够迅速进入专注状态，以及能够长期保持专注状态，是高效学习的两个最重要习惯。
 
+
+** Personal development
+
+*** The 15-Minute Method
+Here's a simple yet very powerful productivity method I'd like to share with you. I call it the 15-minute method.
+
+You've probably heard the phrase "chunk it down" in reference to breaking large projects into smaller, more manageable tasks. Sometimes it's easy to break projects into bite-sized pieces, but other times it can be more difficult to do so. Especially when you're doing very creative work, it can be nearly impossible to identify all the steps in advance, and clearly defining those steps may be tricky.
+
+Even after we chunk a project into smaller tasks, some of those tasks can be intimidating when think about doing them. I find this especially true with tasks that can be very tedious. Even if the steps are clear, I'm more likely to procrastinate when I look at a 3-hour block of relatively dull work.
+
+We also know that getting started on a task is usually the hardest part. Once you get past the first 15 minutes or so, it's easier to keep going. Once you've built up some momentum, two hours can flow by like it's nothing. We just have to find a way to get started without delay, overriding the desire to procrastinate.
+
+The 15-minute method is a way to help overcome inertia and get moving on a task. It's basically a psychological trick, and it's very simple.
+How It Works
+
+All you do is tell yourself that you're going to work on a particular task or project for only 15 minutes. You can work longer if you feel like it, but you won't worry about that until your initial 15 minutes are up. Only after you've completed those first 15 minutes will you even think about working longer.
+
+Prepare your environment in advance. Set out all the materials you'll need to work on your task for 15 minutes. Do what's necessary to make sure you won't be interrupted during that time. This is very important.
+
+When you begin your 15 minutes, do nothing but the task at hand. Don't get up for any reason. If you're working on your computer, don't open any applications but the essential ones. If the phone rings, let it go to voicemail. If a text message comes in, let it wait. Don't even think about checking your email or Facebook. If someone pops in and asks, "Do you have a minute?" tell them to come back when your 15 minutes are up (or later).
+
+For those 15 minutes only, commit to not distracting yourself in any way. Focus single-mindedly on the task at hand.
+
+Work quickly during this time. Focus on speed. Try to make as much progress on your task as humanly possible. If distracting thoughts come up, say to yourself, "Focus! Focus! Focus!" Then ask yourself, "What's the very next step?"
+
+Put some kind of clock or timer in front of you, so you can see the minutes counting down. It's important to create a sense of time pressure. Know that you aren't swimming in time -- you only have 15 minutes here. The time will pass quickly. I use a digital kitchen timer that counts down and sounds an alarm when the time is up.
+Chaining 15-Minute Chunks
+
+After your 15 minutes are up, now you can decide whether you wish to keep going with the task at hand. At this point your mind is in a different state than it was when you first began. You aren't in the same mental state you were in 15 minutes earlier. Your neurons are saturated in task-related activity. Your mind will have a strong tendency to want to keep going and to resist stopping.
+
+If you want to stop, give yourself permission to stop. Get up, walk around, take a break, or switch to some other project. When you're ready to do another 15-minute chunk, then do so. Otherwise, let it be okay to stop after 15 minutes.
+
+Most likely when those first 15 minutes are up, you'll want to continue. You may even be annoyed that your time is up. Feel free to keep working. If it's easy to do so, restart your timer immediately, and commit to doing another 15-minute chunk.
+
+Once you get moving, it's much easier to keep moving. It's hard to get started when you're staring at a two-hour task or longer. That may seem like a big commitment, so don't commit to that much up front. Only commit to 15 minutes.
+
+When you notice that your 15-minute segments are becoming less productive, or you're getting distracted, stop and take a break. That's a good time to go for a walk, have a meal, or switch to other tasks. Then when you're ready to begin again, start with a fresh 15-minute commitment.
+
+With practice you can challenge yourself to chain several 15-minute chunks together. Typically I will chain 7 or 8 of these chunks in a row before taking a break.
+
+NEVER allow yourself to do anything off-task during a 15-minute chunk. If you feel the urge to check email or return a phone call, do it between -- never during -- 15-minute chunks.
+Benefits of This Method
+
+The 15-minute method has many benefits. First, it helps you overcome inertia and gets you moving forward productively. No matter how unpleasant the task may seem, it isn't that difficult to commit to working on it for only 15 minutes.
+
+Second, it gets you past those "I don't know what to do" excuses. You can easily figure out what to do for 15 minutes. If you really don't know how to begin, journal about the task. Make a very short to-do list. Or call someone to ask for advice on how to start. You only have to figure out 15 minute's worth of the task to get started.
+
+Third, it keeps you focused. You're compelled to make clear distinctions between real work vs. distractions. You can't delude yourself into thinking that web surfing or checking email is working. When you use the 15-minute method, you're getting real work done. A whole day spent using the method can sometimes be more productive than a whole week without it.
+
+Fourth, it helps you work faster. You'll find that the act of checking in with yourself every 15 minutes helps you maintain a fast tempo. Even if you keep working for hours at a time, those frequent check-ins are valuable, and they only take seconds.
+
+Finally, it helps you build more discipline. You'll train yourself to stick to the task at hand and put off distractions. And you'll challenge yourself to work flat out instead of procrastinating.
+First Thing in the Morning
+
+If you want to have a really productive day, get started with the 15-minute method first thing in the morning. Don't allow yourself to have breakfast, check email, or do anything else that could chew up your time until you complete at least one 15-minute chunk on a key task.
+
+I sometimes challenge myself to do 4-8 chunks first thing in the morning before I do anything else. Then I'll have breakfast, handle my communication, etc.
+
+I used this approach when writing my book. I'd frequently push myself to complete 2-4 hours of writing first thing in the morning before giving myself permission to do anything else.
+Variations
+
+Feel free to vary the 15-minute method to suit your situation. You can do 10- or 20-minute chunks if you'd like. Just make sure the chunk sizes aren't so big that you have a tendency to procrastinate. The point is to make it easy to get started by lowering the perceived commitment.
+
+You can also use the 15-minute method to monitor and control how much time you spend on activities like web surfing or email. Limit yourself to a certain number of 15-minute chunks. For example, I'll often devote a 30-minute block of time to handling my online communication. Hitting the halfway point after the first 15-minute chunk helps me pace myself and make sure I'm not getting bogged down (like over-engineering an email that only requires a short response).
+
+I recently applied the 15-minute method to the task of creating and posting an updated version of the Conscious Growth Workshop web page. It was a creative task that took about 16 hours to complete, spread over a few days. In one day I completed 33 chunks (8 hours, 15 minutes). Given that all of those chunks were fast tempo and distraction-free, that adds up to a lot of real work completed. I liked the sense of progress that came from checking off chunk after chunk. This made the task seem more manageable. I knew that if I committing to one 15-minute chunk at a time, eventually I'd complete the project.
+
+Give the 15-minute method a try. I think you'll find it useful on many levels. It only takes 15 minutes. :) 
+
 ** Lessons learn from others 										  :THINK:
 *** From Ming
 1. when new member join the team, have 1on1 session to understand each other and communication prefer ways. also discuss about ideas on the project design and ideas.
@@ -4765,6 +4982,28 @@ Action plan:
 - 如果试验有n个factor，如何利用工具能够让试验的影响范围因子远远的小于2的n次方
 - 尽量缩小试验的范围
 
+*** From Hongbing
+**** first mentoring lunch <2010-07-15>
+
+what should manager do?
+1. not just assign tasks, but leave space to team members and give their opportunity to classify high potentials, teach how to fish but not just give fish
+2. fight for team members credit and pay back
+3. setup team process and make every one know their directions and responsibility
+4. communication (subordinate, peer, manager) 
+   - lst level: only can chat without any purpose or focus
+   - 2nd level: clear mind and focus for each communication
+   - 3rd level: understand everyone's requirement and expectation, clearly set the goal
+
+current focus:
+1. setup team process and communication
+2. working with local manager and US leads to build close relationship
+
+how to handle tough employee:
+1. if no personality and integrity issue, do more communication and don't set high expectation for short term... this is a gradual improvement process
+2. as a manager, you have more information and power to control and show your care and respective. like better ACR, a more challenge task, etc
+3. you cannot let everyone like you from their heart since everyone has own advantages, know them better and give them more opportunities and recognize, this relationship will be improved.
+
+
 *** From Yubo
 1. how to motivate people? (e.g. if move Caihua to do another high priority thing and suspend current ongoing projects, caihua may have concern, what are good points to motivate?)
    - This is a good oppotunity for you to involve more components and bring your ideas to the team. If you have any good suggestion to the framework, then bring these out and let others know your opioion. We may not fix this in short term due to resource or other high priority things, but this would let others know your value in the team and would consider give you more oppotunity and responsibility if there has any good place. 
@@ -4779,7 +5018,6 @@ After Kenny joins the team, need to think about my next step focus and developme
 - build influence. build your trust in the team (from impersonality and subjective)
 - improve code quality. from a higher level, even code is ok and easy to read but design is not good as expected, like installation should revisit and accumulate more experiences. from customer point of view to think about problems.
 - database. the biggest issue would be you don't know what you don't know. how you convience Rich and yourself to provide a stable db solution? how to leverage more senior resources and how to ensure db is OK?
-
 
 *** From Ray Tang
 **** Organize work properly and demostrate the work
@@ -4830,6 +5068,9 @@ Daily mgmt style:
 4. hand-on to be release lead and understand every bug
 5. Control resource need to have a balance. Not mean control strictly but can offer some help to others while not add overload to the team members. So when planning, add buffer time is very important
 6. Put staff meeting notes to public share folder for all team members who are interested in to see
+7. Give detail updates on US trip and set our priority (quality and stability)
+8. Demonstrate China team to eve, focus on a) China team is no longer a young campus hire team but with a number of experiences talents, b) clear chart to show team title and working experience structure
+9. Direct. Have clear goal on the talk for each conversation. No need to turn around...
 
 *** Management style from Bobby
 Recently there have many 1on1 discussion and meeting with Bobby, here are some thoughts which I think are very good habits and ideas:

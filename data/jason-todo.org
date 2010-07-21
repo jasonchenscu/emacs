@@ -94,11 +94,15 @@ Profiling Atmos
 
 **** Maintain reviewforge (cigreview.lss.emc.com)
 
+IP Addr: 10.32.109.87
+
 # mysql
 mysql -uroot -p
 /usr/bin/mysqladmin -u root password 'newpassord';
 mysqladmin -h 10.32.109.87 -u root -p password 'pass@word1'
 grant all on *.* to root@'cnrdchenx10l1c.corp.emc.com' identified by 'navichina';
+
+grant all on *.* to root@'cnadchenc1l2c.corp.emc.com' identified by 'pass@word1'
 
 # Change password to handle ERROR 1045: Access denied for user 'root'@'localhost'
 $find / -type f -name "mysql"
@@ -122,18 +126,75 @@ http://www.daniweb.com/code/snippet217019.html
 
 **** Reviewboard metrics collection
 
+Comment severity:
+1 	Non-Categorical
+2 	Major
+3 	Moderate
+4 	Minor
+
+Comment state:
+1 	Open
+2 	Accepted
+3 	Rejected
+4 	Answered
+
+Comment type:
+1 	Defect
+2 	Enhancement
+3 	Coding Style
+4 	Question
+
 Get total review requests:
 # select id from reviews_reviewrequest where time_added > '2010-06-24 00:00:00' order by id;
 
-Get total review comments (defects, accepted, major)
-select 
-count(id)
+Get total review comments (defects, accepted, major):
+# select count(id)
 #commenttype_id, commentstate_id, commentseverity_id 
 from reviews_comment 
 where review_request_id in (select id from reviews_reviewrequest where time_added > '2010-06-24 00:00:00') 
 and commenttype_id = 1 
 and commentstate_id = 2 
 #and (commentseverity_id = 2 or commentseverity_id = 1);
+
+Get total review lines:
+???
+
+Get total review efforts:
+# select sum(time_used)
+from reviews_review 
+where timestamp > '2010-06-11 00:00:00'
+
+Get individual review efforts and user name:
+# select user_id, sum(time_used), auth_user.first_name, auth_user.last_name
+from reviews_review inner join auth_user
+on user_id = auth_user.id
+where timestamp > '2010-06-11 00:00:00'
+group by user_id
+order by sum(time_used) desc
+
+Get total defects found by review:
+# select count(id)
+from reviews_comment 
+where timestamp > '2010-06-11 00:00:00'
+and commenttype_id = 1
+
+Get total major defects found by review:
+# select count(id)
+from reviews_comment 
+where timestamp > '2010-06-11 00:00:00'
+and commenttype_id = 1
+and commentseverity_id = 2
+
+Get total accepted defects:
+# select count(id)
+from reviews_comment 
+where timestamp > '2010-06-11 00:00:00'
+and commenttype_id = 1
+and commentstate_id = 2 
+
+**** Need to follow up in whole team [0/2]
+***** TODO Add reviewer in the svn commit log
+***** TODO Send out weekly/monthly review?
 
 ** Tea session - knowledge sharing in team wide
 
@@ -243,6 +304,33 @@ Ming: commit bug 10439 in revision r46628 - break slave node installation <2010-
 *** Receive positive feedbacks
 *** Perform good communication
 *** Show initiative and leadership
+
+
+** Atmos/Vmware
+
+why important?
+- improve ROI 
+- used as virtual appliance
+- simplify system management, like disk failure, node failure
+- imprvove scalability and flexibility
+
+why relocate?
+- stay closely with customer and communication with vmware engineer
+- 
+- international experience
+
+Questions
+- what's current focus and future roadmap? short term and long term focus? research or development?
+- what's overall role in atmos product? anything related to AVE
+- what's current technical challenge? 
+- what's new management model of atmos/vmware? what's impact to existing atmos mgmt model? like node/disk failure, upgrade/rollback
+- will vmware be our customer and requirement source?
+- Is this a vmware sell driving product? any relation with mako or aurora since they all vmware-emc products
+- what's most wanted atmos background knowledge? 
+- any similar product provided by emc competitors?
+- what will backend storage use when vmware deploy atmos? use mako? NAS?
+
+
 
 * Project development 												   :WORK:
 ** Command Atmos mgmt command
@@ -1451,6 +1539,14 @@ set config Atmos_PC3public_0v02.cfg
 ------------------------------- spliter -------------------------------
 
 add ip int=vlan103 ip=dhcp
+*** Anaconda installation process
+
+**** work around for mkinitrd 
+
+use kernaltag-handler
+
+/usr/libexec/conary/tags/kernel
+
 ** Atmos IMPROVEMENT areas
 *** Cluster Task module redesign - sync framework
 Design consideration:
@@ -3760,6 +3856,8 @@ C-u Number command - execute "command" in "Number" times
 ** Python learning
 *** Good code example
 How to get key/value from dict? http://www.daniweb.com/code/snippet217019.html 
+**** Code reading
+Queue.py 
 
 *** Good web sites and pages
 *** Books
@@ -5800,3 +5898,4 @@ f sd
 asd f
 
 
+ 

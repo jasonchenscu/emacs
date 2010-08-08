@@ -40,9 +40,12 @@ Profiling Atmos
 
 ** Effective code review by using ReviewBoard
 
-**** INPROGRESS Reviewforge improvement TODO list [24/26]
+**** INPROGRESS Reviewforge improvement TODO list [25/26]
 ***** TODO Collect good review comment
-***** TODO Collect individual review efforts
+***** DONE Collect individual review efforts
+	  CLOSED: [2010-07-30 Fri 10:04]
+After discussion, this will be calculated by the number of comments and types from the system after weighted.
+
 ***** DONE Prepare guidelines for team members on use new ReviewBoard
 	  CLOSED: [2010-06-21 Mon 19:13]
 ***** DONE Add maintainance work in ReviewBoard host (cronjob to backup database, regenerate index)
@@ -102,7 +105,7 @@ mysql -uroot -p
 mysqladmin -h 10.32.109.87 -u root -p password 'pass@word1'
 grant all on *.* to root@'cnrdchenx10l1c.corp.emc.com' identified by 'navichina';
 
-grant all on *.* to root@'cnadchenc1l2c.corp.emc.com' identified by 'pass@word1'
+grant all on *.* to root@'cnadchenc1l2c.corp.emc.com' identified by 'pass@word1';
 
 # Change password to handle ERROR 1045: Access denied for user 'root'@'localhost'
 $find / -type f -name "mysql"
@@ -126,43 +129,81 @@ http://www.daniweb.com/code/snippet217019.html
 
 **** Reviewboard metrics collection
 
-Comment severity:
-1 	Non-Categorical
-2 	Major
-3 	Moderate
-4 	Minor
+Comment severity: Weight
+1 	Non-Categorical   1
+2 	Major             3
+3 	Moderate          2
+4 	Minor             1
 
 Comment state:
 1 	Open
 2 	Accepted
-3 	Rejected
+3 	Rejected          exclude
 4 	Answered
 
 Comment type:
-1 	Defect
-2 	Enhancement
-3 	Coding Style
-4 	Question
+1 	Defect            4
+2 	Enhancement       3
+3 	Coding Style      2
+4 	Question          1
 
 Get total review requests:
 # select id from reviews_reviewrequest where time_added > '2010-06-24 00:00:00' order by id;
 
+Get total US member review requests;
+# select id, submitter_id from reviews_reviewrequest 
+where (time_added > '2010-06-01 00:00:00' and time_added < '2010-08-01 00:00:00') 
+and submitter_id in (375,382,388,383,389,394,395,398,399,400,401,402,405,406,408)
+order by id;
+
 Get total review comments (defects, accepted, major):
-# select count(id)
-#commenttype_id, commentstate_id, commentseverity_id 
+# select 
+count(id)
+#id,commenttype_id, commentstate_id, commentseverity_id,review_request_id
 from reviews_comment 
-where review_request_id in (select id from reviews_reviewrequest where time_added > '2010-06-24 00:00:00') 
-and commenttype_id = 1 
+where review_request_id in (select id from reviews_reviewrequest where time_added > '2010-07-18 00:00:00') 
+and commenttype_id = 1
 and commentstate_id = 2 
-#and (commentseverity_id = 2 or commentseverity_id = 1);
+#and (commentstate_id = 2 or commentstate_id=4)
+and (commentseverity_id = 2 or commentseverity_id = 1);
+#and commentseverity_id = 2;
+
+Get total US member review comment number:
+# select count(id) from reviews_comment
+where (timestamp > '2010-06-01 00:00:00' and timestamp < '2010-08-01 00:00:00') 
+and user_id in (375,382,388,383,389,394,395,398,399,400,401,402,405,406,408)
+group by user_id
+order by id
 
 Get total review lines:
-???
+# select sum(line_count) from diffviewer_filediff 
+where diffset_id in 
+(
+  select diffviewer_diffset.id from reviews_reviewrequest 
+  inner join diffviewer_diffset
+  on diffviewer_diffset.history_id = diffset_history_id
+  where reviews_reviewrequest.id in 
+  (
+    select review_request_id from reviews_review
+    where (timestamp > '2010-06-01 00:00:00' and timestamp < '2010-08-01 00:00:00') 
+# By US member or not
+#    and user_id in (375,382,388,383,389,394,395,398,399,400,401,402,405,406,408)
+  )
+)
 
 Get total review efforts:
 # select sum(time_used)
 from reviews_review 
 where timestamp > '2010-06-11 00:00:00'
+
+Get review efforts by comments:
+#select user_id, commenttype_id, commentseverity_id, auth_user.first_name, auth_user.last_name
+from reviews_comment inner join auth_user
+on user_id = auth_user.id
+where timestamp > '2010-6-11 00:00:00'
+and commentstate_id <> 3
+and commentseverity_id in (1,2,3,4)
+order by user_id
 
 Get individual review efforts and user name:
 # select user_id, sum(time_used), auth_user.first_name, auth_user.last_name
@@ -195,6 +236,15 @@ and commentstate_id = 2
 **** Need to follow up in whole team [0/2]
 ***** TODO Add reviewer in the svn commit log
 ***** TODO Send out weekly/monthly review?
+
+
+** Document(Design) review
+
+http://reviewforge.clrcase.lab.emc.com/r/4802/
+
+http://reviewforge.clrcase.lab.emc.com/r/5321
+
+
 
 ** Tea session - knowledge sharing in team wide
 
@@ -305,6 +355,31 @@ Ming: commit bug 10439 in revision r46628 - break slave node installation <2010-
 *** Perform good communication
 *** Show initiative and leadership
 
+** SWOT analyze for current team and projects
+
+Quality of delivery (On time, Meet requirement, Less bug etc.)
+
+S
+W
+O
+T
+
+
+Effective communication with BU (English, Able to articulate, Skill to networking etc.)
+
+
+
+People structure and people engagement (people structure; people engagement; people development plan.)
+
+
+
+Summary:
+
+Critical items to address
+
+
+My action plan
+
 
 ** Atmos/Vmware
 
@@ -329,8 +404,6 @@ Questions
 - what's most wanted atmos background knowledge? 
 - any similar product provided by emc competitors?
 - what will backend storage use when vmware deploy atmos? use mako? NAS?
-
-
 
 * Project development 												   :WORK:
 ** Command Atmos mgmt command
@@ -1791,6 +1864,8 @@ find . -type f \{ -name "*.c" -o -name "*.h"\} - print | xargs grep "$@"
 
 for i in `seq 1 100`; do cosuid -r --name uid$i tenid tenant2 -u tony2 -p 123456 -t tenant2; done
 
+while true; do ping -c 1 10.32.169.213; sleep 3; echo "wait for 30 seconds...."; done
+
 select nextval('test_id_seq');
 select currval('test_id_seq');
 select setval('test_id_seq', (select max(id) from test));
@@ -2235,6 +2310,10 @@ Already fixed with following solution:
 Please archive this email in case you met this again on new agent.
 
 Matt
+
+**** Why PIT need to disable ping for slave when do hulk installation?
+Because postgresql will check its peer. disable ping will make master think there has no slave on line. Then slave will be restarted by ssh commands and then PXE installation.
+
 ** Project lesson learn 											   :WORK:
 *** Plan
 **** Checklist
@@ -3824,6 +3903,9 @@ This will go against with CORP policy
 ** DONE Send out node replacement status for eBay using
    CLOSED: [2009-07-13 Mon 21:
 * Technical
+** Storage
+
+
 ** Emacs tips														  :EMACS:
 *** emacsÖĞµÄ×Ô¶¯»»ĞĞ
 # ²»ÏÓ·³µÄ£¬Ã¿´ÎM-x toggle-truncate-linesÇĞ»»»»ĞĞÓë²»»»ĞĞ
@@ -3853,6 +3935,11 @@ if not use frequently, use archive mode (c-c c-x c-a), use same command can unar
 *** Commands set collection
 M-< M-> go to top and bottom of file
 C-u Number command - execute "command" in "Number" times
+
+*** Undo and Redo
+Undo: C-x u
+Redo: C-G C-x u
+
 ** Python learning
 *** Good code example
 How to get key/value from dict? http://www.daniweb.com/code/snippet217019.html 
@@ -3900,6 +3987,9 @@ Queue.py
 3. # git add .
 4. # git commit -m 'comment'
 *** git with svn in Atmos use - wiki from Ming
+check out new branch
+
+git co -b local/atmos-1.3.2.52930 tags/atmos-1.3.2.52930
 
 ** Linux tips and good tools
 *** sed example
@@ -4132,7 +4222,6 @@ Done!
 echo 1 > /proc/sys/vm/block_dump
 dmesg -c > log (-c mean clear)
 
-
 *** Ubuntu GUI / console switch
 Ctrl-Alt-f1 -> console
 Alt-f7 -> GUI
@@ -4162,6 +4251,9 @@ Second, the /var/lock/subsys/ directory is checked during reboots and shutdowns.
    4. Run kill -SIGKILL to kill all remaining processes
 
 This method of shutting down is ordered such that processes are killed as gracefully as possible. During a shutdown, the script /etc/rc.d/init.d/killall checks the /var/lock/subsys/ directory to see if any subsystems are still locked. If a service's subsystem is locked after all other services have been stopped (i.e. step 1 above has completed), the killall script uses the subsystem filename to call service <initscript> stop. This attempts to stop the service gracefully before handing off to steps 2 through 4, which forcefully terminate the process itself.
+
+*** Disable ping command
+echo  > /proc/sys/net/ipv4/icmp_echo_ignore_all
 
 ** Good cluster management solution
 *** [[http://reductivelabs.com/products/puppet/][Puppet]] - Puppet helps accomplish the goal of a hands-off, automated infrastructure. 
@@ -4226,217 +4318,7 @@ Upgrade process: (From management station client to trigger)
 5. Non-disruptive upgrade (NDU) call
 6. Post tasks to recover to previous environment
 * Learning 															  :THINK:
-** !!!Five minutes!!!
-*** <2010-04-09 22:34>
-Today during my lunch session with Stephen, he gave me many very suggestion. here is summary
-1. emc sales this year is tough due to expo 2010sh
-2. always be active to do the work, think about how to improve and talk to your manager for support
-3. smile and be optimistic on your work, have passion to do things
-4. think about what you can improve and you want to do. ask people who can support you
-
-From Yubo 1on1
-1. still need to learn how to deal with your manager. 
-2. have a list of priority things you want to do and always keep in mind 
-
-*** <2010-04-08 21:37>
-From secret - always think what you want to be in your mind! Simple word, huge power! 
-
-*** <2010-04-01 18:02>
-After some days thinks about on the future career development, I have talked with Yubo and Kenny about my thought on the future development - mgmt track focus. I do not think i'm suitable for the real technical person and deep into it. I like to communicate and work in the open mind team. the team is highly promoted and motived by the things everyday they're doing. I also share my three strength to Yubo:
-1. Hard working
-2. Like to communication
-3. Always be initiative
-
-After these two talks, I feel really easy on my frustrated mind for over 3 months. I do think to have a big challenge job not only on technical. Rather than find a new job inside or outside, if have good oppotunities on internal team which match my interest, this should be a win-win status.
-
-Above is not a fool. :) I'm serious! haha...
-
-*** <2010-03-25 10:26>
-Rich's go to detail set me a really good example on review things. I should always verify my words before speak it out. Otherwize, they may not trust you if you make the same mistake several times.
-
-When fix bug or write code, always be prepared for the future changes, Ming's table driven (commit #49839) style to handle switch config is one good example to learn.
-
-*** <2010-03-19 22:10>
-last week in the lesson learn from Rich POX API document review, Rich give a very good feeback:
-
-Always be *critically think*, ask the right question and understand the feature you're doing.
-
-If I think about the root cause for this, *make a good planning* is the most important factor.
-
-I have said many time to have a good planning, not only for the daily work, but for my personal goal, monthly, yearly goal. I need to think it critically about the daily work planning as well as project good planning, go deep into details!
-
-Below is the mail thread about my thanks.
-
-From: Urmston, Rich 
-Sent: Wednesday, March 17, 2010 10:05 PM
-To: Chen, Jason (CIG)
-Subject: RE: Thanks a lot for your feedback.
-
-Thanks Jason.  I am confident you and the team will gain the confidence to look at things more critically as you gain more experience.  I know it takes time to develop these skills and ways of thinking.  
- 
-Have a good night!
-
-________________________________________
-From: Chen, Jason (CIG) 
-Sent: Wednesday, March 17, 2010 10:01 AM
-To: Urmston, Rich
-Subject: Thanks a lot for your feedback.
-Hi Rich,
-
-I want to thank you again for your feedbacks. I really appreciate of your suggestion about our improvement areas. We should improve ourselves a lot from this side. At many times, we have incorrect assumption and not pay more focus on real feature from customer perspective. Just as you pointed out, we always shy and not asking right and necessary questions even not understand the feature and use cases. This blinds us to provide a more user-friendly and well-designed feature. Moreover, the management part works are mostly customer-oriented. This will lead to many customer confusion and misunderstanding. 
-
-Moving forward, as everyone is more focus and with less features on hands, I think it will help us to put more efforts on understanding specific feature deeply we¡¯re working on. But definitely, we need to let all our team members (especially myself) to be aware of this for the daily working habits. Only in this way, we can get each of our features better designed with better quality. 
-
-Have a good day!
-
-Best regards,
-Jason
-
-*** <2010-03-08 22:12>
-
-after 1on1 with ming, ming shared many thoughts with me:
-1. deep thinking about myself for improvement areas
-2. Ç§ÀïÂí³£ÓĞ£¬²®ÀÖ²»³£ÓĞ
-3. like start up style
-4. why move to mgmt? 
-   1. many technical talent better than me, but why many talents get together but cannot work as 1+1>2. how to organize the work is importantn?
-   2. the career path is become narrow as you go more high technical level, like linux kernel developement on one area.
-5. personal IDP 
-
-what useful for me?
-1. today is present, find what are more valuable to you and learn/think to grow
-2. mgmt track? 
-
-*** <2010-03-07 23:06>
-I should avoid over commit situations! Not always set high expectations to others!
-
-Manage time is still a problem....
-
-What I have done in past two hours, just learn how to use post-review? that's not enough?
-
-why i always not feel satisfied even learning all time? do this cause by a unclear goal? I should draft out a IDP A.S.A.P. This way will make me grow with a stable and more balance way.
-
-*** <2010-03-06 15:09>
-
-In team meeting, I should not say too much about some high level principles. I should be a good executor and be a good example for others. Just do more and say less should be good at this time. 
-
-*** <2010-03-01 17:55>
-today during genprofile refactoring discussion with denny, looks like i can't express my idea very clearly. i need to enhance my class design skills here.
-
-i should enourage other's good suggestion and ideas. so first listen carefully and think about the areas which need to improve, have a clear mind, then express the idea.
-
-*** <2010-02-27 20:42>
-
-
-*** 2010-02-25
-still how to motivate people? need to be calm down when discuss with others about technical problems. 
-
-e.g.
-1. explain the meaning of doing this
-2. all thing we have done are meaningful and useful not only to you but to the whole team development
-3. understand the changes and current status, make decision need more time and experience
-   
-GET THINGS DONE HABIT!!!
-*** 2010-02-24
-
-Ã¿Ìì×ÜÊÇÔÚÏë½ñÌì×öµÄµ½µ×Öµ²»ÖµµÃ£¬ÓĞÃ»ÓĞ¸üºÃµÄÑ¡Ôñ¡£
-
-Ã÷È·×Ô¼º×öÊÂÇéµÄÌ¬¶ÈºÍ×öÊÂÇéµÄ·½·¨¡£
-
-½ñÌìÓÖÑ§µ½ÁËÊ²Ã´ÄØ£¿£¿£¿
-
-
-*** 2010-02-05 
-I talk too much in today's dinner. some talk i cannot very confidence to that and /say it not clearly/ and rapidly. This would make others not fully understanding my ideas. this is not good especially to a wide audience. this will make me not very confidence and become nervous.
-*** 2010-02-06
-1. sometimes I cannot *Control my temper* very well. like today when do haircut, i waste some time to argur with the barber without any meaning. 
-2. I should _do one thing at one time_ but not distract myself into several things and switch among these things. 
-
-*** 2010-02-08
-Today, from Ming's RCA session, i found there is one good practice on asking right questions (5 why)
-From Kenny Chen's career talk, i have most impression is working hard is prerequisite. 
-i found my time is not enough and i have many tasks need to context switch, i should learn back from GTD working habits...
-*** 2010-02-09
-I always have many comments during other colleage's design review, sometimes a little aggressive. I think I should be not too criticize on others defects. 
-From today 1on1 with Ming, he gave me many good suggestions. here i list some of them:
-- think about more initiative on how to improve working efficiency, like meeting, code review, ???
-- enlarge my responsibility not only to installation/db, but to whole system mgmt area to contribute more
-- Reading->practice->reading->practice  a iterative improvement process
-
-*** 2010-02-10
-Discuss with Ming about installation recovery tool implementation and task module redesign, have some learnings.
-how can we make the refactor better? 
-- try to reduce each commit change
-- have a regular review
-- set up review process to be more effective
-- use refactor tools
-- also think about support more failure cases or features during refactor, can start thinking about and discussing
-- core issue to task module: not implementatino ways, but the cleaner loose couple design of task engine. should seperate task engine from task specific operations
-
-*** 2010-02-11
-i found my work is not effective today. I don't know what I have done today and whether it's correct and useful things. Ê±¼ä¹ÜÀíÊÇ¸öÓÀÔ¶µÄ»°Ìâ£¬ºÜ¶àÊ±ºòÒ²ÔÚÑ§Ï°Ò»Ğ©ÓĞĞ§ÀûÓÃµÄÊ±¼äµÄ·½·¨µ«ÊÇ¸Ğ¾õ¹ıÒ»¶ÎÊ±¼äºó×Ô¼ºµÄÊ±¼ä»¹ÊÇ²»ÄÜºÜºÃÀûÓÃ¡£ÎÒÏëÃ¿Ìì»¹ÊÇÒªÑø³ÉÒ»¸öºÃµÄÏ°¹ß£¬Ã¿ÌìÔç³¿5·ÖÖÓÏëÇå³ş½ñÌìµÄpriority£¬ÍíÉÏÏÂ°àÇ°5·ÖÖÓ×Ü½áÒ»ÏÂ½ñÌìµÄÊÂÇéºÍÊÕ»ñ£¬ÄÄĞ©ÊÂÇé»¹Ã»ÓĞ×öÍê£¬ÎªÊ²Ã´Ã»ÓĞ×öÍê£¬ÊÇplan»¹ÊÇefficiency£¿ÎÒĞèÒª¼á³ÖÕâ¸öÏ°¹ß£¡
-
-*** 2010-02-12
-Done:
-1. review Anne installation guide
-2. troubleshooting bug 11116
-3. start learn celery 
-
-I need to force myself to have a good time management and use emacs as my time control tool. ×î½ü×ÜÊÇ¾õµÃ¹¤×÷ÆğÀ´Ã»ÓĞ¾«Éñ£¬Æ½Ê±µÄÉú»îÒ²ÊÇ£¬ÔõÃ´²ÅÄÜÕÒ»Ø×Ô¼ºµÄpassionºÍenergy£¿
-
-ÔõÃ´Ñù·ÖÎöÕâ¸öÎÊÌâ£¿ask 5 why£¿
-- why this, not have passion and energe? - familiy and work issues
-- what is familiy issues? - related to parents
-- how to solve this? - more communication to clear
-- what is work issues? - pay is not satisfied, challenge is ok
-- how to solve this? - read more, learn more and find good oppotunities
-- then what issues still have? - a mess life which needs to be organized and planned better for everyday
-
-so in all is *PLANNING*
-
-*** 2010-02-14
-Brainstorming bring some good points which I totally agree about jobs and industry choices:
-1. ¸Õ¿ªÊ¼¹¤×÷µÄÊ±ºò¿´µÄ¸ü¶àµÄÊÇ»ú»áºÍ·¢Õ¹µÄÄÜÁ¦
-2. ÒªµÈµ½±ğÈËÁÔ¶ø²»ÊÇ×Ô¼ºÍù¿ÓÀïÌø£¬²Å»áÓĞ¸üºÃµÄ¼ÛÖµ
-3. ²»ÒªÔÚÓöµ½À§ÄÑµÄÊ±ºòºÍÓÉÓÚÊÜ±ğÈËÌøµÄÓ°Ïì¶øÌø£¬×ĞÏ¸ÅĞ¶Ï×Ô¼ºÏÖÔÚµÄÏÖ×´ºÍ×Ô¼ºµÄ·¢Õ¹Ä¿±ê
-
-i have buy one gift for my wife and found i'm also happy with that after phone call with mom. Looks like this is a continuous improvement for all of us to have a good family environment and also for me to have a good attitude and energy to be concentrated on work!
-
-Other notes:
-
-
-*** 2010-02-15
-today during learning with Celery, I found I really need to make a study plan on technical things, like python, DP, and read more source code. I should try to ask myself about my development plan and learning plan. It's good to track this and associate with my IDP this year. 
-
-Basically, technical and softskill are two parts I need to improve.
-Technical:
-- Python programming
-- Design pattern
-- Project/Program management
-
-Soft skill:
-- ???
-
-*** 2010-02-16
-no update today. still thinking about the learning plan this year and follow the detail plan... need to have a book list and reading plan.
-
-why don't first summarize what I have read last year?
-
-*** 2010-02-21
-Reading become technical leader. some thoughts about the innovation part from my past experience:
-1. ×öÊÂÏÈ×öÈË£¡²»ÔÚÓÚ×öµÄÊÂÇé£¬¶øÊÇÔÚÓÚ×öÊÂÇéµÄÌ¬¶È¡£Ö»ÒªÓĞºÃµÄÌ¬¶È¼ÓÉÏÇÚ·ÜºÍÅ¬Á¦£¬ºÃµÄ»ú»á×Ü»áÀ´µÄ
-2. ÅàÑø×Ô¼ºµÄÑÛ¹âºÍ¿´ÊÂÇéµÄ·½·¨¡£ÈçºÎÅàÑøÑÛ¹â»òÕß´´ĞÂ£º
-   - ¾­³£·ñ¶¨×Ô¼ºµÄÏë·¨
-   - ½è¼øËûÈËµÄÏë·¨
-   - ×ÛºÏ¶àÈËµÄÏë·¨
-3. ´Ó³É¹¦ÖĞ»ıÀÛ¾­Ñé£¬´ÓÊ§°ÜÖĞ»ıÀÛ½ÌÑµ£¬¶¼ÊÇºÜ±¦¹óµÄ²Æ¸»
-
-*** 2010-02-22
-have some discussion with Ming about the work pressure in US. ºÍÃ÷ÌÖÂÛÁËÒ»ÏÂinstallµÄrefactoring£¬×Ü½á³öÁËÓ¦¸Ã°ÑgenprofileµÄÁ÷³ÌºÍ¾ßÌåµÄinstall cmdÁ÷³Ì·Ö¿ª£¬ÕâÑù²ÅÄÜ±£³ÖÒ»¸ö¸ü¼ÓÁé»îµÄmoduleºÍframework£¬ ¾ßÌå·ÖÎöµÄ¹ı³Ì»ù±¾ÉÏ¾ÍÊÇ´ÓÉÏ¶øÏÂµÄ·ÖÎö£¬Ï£ÍûµÃµ½µÄÊÇÊ²Ã´Ñù×ÓµÄ½á¹¹£¬È»ºó´ÓÕâ¸ö½á¹¹ÔÙ·ÖÎö´úÂëÓ¦¸ÃÔõÃ´µ÷Õû¡£
-
-Sukwoo recommend me to review paper on ACM transaction on Storage. it's a exciting activity with much pressure, let me see what i can contribute in this side. i like to attend this kind of high-level public activities. 
-
-¹¤×÷µÄĞ§ÂÊ»¹ÊÇÃ»ÓĞÌ«´óÌáÉı£¬Òª¿ªÊ¼Ç¿ÖÆ×Ô¼ºÓÃgtdµÄ·½·¨£¡£¡£¡
+** Paper
 
 ** Year 2010
 *** Daily plan
@@ -4607,7 +4489,6 @@ Qualifications
 | quorum       | ·¨¶¨ÈËÊı£¬ÌôÑ¡³öÀ´µÄÒ»×éÈË |
 | skepticism   | »³ÒÉÂÛ                     |
 |              |                            |
-
 
 ** Reading
 *** [#A] UNP
@@ -4937,7 +4818,6 @@ Mgmt:
    
 *** ÄÜ¹»Ñ¸ËÙ½øÈë×¨×¢×´Ì¬£¬ÒÔ¼°ÄÜ¹»³¤ÆÚ±£³Ö×¨×¢×´Ì¬£¬ÊÇ¸ßĞ§Ñ§Ï°µÄÁ½¸ö×îÖØÒªÏ°¹ß¡£
 
-
 ** Personal development
 
 *** The 15-Minute Method
@@ -5116,6 +4996,11 @@ After Kenny joins the team, need to think about my next step focus and developme
 - build influence. build your trust in the team (from impersonality and subjective)
 - improve code quality. from a higher level, even code is ok and easy to read but design is not good as expected, like installation should revisit and accumulate more experiences. from customer point of view to think about problems.
 - database. the biggest issue would be you don't know what you don't know. how you convience Rich and yourself to provide a stable db solution? how to leverage more senior resources and how to ensure db is OK?
+
+Not good:
+- Encourage people on the work which needs to improvement
+- Review work earlier than in later cycle to blame others
+
 
 *** From Ray Tang
 **** Organize work properly and demostrate the work
@@ -5391,6 +5276,217 @@ DoubanDBµÄµ×²ã´æ´¢ÓÃµÄÊÇTokyoCabinet£¬ÊÇÒ»¸öºÜÇáÁ¿¼¶¡¢¸ßĞ§µÄKey-ValueÊı¾İ¿â¡£ÎÒÃ
 
 *** ¡°´´Òµ½Ì¸¸¡±ÂíÔÆ:CEOµÄ±¾ÊÂ¾ÍÊÇ»áÓÃ±ğÈËµÄÄÔ´ü 
 http://business.sohu.com/20100108/n269457870.shtml
+** !!!Five minutes!!!
+*** <2010-04-09 22:34>
+Today during my lunch session with Stephen, he gave me many very suggestion. here is summary
+1. emc sales this year is tough due to expo 2010sh
+2. always be active to do the work, think about how to improve and talk to your manager for support
+3. smile and be optimistic on your work, have passion to do things
+4. think about what you can improve and you want to do. ask people who can support you
+
+From Yubo 1on1
+1. still need to learn how to deal with your manager. 
+2. have a list of priority things you want to do and always keep in mind 
+
+*** <2010-04-08 21:37>
+From secret - always think what you want to be in your mind! Simple word, huge power! 
+
+*** <2010-04-01 18:02>
+After some days thinks about on the future career development, I have talked with Yubo and Kenny about my thought on the future development - mgmt track focus. I do not think i'm suitable for the real technical person and deep into it. I like to communicate and work in the open mind team. the team is highly promoted and motived by the things everyday they're doing. I also share my three strength to Yubo:
+1. Hard working
+2. Like to communication
+3. Always be initiative
+
+After these two talks, I feel really easy on my frustrated mind for over 3 months. I do think to have a big challenge job not only on technical. Rather than find a new job inside or outside, if have good oppotunities on internal team which match my interest, this should be a win-win status.
+
+Above is not a fool. :) I'm serious! haha...
+
+*** <2010-03-25 10:26>
+Rich's go to detail set me a really good example on review things. I should always verify my words before speak it out. Otherwize, they may not trust you if you make the same mistake several times.
+
+When fix bug or write code, always be prepared for the future changes, Ming's table driven (commit #49839) style to handle switch config is one good example to learn.
+
+*** <2010-03-19 22:10>
+last week in the lesson learn from Rich POX API document review, Rich give a very good feeback:
+
+Always be *critically think*, ask the right question and understand the feature you're doing.
+
+If I think about the root cause for this, *make a good planning* is the most important factor.
+
+I have said many time to have a good planning, not only for the daily work, but for my personal goal, monthly, yearly goal. I need to think it critically about the daily work planning as well as project good planning, go deep into details!
+
+Below is the mail thread about my thanks.
+
+From: Urmston, Rich 
+Sent: Wednesday, March 17, 2010 10:05 PM
+To: Chen, Jason (CIG)
+Subject: RE: Thanks a lot for your feedback.
+
+Thanks Jason.  I am confident you and the team will gain the confidence to look at things more critically as you gain more experience.  I know it takes time to develop these skills and ways of thinking.  
+ 
+Have a good night!
+
+________________________________________
+From: Chen, Jason (CIG) 
+Sent: Wednesday, March 17, 2010 10:01 AM
+To: Urmston, Rich
+Subject: Thanks a lot for your feedback.
+Hi Rich,
+
+I want to thank you again for your feedbacks. I really appreciate of your suggestion about our improvement areas. We should improve ourselves a lot from this side. At many times, we have incorrect assumption and not pay more focus on real feature from customer perspective. Just as you pointed out, we always shy and not asking right and necessary questions even not understand the feature and use cases. This blinds us to provide a more user-friendly and well-designed feature. Moreover, the management part works are mostly customer-oriented. This will lead to many customer confusion and misunderstanding. 
+
+Moving forward, as everyone is more focus and with less features on hands, I think it will help us to put more efforts on understanding specific feature deeply we¡¯re working on. But definitely, we need to let all our team members (especially myself) to be aware of this for the daily working habits. Only in this way, we can get each of our features better designed with better quality. 
+
+Have a good day!
+
+Best regards,
+Jason
+
+*** <2010-03-08 22:12>
+
+after 1on1 with ming, ming shared many thoughts with me:
+1. deep thinking about myself for improvement areas
+2. Ç§ÀïÂí³£ÓĞ£¬²®ÀÖ²»³£ÓĞ
+3. like start up style
+4. why move to mgmt? 
+   1. many technical talent better than me, but why many talents get together but cannot work as 1+1>2. how to organize the work is importantn?
+   2. the career path is become narrow as you go more high technical level, like linux kernel developement on one area.
+5. personal IDP 
+
+what useful for me?
+1. today is present, find what are more valuable to you and learn/think to grow
+2. mgmt track? 
+
+*** <2010-03-07 23:06>
+I should avoid over commit situations! Not always set high expectations to others!
+
+Manage time is still a problem....
+
+What I have done in past two hours, just learn how to use post-review? that's not enough?
+
+why i always not feel satisfied even learning all time? do this cause by a unclear goal? I should draft out a IDP A.S.A.P. This way will make me grow with a stable and more balance way.
+
+*** <2010-03-06 15:09>
+
+In team meeting, I should not say too much about some high level principles. I should be a good executor and be a good example for others. Just do more and say less should be good at this time. 
+
+*** <2010-03-01 17:55>
+today during genprofile refactoring discussion with denny, looks like i can't express my idea very clearly. i need to enhance my class design skills here.
+
+i should enourage other's good suggestion and ideas. so first listen carefully and think about the areas which need to improve, have a clear mind, then express the idea.
+
+*** <2010-02-27 20:42>
+
+
+*** 2010-02-25
+still how to motivate people? need to be calm down when discuss with others about technical problems. 
+
+e.g.
+1. explain the meaning of doing this
+2. all thing we have done are meaningful and useful not only to you but to the whole team development
+3. understand the changes and current status, make decision need more time and experience
+   
+GET THINGS DONE HABIT!!!
+*** 2010-02-24
+
+Ã¿Ìì×ÜÊÇÔÚÏë½ñÌì×öµÄµ½µ×Öµ²»ÖµµÃ£¬ÓĞÃ»ÓĞ¸üºÃµÄÑ¡Ôñ¡£
+
+Ã÷È·×Ô¼º×öÊÂÇéµÄÌ¬¶ÈºÍ×öÊÂÇéµÄ·½·¨¡£
+
+½ñÌìÓÖÑ§µ½ÁËÊ²Ã´ÄØ£¿£¿£¿
+
+
+*** 2010-02-05 
+I talk too much in today's dinner. some talk i cannot very confidence to that and /say it not clearly/ and rapidly. This would make others not fully understanding my ideas. this is not good especially to a wide audience. this will make me not very confidence and become nervous.
+*** 2010-02-06
+1. sometimes I cannot *Control my temper* very well. like today when do haircut, i waste some time to argur with the barber without any meaning. 
+2. I should _do one thing at one time_ but not distract myself into several things and switch among these things. 
+
+*** 2010-02-08
+Today, from Ming's RCA session, i found there is one good practice on asking right questions (5 why)
+From Kenny Chen's career talk, i have most impression is working hard is prerequisite. 
+i found my time is not enough and i have many tasks need to context switch, i should learn back from GTD working habits...
+*** 2010-02-09
+I always have many comments during other colleage's design review, sometimes a little aggressive. I think I should be not too criticize on others defects. 
+From today 1on1 with Ming, he gave me many good suggestions. here i list some of them:
+- think about more initiative on how to improve working efficiency, like meeting, code review, ???
+- enlarge my responsibility not only to installation/db, but to whole system mgmt area to contribute more
+- Reading->practice->reading->practice  a iterative improvement process
+
+*** 2010-02-10
+Discuss with Ming about installation recovery tool implementation and task module redesign, have some learnings.
+how can we make the refactor better? 
+- try to reduce each commit change
+- have a regular review
+- set up review process to be more effective
+- use refactor tools
+- also think about support more failure cases or features during refactor, can start thinking about and discussing
+- core issue to task module: not implementatino ways, but the cleaner loose couple design of task engine. should seperate task engine from task specific operations
+
+*** 2010-02-11
+i found my work is not effective today. I don't know what I have done today and whether it's correct and useful things. Ê±¼ä¹ÜÀíÊÇ¸öÓÀÔ¶µÄ»°Ìâ£¬ºÜ¶àÊ±ºòÒ²ÔÚÑ§Ï°Ò»Ğ©ÓĞĞ§ÀûÓÃµÄÊ±¼äµÄ·½·¨µ«ÊÇ¸Ğ¾õ¹ıÒ»¶ÎÊ±¼äºó×Ô¼ºµÄÊ±¼ä»¹ÊÇ²»ÄÜºÜºÃÀûÓÃ¡£ÎÒÏëÃ¿Ìì»¹ÊÇÒªÑø³ÉÒ»¸öºÃµÄÏ°¹ß£¬Ã¿ÌìÔç³¿5·ÖÖÓÏëÇå³ş½ñÌìµÄpriority£¬ÍíÉÏÏÂ°àÇ°5·ÖÖÓ×Ü½áÒ»ÏÂ½ñÌìµÄÊÂÇéºÍÊÕ»ñ£¬ÄÄĞ©ÊÂÇé»¹Ã»ÓĞ×öÍê£¬ÎªÊ²Ã´Ã»ÓĞ×öÍê£¬ÊÇplan»¹ÊÇefficiency£¿ÎÒĞèÒª¼á³ÖÕâ¸öÏ°¹ß£¡
+
+*** 2010-02-12
+Done:
+1. review Anne installation guide
+2. troubleshooting bug 11116
+3. start learn celery 
+
+I need to force myself to have a good time management and use emacs as my time control tool. ×î½ü×ÜÊÇ¾õµÃ¹¤×÷ÆğÀ´Ã»ÓĞ¾«Éñ£¬Æ½Ê±µÄÉú»îÒ²ÊÇ£¬ÔõÃ´²ÅÄÜÕÒ»Ø×Ô¼ºµÄpassionºÍenergy£¿
+
+ÔõÃ´Ñù·ÖÎöÕâ¸öÎÊÌâ£¿ask 5 why£¿
+- why this, not have passion and energe? - familiy and work issues
+- what is familiy issues? - related to parents
+- how to solve this? - more communication to clear
+- what is work issues? - pay is not satisfied, challenge is ok
+- how to solve this? - read more, learn more and find good oppotunities
+- then what issues still have? - a mess life which needs to be organized and planned better for everyday
+
+so in all is *PLANNING*
+
+*** 2010-02-14
+Brainstorming bring some good points which I totally agree about jobs and industry choices:
+1. ¸Õ¿ªÊ¼¹¤×÷µÄÊ±ºò¿´µÄ¸ü¶àµÄÊÇ»ú»áºÍ·¢Õ¹µÄÄÜÁ¦
+2. ÒªµÈµ½±ğÈËÁÔ¶ø²»ÊÇ×Ô¼ºÍù¿ÓÀïÌø£¬²Å»áÓĞ¸üºÃµÄ¼ÛÖµ
+3. ²»ÒªÔÚÓöµ½À§ÄÑµÄÊ±ºòºÍÓÉÓÚÊÜ±ğÈËÌøµÄÓ°Ïì¶øÌø£¬×ĞÏ¸ÅĞ¶Ï×Ô¼ºÏÖÔÚµÄÏÖ×´ºÍ×Ô¼ºµÄ·¢Õ¹Ä¿±ê
+
+i have buy one gift for my wife and found i'm also happy with that after phone call with mom. Looks like this is a continuous improvement for all of us to have a good family environment and also for me to have a good attitude and energy to be concentrated on work!
+
+Other notes:
+
+
+*** 2010-02-15
+today during learning with Celery, I found I really need to make a study plan on technical things, like python, DP, and read more source code. I should try to ask myself about my development plan and learning plan. It's good to track this and associate with my IDP this year. 
+
+Basically, technical and softskill are two parts I need to improve.
+Technical:
+- Python programming
+- Design pattern
+- Project/Program management
+
+Soft skill:
+- ???
+
+*** 2010-02-16
+no update today. still thinking about the learning plan this year and follow the detail plan... need to have a book list and reading plan.
+
+why don't first summarize what I have read last year?
+
+*** 2010-02-21
+Reading become technical leader. some thoughts about the innovation part from my past experience:
+1. ×öÊÂÏÈ×öÈË£¡²»ÔÚÓÚ×öµÄÊÂÇé£¬¶øÊÇÔÚÓÚ×öÊÂÇéµÄÌ¬¶È¡£Ö»ÒªÓĞºÃµÄÌ¬¶È¼ÓÉÏÇÚ·ÜºÍÅ¬Á¦£¬ºÃµÄ»ú»á×Ü»áÀ´µÄ
+2. ÅàÑø×Ô¼ºµÄÑÛ¹âºÍ¿´ÊÂÇéµÄ·½·¨¡£ÈçºÎÅàÑøÑÛ¹â»òÕß´´ĞÂ£º
+   - ¾­³£·ñ¶¨×Ô¼ºµÄÏë·¨
+   - ½è¼øËûÈËµÄÏë·¨
+   - ×ÛºÏ¶àÈËµÄÏë·¨
+3. ´Ó³É¹¦ÖĞ»ıÀÛ¾­Ñé£¬´ÓÊ§°ÜÖĞ»ıÀÛ½ÌÑµ£¬¶¼ÊÇºÜ±¦¹óµÄ²Æ¸»
+
+*** 2010-02-22
+have some discussion with Ming about the work pressure in US. ºÍÃ÷ÌÖÂÛÁËÒ»ÏÂinstallµÄrefactoring£¬×Ü½á³öÁËÓ¦¸Ã°ÑgenprofileµÄÁ÷³ÌºÍ¾ßÌåµÄinstall cmdÁ÷³Ì·Ö¿ª£¬ÕâÑù²ÅÄÜ±£³ÖÒ»¸ö¸ü¼ÓÁé»îµÄmoduleºÍframework£¬ ¾ßÌå·ÖÎöµÄ¹ı³Ì»ù±¾ÉÏ¾ÍÊÇ´ÓÉÏ¶øÏÂµÄ·ÖÎö£¬Ï£ÍûµÃµ½µÄÊÇÊ²Ã´Ñù×ÓµÄ½á¹¹£¬È»ºó´ÓÕâ¸ö½á¹¹ÔÙ·ÖÎö´úÂëÓ¦¸ÃÔõÃ´µ÷Õû¡£
+
+Sukwoo recommend me to review paper on ACM transaction on Storage. it's a exciting activity with much pressure, let me see what i can contribute in this side. i like to attend this kind of high-level public activities. 
+
+¹¤×÷µÄĞ§ÂÊ»¹ÊÇÃ»ÓĞÌ«´óÌáÉı£¬Òª¿ªÊ¼Ç¿ÖÆ×Ô¼ºÓÃgtdµÄ·½·¨£¡£¡£¡
 
 * Personal 															   :LIFE:
 *** Âò·¿
@@ -5875,27 +5971,14 @@ and you tell yourself you will write it "one of these days". Just think
 
 aaa bbb ccc
 * temp
-
+asdf
 |   |   |   |   |   |
 |---+---+---+---+---|
 |   |   |   |   |   |
-|   |   |   |   |   |
-|   |   |   |   |   |
-|---+---+---+---+---|
-|   |   |   |   |   |
-|   |   |   |   |   |
-
-| col | name |
-|   1 | a    |
-
-
-nnadf sdkfa;s 
-s
-df as
-d 
-asd
 f sd 
 asd f
 
 
- 
+12844
+
+merge?

@@ -12,6 +12,183 @@
 #+OPTIONS:"\n:t"
 
 * Non-project related
+** Time management
+*** My timechart 
+**** From 6-28 To 9-3
+***** Detail tasks
+6-28
+# (50%) Slony DB: Integrated Slony with installation component
+# (20%) RMG removal tool plan discussion
+# (20%) Troubleshooting 12573, 12574
+# (10%) Discuss about SEDA SSL config synchronization and background processing in GUI 
+
+7-05
+# (70%) Finish slony installation integration on all normal cases with 98% smoke testing rate.
+# (30%) Discuss cosrestore design and review code change 
+
+7-12
+# (80%) 1.4.0 Bug fixing . Fixed 10446, 12524, 12611
+# (20%) Support for add policychk cronjob during installation. Code is ready but requirement changes. 
+
+7-19
+# (20%) Support on adding policy chk cronjob during configuration
+# (30%) Analyze all MgmtDB related bugs into different categories for test case design reference
+# (20%) Start drafting slony test case in this wiki page
+# (20%) Support Sun media customer issue on RMG crash (CS#: 35842596, 12704)
+# (10%) Troubleshooting slave node installation failure during kickstart on configuring IPMI/BMC network 
+
+7-26
+# (40%) Finish Slony test cases design besides upgrade part
+# (30%) Fix bug 12741 about slave node installation on hulk
+# (20%) Investigate CS issues: 35487160/12588, 12734, 12573
+# (10%) Review 12614 changes about task reload twice during upgrade 
+
+8-2
+# (30%) Merge 12774, 12611 to 1.3.3 and verified in hulk/VM testbed
+# (20%) Review slony test cases and update cases based on review comments
+# (25%) Add status check and integrate cleanup/drop node during configure slave postgresql/slony
+# (10%) Propose milestone 2 work db schema changes and rebase 1.4.0 RC1 to slony branch
+# (10%) Support 12844 on pgreplicate core dump issue. Verify 12332 on pgreplicate core dump patch. Currently has reproduced issue one time and the patch works well so far.
+# (5%) Review updated document for the parallel installation instruction in 1.3.3 and new sles installation process. 
+
+8-9
+# (10%) Troubleshooting 12784 and fix the testbed
+# (30%) Continue pgreplicate testing and fix 12332, 12892
+# (20%) Updated slony new DB schema to have a better system structure and finished installation part changes
+# (40%) Two days meeting 
+
+8-16
+# (40%) SLES installation support
+# (20%) Start CM DB library changes on new Slony DB schema
+# (10%) 1.4.0 bug troubleshooting(13090, 13091)
+# (10%) Verify 12332, 12892 after cybercluster patch has been integrated into 1.3.3/1.4.0
+# (10%) Review code change for node replacement and cosrestore
+# (10%) Sick leave 
+
+8-23
+# (10%) Continue CM DB library changes. (Design almost done but overall delayed)
+# (20%) Troubleshooting 1.4.0 bug 13045, 13109, 13114.
+# (10%) SLES installation support on CM part issue (fixed by Ming in r54543)
+# (20%) Fix 1.4.0 bug 12995 and private netmask installation issue
+# (20%) Customer case support: #36358394 / 13225.
+# (20%) One day vacation 
+
+8-30
+# (20%) Continue CM DB library changes.
+# (20%) Troubleshooting 1.4.0 bug 13281, 13284, 13315.
+# (20%) Vistaprint installation support
+# (10%) eBay removal SQW RMG support and cosrestore work discussion/review
+# (10%) Fix 1.4.0 bug 13239
+# (20%) One day sick leave 
+
+***** Grouped category
+=================================================================================
+After group and calculate
+=================================================================================
+
+10 working weeks - 50 working days
+
+Slony: 16.75
+# (50%) Slony DB: Integrated Slony with installation component
+# (70%) Finish slony installation integration on all normal cases with 98% smoke testing rate.
+# (25%) Add status check and integrate cleanup/drop node during configure slave postgresql/slony
+# (30%) Analyze all MgmtDB related bugs into different categories for test case design reference
+# (20%) Start drafting slony test case in this wiki page
+# (40%) Finish Slony test cases design besides upgrade part
+# (20%) Review slony test cases and update cases based on review comments
+# (10%) Propose milestone 2 work db schema changes and rebase 1.4.0 RC1 to slony branch
+# (20%) Updated slony new DB schema to have a better system structure and finished installation part changes
+# (50%) Start CM DB library changes on new Slony DB schema
+ 
+cosrestore: 3
+# (10%) Review code change for node replacement and cosrestore
+# (30%) Discuss cosrestore design and review code change 
+# (20%) RMG removal tool plan discussion
+
+Customer support: 5
+# (20%) Support Sun media customer issue on RMG crash (CS#: 35842596, 12704)
+# (20%) Investigate CS issues: 35487160/12588, 12734, 12573
+# (10%) Support 12844 on pgreplicate core dump issue. Verify 12332 on pgreplicate core dump patch. Currently has reproduced issue one time and the patch works well so far.
+# (20%) Customer case support: #36358394 / 13225.
+# (20%) Vistaprint installation support
+# (10%) eBay removal SQW RMG support and cosrestore work discussion/review
+
+1.3.x/1.4.0 bug fixing and troubleshooting: 15.5
+# (20%) Troubleshooting 1.4.0 bug 13045, 13109, 13114.
+# (20%) Fix 1.4.0 bug 12995 and private netmask installation issue
+# (20%) Troubleshooting 1.4.0 bug 13281, 13284, 13315.
+# (10%) Fix 1.4.0 bug 13239
+# (10%) 1.4.0 bug troubleshooting(13090, 13091)
+# (10%) Verify 12332, 12892 after cybercluster patch has been integrated into 1.3.3/1.4.0
+# (30%) Fix bug 12741 about slave node installation on hulk
+# (10%) Review 12614 changes about task reload twice during upgrade 
+# (10%) Troubleshooting slave node installation failure during kickstart on configuring IPMI/BMC network 
+# (20%) Troubleshooting 12573, 12574
+# (80%) 1.4.0 Bug fixing . Fixed 10446, 12524, 12611
+# (30%) Merge 12774, 12611 to 1.3.3 and verified in hulk/VM testbed
+# (10%) Troubleshooting 12784 and fix the testbed
+# (30%) Continue pgreplicate testing and fix 12332, 12892
+
+1.4 feature support: 2.75
+# (20%) Support for add policychk cronjob during installation. Code is ready but requirement changes. 
+# (10%) Discuss about SEDA SSL config synchronization and background processing in GUI 
+# (20%) Support on adding policy chk cronjob during configuration
+# (5%) Review updated document for the parallel installation instruction in 1.3.3 and new sles installation process. 
+
+SLES support: 2.5 days
+# (10%) SLES installation support on CM part issue (fixed by Ming in r54543)
+# (40%) SLES installation support
+
+Training/Meeting: 2 days
+Vacation: 2.5 days
+- Sick leave: 1.5 days
+- Normal vacation: 1 day
+
+***** Final results
+After group tasks
+
+10 working weeks - 50 working days
+
+Slony: 16.75
+# Finish slony installation integration on all normal cases with 98% smoke testing rate.
+# Analyze all MgmtDB related bugs into different categories for test case design reference
+# Finish Slony test cases design besides upgrade part
+# Updated slony new DB schema to have a better system structure and finished installation part changes
+# Start CM DB library changes on new Slony DB schema
+ 
+cosrestore: 3
+# RMG removal tool plan discussion
+# Discuss cosrestore design and review code change 
+
+Customer support: 5
+# Support Sun media customer issue on RMG crash (CS#: 35842596, 12704)
+# Investigate CS issues: 35487160/12588, 12734, 12573
+# Support 12844 on pgreplicate core dump issue. Verify 12332 on pgreplicate core dump patch. Currently has reproduced issue one time and the patch works well so far.
+# Customer case support: #36358394 / 13225.
+# Vistaprint installation support
+# eBay removal SQW RMG support
+
+1.3.x/1.4.0 bug fixing and troubleshooting: 15.5
+# Troubleshooting 11 bugs for 1.3.x/1.4.0: 12573, 12574, 12784, 13045, 13090, 13091, 13109, 13114, 13281, 13284, 13315
+# Fix 9 bugs for 1.3.x/1.4.0: 10446, 12332, 12524, 12611, 12741, 12774, 12892, 12995, 13239
+# Review bug 12614 changes about task reload twice during upgrade 
+
+1.4 feature support: 2.75
+# Support for add policychk cronjob during installation
+# Discuss about SEDA SSL config synchronization and background processing in GUI 
+# Review updated document for the parallel installation instruction in 1.3.3 and new sles installation process. 
+
+SLES support: 2.5 days
+# Review SLES installation procedure wiki page comparing kiwi with kickstart
+# Support fix installation issues on CM/scripts during debugging
+
+Training/Meeting: 2 days
+# CIG offsite meeting
+
+Vacation: 2.5 days
+# Sick leave: 1.5 days
+# Normal vacation: 1 day
+
 ** Initialtive on effective daily work
 
 *** Effective meeting
@@ -163,8 +340,7 @@ count(id)
 from reviews_comment 
 where review_request_id in (select id from reviews_reviewrequest where time_added > '2010-07-18 00:00:00') 
 and commenttype_id = 1
-and commentstate_id = 2 
-#and (commentstate_id = 2 or commentstate_id=4)
+and (commentstate_id = 2 or commentstate_id=4)
 and (commentseverity_id = 2 or commentseverity_id = 1);
 #and commentseverity_id = 2;
 
@@ -1173,7 +1349,7 @@ Thanks,
 Jason
 
 *** [#A] Installation restore procedure
-**** INPROGRESS [#B] decouple genprofile for better organise and rereuse code, consider ip change and reconfiguration together.
+**** decouple genprofile for better organise and rereuse code, consider ip change and reconfiguration together.
 **** Restore services and service related data
 - ais: 
   - private IP address needs to be considered
@@ -1296,6 +1472,45 @@ try as much as possible to split existing code into small scripts and utility. t
 _Review process:_ Try to get Ming involved as early as possible.
 
 first keep original function not change, keep diff as small as possible, which is easy for review, test, patch
+**** Feedback on review cosrestore framework
+
+DB data control
+- When remove DB, need to consider DB tables relationship. like disk, dae, alert, task, etc. 
+- Leverage mauiutility module for db related functions, no need to add a new module, like remove_site(sysdb, sitename)
+- leverage nodecfg module for nodecfgs table update
+
+Config control
+- leverage nodecfg module for node.cfg update
+- 
+
+Service control
+- How to handle services which need to redeploy with existing design?
+
+
+My overall thought on the framework is:
+1. loose-couple design (table-driven design)
+2. easy to extend and flexible to change in the future
+3. code reuse for installation
+
+Take remove DB records as an example, currently Denny has added a new remove_node_from_db.py to do the whole work. This new file may need to change if we add new tables later which need to be removed. Can we have a well described table which is easy to maintain and provide a common interface (remove_table_from_db(table_name, db_name))
+
+clean_table_dict = {'sites':'system', 'nodes':'system', 'clusters':'rmg', ...}
+
+In this way, later if we have some new changes or want to do something for special customer, we just need to maintain this DB tables map. 
+
+The same design principle for regenerate files, reconfigure and restart service steps. 
+
+We can have several maps to maintain the files and services we need to regenerate or reconfigure. With the limitation of current mauiconfig, the service part may still cannot have a cleaner design, but after we gradually changed mauiconfig part, it should provide the flexible mechanism to reconfigure and restart services. 
+
+regenerate_file_dict = {'/etc/hosts':update_etc_hosts, '/etc/maui/cm_cfg.xml':update_cm_cfg, '/etc/maui/node.cfg':update_nodecfg, ...}
+
+reconfig_svc_list = ['RMS', 'MDLS', ...]
+
+restart_svc_list = ['RMS', 'MDLS', ...]
+
+For the common interfaces above, like update_etc_hosts(), update_cm_cfg(), etc, all these interfaces should be added into pylib since other configuration tools will also need the same functionality. 
+
+
 *** [#C] Task module improvement
 
 Yubo suggestion:
@@ -2015,7 +2230,6 @@ rmg.db=# select hostname from nodes where uuid='44454C4C-4200-1050-8047-B3C04F5A
  R610-NYC-008
 (1 row)
 
-
 *** Debug IPMI related issues
 A snippet from the setup script that is part of the installation is below:
 
@@ -2059,6 +2273,109 @@ firmware-version: 5.0.11 NCSI 2.0.5
 bus-info: 0000:01:00.1
 
 based on bug 9308, can you update NIC FW to 5.0.12 and try it again? thanks.
+
+        
+------- Comment  #94 From Matthew Sargeant
+
+Testing shows the 1.30 iDRAC firmware fixes the two original issues (node
+discovery and iDRAC becoming unresponsive).  The new issue of the iDRAC network
+becoming unresponsive after reboot has been determined to be caused by
+gratuitous arp messages on eth1 impacting the shared network interface to the
+iDRAC during startup.  Testing shows network controller firmware 5.0.12 fixes
+this issue.
+
+R610 based systems need to be updated to use main BIOS to 1.3.6, iDRAC firmware
+to 1.30, and the network controller firmware to 5.0.12.
+
+An ECO has been started by Fred Malpass to release this new firmware/BIOS.
+
+Until a dtk issue can be fixed, two ISOs need to be used to achieve the
+complete update:
+
+Main BIOS and iDRAC:
+http://opseroom01.corp.emc.com/eRoom/SPOmidrangesysdiv/SPOAppServers/0_16ef3d
+
+Network Controller:
+http://opseroom01.corp.emc.com/eRoom/SPOmidrangesysdiv/SPOAppServers/0_16ef3e
+
+*** Debug disk related issues
+
+Internal disk allocation check /var/log/message
+
+# omreport storage vdisk
+List of Virtual Disks in the System
+
+Controller SAS 6/iR Integrated (Embedded)
+ID                  : 0
+Status              : Non-Critical
+Name                : Virtual Disk 0
+State               : Degraded
+Progress            : Not Applicable
+Layout              : RAID-1
+Size                : 231.90 GB (248999051264 bytes)
+Device Name         : /dev/sda
+Type                : SATA
+Read Policy         : No Read Ahead
+Write Policy        : Write Through
+Cache Policy        : Not Applicable
+Stripe Element Size : Not Applicable
+Disk Cache Policy   : Enabled
+
+[root@RMGLAB5-001 maui]# omreport system alertlog |less
+Alert Log
+
+Alert Log contains...
+
+Severity      : Ok
+ID            : 2065
+Date and Time : Fri Sep  3 18:58:57 2010
+Category      : Storage Service
+Description   : Physical disk Rebuild started:  Physical Disk 0:0:0 Controller
+0, Connector 0
+
+Severity      : Ok
+ID            : 2330
+Date and Time : Fri Sep  3 18:58:55 2010
+Category      : Storage Service
+Description   : SAS port report: SAS wide port 0 restored link on PHY 0.: 
+Controller 0 (SAS 6/iR Integrated)
+
+Severity      : Ok
+ID            : 2052
+Date and Time : Fri Sep  3 18:58:55 2010
+Category      : Storage Service
+Description   : Physical disk inserted:  Physical Disk 0:0:0 Controller 0,
+Connector 0
+
+Severity      : Non-Critical
+ID            : 2049
+Date and Time : Fri Sep  3 18:58:52 2010
+Category      : Storage Service
+Description   : Physical disk removed:  Physical Disk 0:0:0 Controller 0,
+Connector 0
+
+Severity      : Non-Critical
+ID            : 2329
+Date and Time : Fri Sep  3 18:58:51 2010
+Category      : Storage Service
+Description   : SAS port report: SAS wide port 0 lost link on PHY 0.: 
+Controller 0 (SAS 6/iR Integrated)
+
+Severity      : Non-Critical
+ID            : 2123
+Date and Time : Fri Sep  3 18:58:51 2010
+Category      : Storage Service
+Description   : Redundancy lost:  Virtual Disk 0 (Virtual Disk 0) Controller 0
+(SAS 6/iR Integrated)
+
+Severity      : Non-Critical
+ID            : 2057
+Date and Time : Fri Sep  3 18:58:51 2010
+Category      : Storage Service
+Description   : Virtual disk degraded:  Virtual Disk 0 (Virtual Disk 0)
+Controller 0 (SAS 6/iR Integrated)
+
+
 ** PIT, mauits, netinstall setup notes
 *** New PIT framework usage
 # ssh cheny7@10.32.180.27
@@ -3960,7 +4277,6 @@ This will go against with CORP policy
 ** Algorithm
 
 
-
 ** Emacs tips														  :EMACS:
 *** emacs中的自动换行
 # 不嫌烦的，每次M-x toggle-truncate-lines切换换行与不换行
@@ -4320,6 +4636,15 @@ This method of shutting down is ordered such that processes are killed as gracef
 
 *** Disable ping command
 echo  > /proc/sys/net/ipv4/icmp_echo_ignore_all
+
+
+*** Typical network latency
+http://nanog.cluepon.net/index.php/Traceroute_latency#Real_World_Measurements
+
+Coast-to-coast USA (Virginia to California) 	60-75ms
+Trans-Atlantic (New York to London, England) 	66-80ms
+Trans-Pacific (California to Tokyo, Japan) 	130-150ms
+Trans-Pacific (California to Sydney, Australia) 	170-190ms 
 
 ** Good cluster management solution
 *** [[http://reductivelabs.com/products/puppet/][Puppet]] - Puppet helps accomplish the goal of a hands-off, automated infrastructure. 
@@ -5628,6 +5953,15 @@ Sukwoo recommend me to review paper on ACM transaction on Storage. it's a exciti
 5、成长比成绩重要
 6、榜样比命令重要
 
+*** nidan
+
+思月思人 
+
+邀思幻影身遥忆，朦朦亲人聚相邀。
+峰山河流俱齐唱，欢欢萦思上眉心。
+伴影月下成双影，蜜蜜话语甜在心。
+月圆伴偶茗清茶，思思中秋月上行。
+
 * Wisdom 															  :THINK:
 ** Good Words
 通过规划利用好现有的能力远比挖掘所谓的潜能更重要。
@@ -6071,10 +6405,13 @@ asdf
 |---+---+---+---+---|
 |   |   |   |   |   |
 
-fix installation netmask issue
+letao 10 yuan: 1079386948537219
 
-bug 13045, 13109, 13114, 
 
-12995
 
-cs issue: 13225
+vistaprint support
+
+fix 13315
+
+troubleshooting 13052, 13182
+

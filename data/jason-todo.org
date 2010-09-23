@@ -189,6 +189,9 @@ Vacation: 2.5 days
 # Sick leave: 1.5 days
 # Normal vacation: 1 day
 
+*** Discuss with Hongbing
+<2010-09-09 17:06>
+
 ** Initialtive on effective daily work
 
 *** Effective meeting
@@ -338,18 +341,17 @@ Get total review comments (defects, accepted, major):
 count(id)
 #id,commenttype_id, commentstate_id, commentseverity_id,review_request_id
 from reviews_comment 
-where review_request_id in (select id from reviews_reviewrequest where time_added > '2010-07-18 00:00:00') 
+where (timestamp > '2010-08-01 00:00:00' and timestamp < '2010-09-01 00:00:00' ) 
 and commenttype_id = 1
 and (commentstate_id = 2 or commentstate_id=4)
 and (commentseverity_id = 2 or commentseverity_id = 1);
-#and commentseverity_id = 2;
+and commentseverity_id in (1,2,3,4)
 
 Get total US member review comment number:
 # select count(id) from reviews_comment
 where (timestamp > '2010-06-01 00:00:00' and timestamp < '2010-08-01 00:00:00') 
 and user_id in (375,382,388,383,389,394,395,398,399,400,401,402,405,406,408)
 and (body_top <> '' or ship_it = 1)
-
 
 Get total review lines:
 # select sum(line_count) from diffviewer_filediff 
@@ -2148,6 +2150,8 @@ svn copy  https://tvg01.lss.emc.com/svn/maui/branches/atmos-1.2.0  https://tvg01
 
 tcpdump -vXn -s 1500 port 80 -i lo
 
+strace -s200 -ftT -o log-t30 ./mauirexec.new  -e " mauisvcmgr -t 30 -s mauimds -c sync_pm" -n "RMG2-006" -l
+
 *** Debug REST API
 curl -v -k -D ./rcvHeaders.txt -d "" -H "x-atmos-tenantadmin:ta1" -H "x-atmos-tenantadminpassword:password" -H "x-atmos-authType:password" -H "x-atmos-uid:u1" -H "Accept:"  -H "User-Agent:" https://10.32.109.112:443/sysmgmt/tenants/t1/subtenants/t1/uids
 *** Debug POX API test
@@ -2374,6 +2378,21 @@ Date and Time : Fri Sep  3 18:58:51 2010
 Category      : Storage Service
 Description   : Virtual disk degraded:  Virtual Disk 0 (Virtual Disk 0)
 Controller 0 (SAS 6/iR Integrated)
+
+** Policy distribution debugging
+*** Whole CLI work flow
+Experience on debugging bug #13416.
+
+When execute CLI, e.g. cospolicyselector, by default it will use sync mode and default timeout value in CLI is 300s. 
+
+# cospolicyselector -c --name 600_update_test2 --policy 600 --polmode u --metatag DataPolicy --matchoper equals --metaval 600 --onevent on_umd_update  -u mbova -p password -t WS -i 10.6.145.50
+
+1. GUI controller trigger CM to do distribute policy
+2. CM will have a global manager to sync policy with local manager to all nodes
+3. GUI create syncpm task to query policy sync status and notify MDS if policy distribution finished
+4. There have several retry inside syncpm logic
+   1. wait for distribution status by check global and local batch status in batchdecs table, here will continue retry, timeout value is 300s
+   2. if distribute succeeds, it notifies all nodes MDS to reload policy by call "mauisvcmgr -t 60 -s mauimds -c sync_pm,mauisvcmgr -t 60 -s mauimds -c sync_hn", here will retry 3 times. max timeout value is 2 * 3 * 60 = 360s
 
 
 ** PIT, mauits, netinstall setup notes
@@ -4362,6 +4381,26 @@ check out new branch
 git co -b local/atmos-1.3.2.52930 tags/atmos-1.3.2.52930
 
 ** Linux tips and good tools
+*** Use cscope to build source index for linux kernel
+
+From self service linux 7.2.11
+
+Before running cscope to retrieve symbol information, a symbols database must be built. Assuming your kernel source tree is in /usr/src/linux-2.6.2, the following command will create the symbols database in the file /usr/src/linux-2.6.2/cscope.out:
+
+# find /usr/src/linux-2.6.2 \( -name "[A-Za-z]*.[CcHh]" -o -name "*.[ch]pp" -o -name "*.[CH]PP" -o -name "*.skl" -o -name "*.java" \) -print | cscope -bku -f /usr/src/linux-2.6.2/cscope.out -i -
+
+The cscope parameters to take note of are -b for build the symbol database (or cross-reference as it is referred to in the man page) and -k for "kernel mode," which ensures that the proper include files are scoured.
+
+Once the database is built, searching it is simply a matter of running this command:
+#cscope -d -P /usr/src/linux-2.6.2 -p 20 -f /usr/src/linux-2.6.2/cscope.out
+
+Some commands:
+^i - switch to input or search result
+^n - go to next line
+^p - go to previous line
+^d - exit cscope
+
+
 *** sed example
 delete lines: # sed "/$pattern/d" $file
 
@@ -6400,18 +6439,11 @@ and you tell yourself you will write it "one of these days". Just think
 
 aaa bbb ccc
 * temp
-asdf
+  asdf
 |   |   |   |   |   |
 |---+---+---+---+---|
 |   |   |   |   |   |
 
 letao 10 yuan: 1079386948537219
 
-
-
-vistaprint support
-
-fix 13315
-
-troubleshooting 13052, 13182
 

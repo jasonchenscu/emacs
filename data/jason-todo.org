@@ -12,6 +12,15 @@
 #+OPTIONS:"\n:t"
 
 * Non-project related
+** Daily TODO list
+***	2010-10-25
+**** INPROGRESS event pending
+**** DONE review mozy test plan and send rich email
+	 CLOSED: [2010-10-25 Mon 14:20]
+**** DONE send out comment response to China COE CIG dev
+	 CLOSED: [2010-10-25 Mon 13:56]
+**** INPROGRESS start read disk mgmt code
+
 ** Time management
 *** My timechart 
 **** From 6-28 To 9-3
@@ -219,9 +228,10 @@ Profiling Atmos
 *** Need more investigation on initialtive
 
 ** Effective code review by using ReviewBoard
-
-**** INPROGRESS Reviewforge improvement TODO list [25/26]
-***** TODO Collect good review comment
+**** DONE Reviewforge improvement TODO list [26/26]
+	 CLOSED: [2010-10-24 Sun 15:30]
+***** DONE Collect good review comment
+	  CLOSED: [2010-10-24 Sun 15:30]
 ***** DONE Collect individual review efforts
 	  CLOSED: [2010-07-30 Fri 10:04]
 After discussion, this will be calculated by the number of comments and types from the system after weighted.
@@ -328,7 +338,7 @@ Comment type:
 4 	Question          1
 
 Get total review requests:
-# select id from reviews_reviewrequest where time_added > '2010-06-24 00:00:00' order by id;
+# select count(id) from reviews_reviewrequest where time_added > '2010-06-11 00:00:00' order by id;
 
 Get total US member review requests;
 # select id, submitter_id from reviews_reviewrequest 
@@ -435,10 +445,23 @@ where timestamp > '2010-06-11 00:00:00'
 group by user_id 
 order by user_id
 
-**** Need to follow up in whole team [0/2]
-***** TODO Add reviewer in the svn commit log
-***** TODO Send out weekly/monthly review?
+Get all pending review comments by each user
+# select RC.id, DS.history_id, RR.submitter_id, auth_user.first_name, auth_user.last_name
+from reviews_comment as RC, diffviewer_filediff as FD, diffviewer_diffset as DS, reviews_reviewrequest as RR inner join auth_user
+on RR.submitter_id = auth_user.id
+where commentstate_id = 1
+and RC.filediff_id = FD.id
+and FD.diffset_id = DS.id
+and DS.history_id = RR.id
+order by auth_user.first_name
 
+
+**** Need to follow up in whole team [2/2]
+***** DONE Add reviewer in the svn commit log
+	  CLOSED: [2010-10-24 Sun 22:31]
+***** DONE Send out weekly/monthly review?
+	  CLOSED: [2010-10-24 Sun 15:30]
+send out biweekly report and bimonthly newsletter.
 
 ** Document(Design) review
 
@@ -446,10 +469,7 @@ http://reviewforge.clrcase.lab.emc.com/r/4802/
 
 http://reviewforge.clrcase.lab.emc.com/r/5321
 
-
-
 ** Tea session - knowledge sharing in team wide
-
 *** Potential topics
 
 **** Installation refactoring learning
@@ -582,7 +602,6 @@ Critical items to address
 
 My action plan
 
-
 ** Atmos/Vmware
 
 why important?
@@ -609,7 +628,7 @@ Questions
 
 * Project development 												   :WORK:
 ** Command Atmos mgmt command
-cossetup -u SecurityAdmin -p '#1Passwd' --userpass 'password' --userinfo n --local
+cossetup -u SecurityAdmin -p '#1Passwd' --userpass '#1Passwd' --userinfo n --local
 cosuser -u SecurityAdmin -p '#1Passwd' -c --userid MauiAdmin --userpass 'password' --local
 cossysadmin -u SecurityAdmin -p '#1Passwd' -a --userid MauiAdmin --authtype local --local
 
@@ -622,9 +641,11 @@ costenantadmin -a --userid ta1 --tenid t1 -u MauiAdmin_pit -p 'password' --local
 cossubtenant -c --name st1 --authtype local -u ta1 -p 'password' -t t1
 cosuid -c --name uid1 --subtenid st1 --email a@b.com -u ta1 -p 'password' -t t1
 
-** TODOLIST [18/20]
-
-*** TODO follow up C++ db connection issue - CM db connection module improvement to reduce dependency to system db availability
+** TODOLIST [19/25]
+*** TODO Prepare code review sharing session
+*** TODO Think about how to summarize slony work to Rich
+*** TODO Send out email about response to review comment
+*** TODO Update slony wiki page on node replacement testing negative cases
 *** TODO seperate setnodeinfo to updatenodeinfo and insertnodeinfo, we have met several cases node UUID has changed due to setnodeInfo. bug #10948
 *** DONE Check reviewboard reporting feature
 	 CLOSED: [2010-06-01 Tue 14:53]
@@ -637,6 +658,8 @@ cosuid -c --name uid1 --subtenid st1 --email a@b.com -u ta1 -p 'password' -t t1
 	 CLOSED: [2010-04-26 Mon 12:00]
 *** CANCELED Test force resync db without restart service
 	 CLOSED: [2010-04-07 Wed 16:28]
+*** DONE follow up C++ db connection issue - CM db connection module improvement to reduce dependency to system db availability
+	 CLOSED: [2010-10-22 Fri 17:55]
 *** DONE share atmosconfig and new db pylib module in the installation refactoring process
 	 CLOSED: [2010-06-06 Sun 20:43]
 *** DONE Atmos in a box document update - we cannot support clone operation for existing atmos nodes. more detail see bug #10948
@@ -663,19 +686,20 @@ cosuid -c --name uid1 --subtenid st1 --email a@b.com -u ta1 -p 'password' -t t1
 	 CLOSED: [2010-04-21 Wed 13:52]
 *** DONE Add a patch to change mongrel session config to memory store
 	 CLOSED: [2010-04-07 Wed 16:23]
+** Atmos 1.5 cycle
+*** Disk management
+**** Learning existing design
+***** Questions
+1. When in "partition status", why change to "new" when received remove or ioerr event.
+2. 
+
+Issues:
+
+1. should not set task status during CmDiskStage::waitAddDiskCb
+2. 
+
 ** Atmos 1.4 cycle
-*** [#A] Slony replication for postgres
-**** INPROGRESS Installation intergration
-
-***** TODO add GUI error restart DB page and action
-
-***** TODO test init database
-
-***** TODO remove db_util.rb
-
-***** TODO 
-
-
+*** Slony replication for postgres
 **** Mgmt expection
 
 1st phase - basic installation and replication
@@ -953,6 +977,10 @@ INSERT INTO sites VALUES ( 1, 'site_a', '0.0.0.0', '0df8b6c2-8905-438d-8405-818d
 select * from _system.sl_node;
 
 Check postgresql database information for each table
+
+psql -U postgres system.db -c "select * from _slony.sl_path"
+
+
 # SELECT * from pg_tables order by schemaname;
 ***** EnterpriseDB first troubleshooting 
 
@@ -1135,7 +1163,6 @@ Failure case:
 3. master slon down: data cannot sync
 4. master slon come back: data become sync
 
-
 **** Slony bug
 in remote_worker.c
 new file line 4209 after check wgline->log.n_used > 0 in SLON_WGLC_ACTION, log message should use dstring_data(&(wgline->log)) instead of dstring_data(&(wgline->data).
@@ -1197,8 +1224,6 @@ ERROR: Add node for system.db failed.
 
 Failed to setup PostgreSQL and Slony slave node at Wed Jul  7 12:59:17 UTC 2010
 
-
-
 NOTICE:  CREATE TABLE / PRIMARY KEY will create implicit index "exrec_pkey" for table "exrecs"
 NOTICE:  CREATE TABLE / UNIQUE will create implicit index "exrecs_id_key" for table "exrecs"
 CREATE TABLE
@@ -1208,8 +1233,30 @@ Wed Jul  7 12:59:17 UTC 2010 INFO: Add node for system.db...
 <stdin>:6: PGRES_FATAL_ERROR select "_slony".storeNode(2, 'slave'); select "_slony".enableNode(2);  - ERROR:  Slony-I: node 2 is already active
 Wed Jul  7 12:59:17 UTC 2010 ERROR: Add node for system.db failed.
 
+**** Slony issue troubleshooting
+***** <event pending> issue when install by PIT
+When install VM testbed by using PIT, there will have <event pending> in sl_path
 
-*** [#B] Installation code refactor
+
+PIT installation not work
+Sometimes manual installation also not work
+
+
+if manually install master node, there will have issue that no new sync event will be generated. 
+
+
+
+
+in local_listen.c, when get STORE_PATH event which is generated by slave node, master slon will update sl_path with give param in the sl_event to update <event pending>.
+
+
+
+***** Change postgresql and slony log level
+
+Change loglevel in /usr/local/maui/etc/mgmt/postgresql.conf 
+Change debuglevel to 4 in /usr/local/maui/mgmtdb/postgresql/lib/slon-tools.pm
+
+*** Installation code refactor
 	 CLOSED: [2010-04-09 Fri 09:56]
 **** Refactor checklist
 
@@ -1350,7 +1397,7 @@ At this time just after finish eBay work, we suggest continuing to work on phase
 Thanks,
 Jason
 
-*** [#A] Installation restore procedure
+*** Installation restore procedure
 **** decouple genprofile for better organise and rereuse code, consider ip change and reconfiguration together.
 **** Restore services and service related data
 - ais: 
@@ -1524,9 +1571,9 @@ Yubo suggestion:
 Action items:
 1. Think about above suggestion and send a proposal to Yubo
 
-*** [#B] pylib enhancement
-**** TODO Add one stop wiki page for all system mgmt developement process
-**** TODO refine topology in mauiutility 
+*** pylib enhancement
+**** Add one stop wiki page for all system mgmt developement process
+**** refine topology in mauiutility 
 **** Team tea session discussion - I 
 
 Denny is owner of pylib. All code change related to pylib need to get Denny's approval before to commit the code.
@@ -1772,6 +1819,7 @@ It will now be restarted as a primary agent.
 2nd phase: have some small object level abstraction
 - for new created object can have a try on the object modeling for the eventually object modeling of data store layer
 
+
 3rd phase: provide ORM layer for the data store access
 - hide db deployment details also to the db api layer but into db connection side
 - easy to change data store type to other... like memcache, file, etc.
@@ -1904,14 +1952,12 @@ AMQP model:
 how to decouple task execute engine and detail task command ?
 if there has any relations between tasks, should these task be *divided* into several small tasks?
 
-
 *** Pylib document and standard refine
 If we want to have a common library for others to use, we should improve following areas:
 - Clear design on pylib architecture and function category
 - Have a common standard convention to enhance and maintain pylib source code, easy to maintain and extend
 - Good document to find out API easily (sphinix?)
 - Have owner to review all codes related to pylib
-
 
 *** DB related
 **** db connection timeout for C++ and python
@@ -2393,7 +2439,6 @@ When execute CLI, e.g. cospolicyselector, by default it will use sync mode and d
 4. There have several retry inside syncpm logic
    1. wait for distribution status by check global and local batch status in batchdecs table, here will continue retry, timeout value is 300s
    2. if distribute succeeds, it notifies all nodes MDS to reload policy by call "mauisvcmgr -t 60 -s mauimds -c sync_pm,mauisvcmgr -t 60 -s mauimds -c sync_hn", here will retry 3 times. max timeout value is 2 * 3 * 60 = 360s
-
 
 ** PIT, mauits, netinstall setup notes
 *** New PIT framework usage
@@ -4295,7 +4340,6 @@ This will go against with CORP policy
 
 ** Algorithm
 
-
 ** Emacs tips														  :EMACS:
 *** emacs中的自动换行
 # 不嫌烦的，每次M-x toggle-truncate-lines切换换行与不换行
@@ -4748,8 +4792,6 @@ Upgrade process: (From management station client to trigger)
 5. Non-disruptive upgrade (NDU) call
 6. Post tasks to recover to previous environment
 * Learning 															  :THINK:
-** Paper
-
 ** Year 2010
 *** Daily plan
 坚持！
@@ -4921,8 +4963,10 @@ Qualifications
 |              |                            |
 
 ** Reading
-*** [#A] UNP
-*** [#A] Clean code
+
+*** [#A] Self service linux
+*** [#B] UNP
+*** Clean code
 *** Effective C++
 *** Programming pearls
 *** STL
@@ -5178,6 +5222,8 @@ Mgmt:
 - Pros: stable and not much pressure, match my interest, develop the team and learn how to manage people and team
 - Cons: 
 
+*** SWOT analyse of L3 position
+
 *** Good collections
 **** [[http://edu.sina.com.cn/j/2009-11-13/1325181092.shtml][标  题: 职场人跳槽要遵守的11条守则]]
 
@@ -5244,9 +5290,21 @@ Mgmt:
 1. Diligent
 2. Communication
 3. Initiative
-4. Pay into details
+4. Pay attention into details
    
 *** 能够迅速进入专注状态，以及能够长期保持专注状态，是高效学习的两个最重要习惯。
+*** 善于管理情绪的人，就如“无招胜有招”的高手，可以突破秘笈的制约，笑傲职场的江湖。
+我经常跟同是管理层的朋友交流，什么样员工的哪些素质才是管理层最为看中的，基本上大家的排序是这样的：
+
+一、 有一定的工作能力，能按质按量地完成安排下去的每项任务。
+
+二、善于沟通，能随时让管理层掌握工作的进展情况
+
+三、态度认真积极，对工作有建设性的意见、无抵触情绪。
+
+四、知道尊重老板，并理解老板的所有决定。
+
+大家可以看到，被员工认为有“拍马屁”因素的素质，被排到了第四位，而且如果做不到一二三，第四点几乎可以被多数老板忽略不计。
 
 ** Personal development
 
@@ -5317,6 +5375,23 @@ I recently applied the 15-minute method to the task of creating and posting an u
 Give the 15-minute method a try. I think you'll find it useful on many levels. It only takes 15 minutes. :) 
 
 ** Lessons learn from others 										  :THINK:
+*** From Kenny
+**** how to identify the role of manager? tech? people?
+- depends on the team size. if 6-7, should be hands on and more focus on technical
+
+**** 1on1 topics
+
+personal strength and weakness, make sure not critical weakness, how to enlarge the strength
+US colleague for regular discussion
+- Erik
+  - Technology trend
+  - Do research
+  - Industry network 
+- Rulian
+  - Project management
+  - Soft skills
+  - Chinese
+
 *** From Ming
 1. when new member join the team, have 1on1 session to understand each other and communication prefer ways. also discuss about ideas on the project design and ideas.
 2. Find out useful papers about mgmt and share to others
@@ -5411,6 +5486,11 @@ how to handle tough employee:
 2. as a manager, you have more information and power to control and show your care and respective. like better ACR, a more challenge task, etc
 3. you cannot let everyone like you from their heart since everyone has own advantages, know them better and give them more opportunities and recognize, this relationship will be improved.
 
+**** mentoring lunch 2010-09
+
+About time management
+
+Set a proper goal is important. Goal is on family, career, person life etc.
 
 *** From Yubo
 1. how to motivate people? (e.g. if move Caihua to do another high priority thing and suspend current ongoing projects, caihua may have concern, what are good points to motivate?)
@@ -5431,6 +5511,8 @@ Not good:
 - Encourage people on the work which needs to improvement
 - Review work earlier than in later cycle to blame others
 
+*** From Eve
+Always think about business when you focus on technical. It's also related to the self career development which you should run yourself as a business, following the business trend and understand how to run business...
 
 *** From Ray Tang
 **** Organize work properly and demostrate the work
@@ -6447,3 +6529,12 @@ aaa bbb ccc
 letao 10 yuan: 1079386948537219
 
 
+
+select RC.id, DS.history_id, RR.submitter_id, auth_user.first_name, auth_user.last_name
+from reviews_comment as RC, diffviewer_filediff as FD, diffviewer_diffset as DS, reviews_reviewrequest as RR inner join auth_user
+on RR.submitter_id = auth_user.id
+where commentstate_id = 1
+and RC.filediff_id = FD.id
+and FD.diffset_id = DS.id
+and DS.history_id = RR.id
+order by auth_user.first_name

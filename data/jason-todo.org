@@ -14,13 +14,20 @@
 * Non-project related
 ** Daily TODO list
 ***	2010-10-25
-**** INPROGRESS event pending
+**** DONE event pending
+	 CLOSED: [2010-11-07 Sun 21:29]
 **** DONE review mozy test plan and send rich email
 	 CLOSED: [2010-10-25 Mon 14:20]
 **** DONE send out comment response to China COE CIG dev
 	 CLOSED: [2010-10-25 Mon 13:56]
-**** INPROGRESS start read disk mgmt code
+**** CANCELED start read disk mgmt code
+	 CLOSED: [2010-11-24 Wed 11:07]
 
+
+*** 2010-11-8
+**** DONE 1.4.1 bug fixing
+	 CLOSED: [2010-11-24 Wed 11:07]
+**** TODO slony event pending fix - add slon service restart after ntp configured
 ** Time management
 *** My timechart 
 **** From 6-28 To 9-3
@@ -228,8 +235,12 @@ Profiling Atmos
 *** Need more investigation on initialtive
 
 ** Effective code review by using ReviewBoard
-**** DONE Reviewforge improvement TODO list [26/26]
+**** DONE Reviewforge improvement TODO list [26/28]
 	 CLOSED: [2010-10-24 Sun 15:30]
+***** TODO remove feature compare in the source code (views.py)
+reviews_reviewrequest.feature_id=reviews_reviewrequestfeature.id 
+***** INPROGRESS Leverage QA in reviewboard, like bugzilla integration
+***** INPROGRESS Start design review in your small project and practice, try to formalize the process
 ***** DONE Collect good review comment
 	  CLOSED: [2010-10-24 Sun 15:30]
 ***** DONE Collect individual review efforts
@@ -356,6 +367,7 @@ and commenttype_id = 1
 and (commentstate_id = 2 or commentstate_id=4)
 and (commentseverity_id = 2 or commentseverity_id = 1);
 and commentseverity_id in (1,2,3,4)
+and reply_to_id Is Null
 
 Get total US member review comment number:
 # select count(id) from reviews_comment
@@ -391,6 +403,7 @@ on user_id = auth_user.id
 where timestamp > '2010-6-11 00:00:00'
 and commentstate_id <> 3
 and commentseverity_id in (1,2,3,4)
+and reply_to_id Is Null
 order by user_id
 
 Get individual review efforts and user name:
@@ -454,6 +467,24 @@ and RC.filediff_id = FD.id
 and FD.diffset_id = DS.id
 and DS.history_id = RR.id
 order by auth_user.first_name
+
+#select auth_user.first_name, auth_user.last_name, count(RC.id)
+from reviews_comment as RC, diffviewer_filediff as FD, diffviewer_diffset as DS, reviews_reviewrequest as RR inner join auth_user
+on RR.submitter_id = auth_user.id
+where commentstate_id = 1
+and RC.filediff_id = FD.id
+and FD.diffset_id = DS.id
+and DS.history_id = RR.id
+group by auth_user.first_name
+order by auth_user.first_name
+
+Update pending status manually with given history_id
+#update reviews_comment as RC, diffviewer_filediff as FD, diffviewer_diffset as DS, reviews_reviewrequest as RR
+set commentstate_id = 2 
+where commentstate_id = 1 and history_id=5015
+and RC.filediff_id = FD.id
+and FD.diffset_id = DS.id
+and DS.history_id = RR.id
 
 
 **** Need to follow up in whole team [2/2]
@@ -626,7 +657,55 @@ Questions
 - any similar product provided by emc competitors?
 - what will backend storage use when vmware deploy atmos? use mako? NAS?
 
+** Concall number
+Ming's Concall Number:
+
+•	US 720.221.4876 or 888.643.3086 
+•	China : 108007121940 or 108001201940 
+•	Profile # 63910727 
+
 * Project development 												   :WORK:
+** Qpid prototype
+*** Qpid and atmos related commands
+
+
+rest_client.rb -f createobject -p 323d42e9e77f49629b700e00cc84e7af/uid1 -k 8uXifHIjXfChG8LmcJdld5A3U/o= -u install.log
+
+mauiobjbrowser -i 4cea340fa120abc504ce9cd5c6debc04cea3d8c95407 -t 55b80acc979644f7879cf79ff3ff6afd
+
+*** JS/Qpid workflow
+Take Async copy replicate as one example:
+
+1. Create queue msg request
+   1) When create a object with async replica policy, JS will receive a request from client.
+   2) jsrouter stage will route to queuestage. 
+   3) queuestage will construct the job and enqueue the job into local qpid replicate queue
+
+2. Consume a queue msg request
+   1) Schedulestage has a timestage to continuously loop to query the job queue
+   2) When there has a job, schedulestage will dequeue a job and parse job status
+   3) If job status is success, schedulestage will start a scheduleTask
+   4) scheduleTask checks task type and construct a new task to handle async copy job
+   5) then generateJob will create a new maui child job or many child jobs
+   6) js start delegate the Job to one JS with JobReqContext and send to one JS based on local info specified
+   7) the send job is a newly created ProcessJob with proper src and target endpoint information
+   8) the ProcessJob has been sent to the JS router stage in one JS and then trigger RMS query in JS selection
+   9) after get result from RMS agent on target JS, send job to that JS and add callback for completion handling
+   10) after get callback request, it will get the schedule task job done and also update object LSO tree if succeed
+
+*** Good qpid links
+Qpid mgmt tools usage: https://cwiki.apache.org/qpid/mgmtc.html
+
+*** Prototype commands
+
+
+
+*** Random notes when reading amqp spec 0-10
+
+We use the term subscription to mean the entity that controls how a specific client application receives messages from a message queue.
+
+client only receive message from message queue but not from exchange or route
+
 ** Command Atmos mgmt command
 cossetup -u SecurityAdmin -p '#1Passwd' --userpass '#1Passwd' --userinfo n --local
 cosuser -u SecurityAdmin -p '#1Passwd' -c --userid MauiAdmin --userpass 'password' --local
@@ -635,18 +714,20 @@ cossysadmin -u SecurityAdmin -p '#1Passwd' -a --userid MauiAdmin --authtype loca
 ssh_do 10.32.182.197 'cosrmg -u MauiAdmin_pit -p '\''password'\'' --local         -a --rmgname '\''trunk4-r1'\'' --rmgloc '\''Boston'\'' --transtype unicast         --enablesmtp n --userpass '\''ChangeMe'\''         --host 10.32.182.197 --startip 10.32.182.197 --endip 10.32.182.198         --gateway 10.32.180.1 --subnetmask 255.255.252.0         --hostprefix '\''trunk4-r1s1'\'' --dnsserver 10.32.97.148         --dnssuffix lss.emc.com --ntpserver external --ntpaddress 10.32.72.28 --ssmode manual         --diskratio '\''1:4'\'' --sspattern '\''default_pattern'\''         --placement '\''optimal,optimal'\'' --acttype '\''n,c'\'' --plattype 0'
 
 
-cosuser -u MauiAdmin_pit -p 'password' -c --userid ta1 --userpass 'password' --local
-costenant -c --name mauits --authtype local -u MauiAdmin -p password --local
-costenantadmin -a --userid ta1 --tenid t1 -u MauiAdmin_pit -p 'password' --local
-cossubtenant -c --name st1 --authtype local -u ta1 -p 'password' -t t1
-cosuid -c --name uid1 --subtenid st1 --email a@b.com -u ta1 -p 'password' -t t1
+cosuser -u MauiAdmin_pit -p 'password' -c --userid t1a --userpass 'password' --local
+costenant -c --name t1 --authtype local -u MauiAdmin_pit -p password --local
+costenantadmin -a --userid t1a --tenid t1 -u MauiAdmin_pit -p 'password' --local
+cossubtenant -c --name st1 --authtype local -u t1a -p 'password' -t t1
+cosuid -c --name uid1 --subtenid st1 --email a@b.com -u t1a -p 'password' -t t1
 
-** TODOLIST [19/25]
-*** TODO Prepare code review sharing session
+** TODOLIST [21/24]
+*** INPROGRESS Prepare code review sharing session
 *** TODO Think about how to summarize slony work to Rich
-*** TODO Send out email about response to review comment
+*** DONE Send out email about response to review comment
+	 CLOSED: [2010-11-07 Sun 21:29]
 *** TODO Update slony wiki page on node replacement testing negative cases
-*** TODO seperate setnodeinfo to updatenodeinfo and insertnodeinfo, we have met several cases node UUID has changed due to setnodeInfo. bug #10948
+*** CANCELED seperate setnodeinfo to updatenodeinfo and insertnodeinfo, we have met several cases node UUID has changed due to setnodeInfo. bug #10948
+	 CLOSED: [2010-11-07 Sun 21:29]
 *** DONE Check reviewboard reporting feature
 	 CLOSED: [2010-06-01 Tue 14:53]
 *** CANCELED Think about how we can actively handle installation failure cases, but not just stay on the restore utility. If so, there is no need to wait for the installation failure and then we provide a workaround. Read some paper from lisa (large linux system administration)
@@ -2351,7 +2432,7 @@ http://opseroom01.corp.emc.com/eRoom/SPOmidrangesysdiv/SPOAppServers/0_16ef3e
 *** Debug disk related issues
 
 Internal disk allocation check /var/log/message
-
+**** Get vdisk detail information by omreport
 # omreport storage vdisk
 List of Virtual Disks in the System
 
@@ -2424,6 +2505,11 @@ Date and Time : Fri Sep  3 18:58:51 2010
 Category      : Storage Service
 Description   : Virtual disk degraded:  Virtual Disk 0 (Virtual Disk 0)
 Controller 0 (SAS 6/iR Integrated)
+**** Rescan SCSI disk drive after adding a new virtual disk 
+# echo "- - -" > /sys/class/scsi_host/host0/scan
+
+**** Check which process is using the disk
+# fuser -m /dev/sdb1
 
 ** Policy distribution debugging
 *** Whole CLI work flow
@@ -4336,10 +4422,6 @@ This will go against with CORP policy
 ** DONE Send out node replacement status for eBay using
    CLOSED: [2009-07-13 Mon 21:
 * Technical
-** Storage
-
-** Algorithm
-
 ** Emacs tips														  :EMACS:
 *** emacs中的自动换行
 # 不嫌烦的，每次M-x toggle-truncate-lines切换换行与不换行
@@ -4444,6 +4526,11 @@ Some commands:
 ^p - go to previous line
 ^d - exit cscope
 
+*** Use doxygen tool to generate code structure and call graph
+1. Generate doxygen config 
+# doxygen -g cfg.doxcfg
+2. Generate code index
+# doxygen cfg.doxcfg
 
 *** sed example
 delete lines: # sed "/$pattern/d" $file
@@ -4552,7 +4639,6 @@ Above method is highly depend on release type. E.g, CAP has but SUSE doesn't hav
 Better way to get this is through below command
 # ip route get 223.255.254.254 | grep 'dev .* src ' | sed 's/.*src//'
 
-
 *** Good cmd utility from commandlinefu.com
 
 mtr google.com -- traceroute + ping
@@ -4619,7 +4705,6 @@ Summary
 3. Run ``date MMDDhhmm'' to set the current system date/time.
 4. Type ``/sbin/hwclock --systohc [--utc]'' to set the hardware clock.
 
-
 *** Creating a custom Kickstart CD for Red Hat
 http://junktrap.naihl.net/doku.php?id=redhat:kickstartbootcd
 
@@ -4682,7 +4767,6 @@ Done!
 [on the client]
 $ ssh -p 1234 ...
 
-
 *** find out which process using the harddrive
 echo 1 > /proc/sys/vm/block_dump
 dmesg -c > log (-c mean clear)
@@ -4719,7 +4803,6 @@ This method of shutting down is ordered such that processes are killed as gracef
 
 *** Disable ping command
 echo  > /proc/sys/net/ipv4/icmp_echo_ignore_all
-
 
 *** Typical network latency
 http://nanog.cluepon.net/index.php/Traceroute_latency#Real_World_Measurements
@@ -4886,81 +4969,84 @@ Qualifications
 
 ** English words
 
-|--------------+----------------------------|
-| word         | meaning                    |
-|--------------+----------------------------|
-| stamina      | 精力                       |
-| hypothesis   | 假设                       |
-| notion       | 观念，想法                 |
-| cumulative   | 累积的                     |
-| corollary    | 推论                       |
-| reckless     | 不计后果的                 |
-| prudent      | 谨慎的                     |
-| deliberate   | 深思熟虑的，故意的         |
-| inadvertent  | 不注意的，疏忽的           |
-| amateur      | 业余爱好者                 |
-| dictator     | 独裁者                     |
-| amortize     | 分期偿还                   |
-| condense     | 浓缩                       |
-| paradox      | 自相矛盾                   |
-| critically   | 批评地,用钻研眼光地        |
-| plural       | 复数的                     |
-| Pathology    | 病理，反常                 |
-| hazard       | 冒险，危险                 |
-| rummage      | 仔细检查，搜查             |
-| adjacent     | 邻近的                     |
-| spatial      | 空间的                     |
-| conjecture   | 猜想                       |
-| interleaving | 交叉,交错                  |
-| obstructive  | 阻碍，妨碍                 |
-| coalesce     | 接合                       |
-| heuristic    | 启发式的                   |
-| commence     | 开始，着手                 |
-| contend      | 竞争                       |
-| arbitrate    | 仲裁, 公断                 |
-| induce       | 导致，引起                 |
-| accompany    | 陪伴，伴奏                 |
-| likewise     | 同样的                     |
-| stagger      | 交错                       |
-| proximal     | 最接近的                   |
-| jeopardize   | 危害                       |
-| possess      | 拥有，占有                 |
-| mitigate     | 减轻                       |
-| empirical    | 实验式，经验主义的         |
-| malicious    | 恶意的                     |
-| steer        | 驾驶，掌舵                 |
-| mobilize     | 动员                       |
-| reveal       | 展示，揭露                 |
-| negligible   | 可以忽略的, 不予重视的     |
-| unorthodox   | 非传统的                   |
-| legacy       | 遗产                       |
-| elastic      | 弹性的                     |
-| catastrophic | 灾难性的                   |
-| unwind       | 展开                       |
-| obligatory   | 必须的                     |
-| deprecate    | 反对，轻视                 |
-| esoteric     | 深奥的                     |
-| corollary    | 推论，必然的结果           |
-| resort       | 手段，采取                 |
-| assorted     | 多样混合的                 |
-| charisma     | 感召力                     |
-| acumen       | 敏锐, 聪明                 |
-| stagnation   | 停滞                       |
-| steer        | 指引                       |
-| abundance    | 富裕，充裕                 |
-| arrogance    | 傲慢，自大                 |
-| congruent    | 适合的                     |
-| intimate     | 亲密的，固有的             |
-| etiquette    | 礼节                       |
-| reformation  | 改革                       |
-| synthesis    | 综合，合成                 |
-| advocate     | 提倡                       |
-| voracious    | 贪婪的                     |
-| monolithic   | 庞大的，完整的             |
-| gloss        | 掩盖，光泽                 |
-| quorum       | 法定人数，挑选出来的一组人 |
-| skepticism   | 怀疑论                     |
-|              |                            |
+|----------------+----------------------------|
+| word           | meaning                    |
+|----------------+----------------------------|
+| stamina        | 精力                       |
+| hypothesis     | 假设                       |
+| notion         | 观念，想法                 |
+| cumulative     | 累积的                     |
+| corollary      | 推论                       |
+| reckless       | 不计后果的                 |
+| prudent        | 谨慎的                     |
+| deliberate     | 深思熟虑的，故意的         |
+| inadvertent    | 不注意的，疏忽的           |
+| amateur        | 业余爱好者                 |
+| dictator       | 独裁者                     |
+| amortize       | 分期偿还                   |
+| condense       | 浓缩                       |
+| paradox        | 自相矛盾                   |
+| critically     | 批评地,用钻研眼光地        |
+| plural         | 复数的                     |
+| Pathology      | 病理，反常                 |
+| hazard         | 冒险，危险                 |
+| rummage        | 仔细检查，搜查             |
+| adjacent       | 邻近的                     |
+| spatial        | 空间的                     |
+| conjecture     | 猜想                       |
+| interleaving   | 交叉,交错                  |
+| obstructive    | 阻碍，妨碍                 |
+| coalesce       | 接合                       |
+| heuristic      | 启发式的                   |
+| commence       | 开始，着手                 |
+| contend        | 竞争                       |
+| arbitrate      | 仲裁, 公断                 |
+| induce         | 导致，引起                 |
+| accompany      | 陪伴，伴奏                 |
+| likewise       | 同样的                     |
+| stagger        | 交错                       |
+| proximal       | 最接近的                   |
+| jeopardize     | 危害                       |
+| possess        | 拥有，占有                 |
+| mitigate       | 减轻                       |
+| empirical      | 实验式，经验主义的         |
+| malicious      | 恶意的                     |
+| steer          | 驾驶，掌舵                 |
+| mobilize       | 动员                       |
+| reveal         | 展示，揭露                 |
+| negligible     | 可以忽略的, 不予重视的     |
+| unorthodox     | 非传统的                   |
+| legacy         | 遗产                       |
+| elastic        | 弹性的                     |
+| catastrophic   | 灾难性的                   |
+| unwind         | 展开                       |
+| obligatory     | 必须的                     |
+| deprecate      | 反对，轻视                 |
+| esoteric       | 深奥的                     |
+| corollary      | 推论，必然的结果           |
+| resort         | 手段，采取                 |
+| assorted       | 多样混合的                 |
+| charisma       | 感召力                     |
+| acumen         | 敏锐, 聪明                 |
+| stagnation     | 停滞                       |
+| steer          | 指引                       |
+| abundance      | 富裕，充裕                 |
+| arrogance      | 傲慢，自大                 |
+| congruent      | 适合的                     |
+| intimate       | 亲密的，固有的             |
+| etiquette      | 礼节                       |
+| reformation    | 改革                       |
+| synthesis      | 综合，合成                 |
+| advocate       | 提倡                       |
+| voracious      | 贪婪的                     |
+| monolithic     | 庞大的，完整的             |
+| gloss          | 掩盖，光泽                 |
+| quorum         | 法定人数，挑选出来的一组人 |
+| skepticism     | 怀疑论                     |
+| reconciliation | 和解，调和                 |
+| corelation     | 关联                       |
+|                |                            |
+|                |                            |
 
 ** Reading
 
@@ -5222,7 +5308,52 @@ Mgmt:
 - Pros: stable and not much pressure, match my interest, develop the team and learn how to manage people and team
 - Cons: 
 
-*** SWOT analyse of L3 position
+*** SWOT analyse of L3 position compare with current dev engineer
+STRENGTH
+1. deep knowledge on atmos system mgmt area and whole system design
+2. rich experiences on handling customer cases
+3. collaboration with more teams to improve cross functional communication
+4. think about product from customer overview
+5. have a more general understanding on Atmos system
+6. more visibility?
+
+WEAKNESS
+1. mainly troubleshooting and customer support, no new feature design or development work
+2. boring and pressure on daily customer cases
+3. challenge by customer
+4. as the bridge for L2 support and dev team, may have pressure from both sides
+
+OPPORTUNITY
+1. opportunity to start a new team with my interest career development opportunity
+2. the team may grow quickly as customer base grows
+3. grow more soft skills other than pure technical
+
+THREAT
+1. not that attractive and learning from technical perspective
+2. not much time can spend with family
+3. on call even night and weekend
+
+Make decision process: choose L3 engineer
+Reasons:
+1. potential opportunity to grow a new team
+2. more practices on cross team communication 
+3. consider product more from a customer perspective
+4. since currently one third of my time has already spent on customer cases, this may just add more time on customer cases but not have time to develop new features, but provide the opportunities for my next career interest
+5. the worst case would be L3 team not grow as much in half or one year at most, at that time, i can still find opportunities to get back to dev team or find other chances. the good thing is I have more knowledge from the whole system view to atmos.
+
+Things I should not blame after take this position:
+1. boring job with many cases
+2. on call at night and weekend
+3. no much time with family
+4. more pressure from both customer and other internal teams
+
+Things I should pay more attention to:
+1. working process and model
+2. build good knowledge base
+3. grow team
+4. good communication with other teams
+5. good sense to handle US and local managers concern - put yourself in your manager's shoe
+
 
 *** Good collections
 **** [[http://edu.sina.com.cn/j/2009-11-13/1325181092.shtml][标  题: 职场人跳槽要遵守的11条守则]]
@@ -6085,6 +6216,8 @@ Sukwoo recommend me to review paper on ACM transaction on Storage. it's a exciti
 
 * Wisdom 															  :THINK:
 ** Good Words
+If you dream it, you can DO it! - from Sukwoo. :-)
+
 通过规划利用好现有的能力远比挖掘所谓的潜能更重要。
 
 你必须自己开始。假如你自己不以积极的爱去深入生存，假如你不以自己的方式去为自己揭示生存的意义，那么对你来说，生存就将依然是没有意义的。
@@ -6538,3 +6671,17 @@ and RC.filediff_id = FD.id
 and FD.diffset_id = DS.id
 and DS.history_id = RR.id
 order by auth_user.first_name
+
+
+
+how to make team success?
+
+team member success
+create proper opportunity
+find everyone the strength
+get good projects
+build good relation with Rich
+
+
+
+11/30 att delete UID case - 0.5 hour

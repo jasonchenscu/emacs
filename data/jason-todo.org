@@ -13,7 +13,12 @@
 
 * Non-project related
 ** Daily TODO list
-***	2010-10-25
+*** TODO code review knowledge sharing
+*** TODO analyze magic number in the code
+*** TODO qpid related document on troubleshooting
+*** TODO slony summary slide
+*** TODO 
+*** 2010-10-25 
 **** DONE event pending
 	 CLOSED: [2010-11-07 Sun 21:29]
 **** DONE review mozy test plan and send rich email
@@ -23,15 +28,15 @@
 **** CANCELED start read disk mgmt code
 	 CLOSED: [2010-11-24 Wed 11:07]
 
-
 *** 2010-11-8
 **** DONE 1.4.1 bug fixing
 	 CLOSED: [2010-11-24 Wed 11:07]
-**** TODO slony event pending fix - add slon service restart after ntp configured
+**** DONE slony event pending fix - add slon service restart after ntp configured
+	 CLOSED: [2011-01-19 Wed 22:18]
 ** Time management
-*** My timechart 
-**** From 6-28 To 9-3
-***** Detail tasks
+** My timechart 
+*** From 6-28 To 9-3
+**** Detail tasks
 6-28
 # (50%) Slony DB: Integrated Slony with installation component
 # (20%) RMG removal tool plan discussion
@@ -97,7 +102,7 @@
 # (10%) Fix 1.4.0 bug 13239
 # (20%) One day sick leave 
 
-***** Grouped category
+**** Grouped category
 =================================================================================
 After group and calculate
 =================================================================================
@@ -160,7 +165,7 @@ Vacation: 2.5 days
 - Sick leave: 1.5 days
 - Normal vacation: 1 day
 
-***** Final results
+**** Final results
 After group tasks
 
 10 working weeks - 50 working days
@@ -205,7 +210,7 @@ Vacation: 2.5 days
 # Sick leave: 1.5 days
 # Normal vacation: 1 day
 
-*** Discuss with Hongbing
+** Discuss with Hongbing
 <2010-09-09 17:06>
 
 ** Initialtive on effective daily work
@@ -235,12 +240,12 @@ Profiling Atmos
 *** Need more investigation on initialtive
 
 ** Effective code review by using ReviewBoard
-**** DONE Reviewforge improvement TODO list [26/28]
+**** DONE Reviewforge improvement TODO list [26/29]
 	 CLOSED: [2010-10-24 Sun 15:30]
 ***** TODO remove feature compare in the source code (views.py)
 reviews_reviewrequest.feature_id=reviews_reviewrequestfeature.id 
-***** INPROGRESS Leverage QA in reviewboard, like bugzilla integration
-***** INPROGRESS Start design review in your small project and practice, try to formalize the process
+***** TODO Leverage QA in reviewboard, like bugzilla integration
+***** TODO Start design review in your small project and practice, try to formalize the process
 ***** DONE Collect good review comment
 	  CLOSED: [2010-10-24 Sun 15:30]
 ***** DONE Collect individual review efforts
@@ -322,6 +327,9 @@ mysql>exit
 
 # memcache
 /usr/local/bin/memcached -d -m 1024 -u root -l <ip> -p 11211
+(e.g. #memcached -d -m 1024 -u root -l 10.32.109.87 -p 11211)
+
+Shoud specify "localhost" in -l option.
 
 **** Good review comment
 ***** In 4726 on how to get key and value from dict in python from Ming
@@ -665,9 +673,62 @@ Ming's Concall Number:
 •	Profile # 63910727 
 
 * Project development 												   :WORK:
+** SKT 
+
+
+No real test on hardware LCD amber... No test cases...
+
+IPMI configuration.
+
+
+SKT expect automatic failover when master node is down.
+
+** Sustaining
+
+*** General issues during bug review
+1. GUI concurrent issue. GUI doesn't have any lock mechanism during perform some operations which might mess the configuration file
+2. Update fix plan in (e.g. 1.4.1), however, nobody tracks that any more.
+3. No follow up.
+4. Give good information on what is the issue, how to reproduce the issue, 
+
+   
+
+*** Questions discuss with Rulian
+1. If the new fix require big effort but very useful to customer, do we need to cover it or discuss with all other managers to prioritize the tasks?
+2. 
+
+*** NTP related discussion
+
+
+ATT and French Telecom require backup NTP server
+
+Test should in a big scale environment since every segment has two NTP servers sync with external server
+
+Can we define different level stratum for internal NTP servers?
+
+Next step we will summarize the issue and see what the next step is. 
+
+
+
+**** TODO Ask Anne about NTP requirement document
+
+**** TODO Confirm with Rulian whether we need to ask QA/CS for their feedbacks on the bug fix suggestion and their pain points.
+**** DONE Bo on NTP issue
+	 CLOSED: [2011-02-25 Fri 11:35]
+	 
+**** TODO Think about communicate (concall) with QA/CS/L3/L4, weekly or bi-weekly review?
+
+**** TODO Add bugzilla custom search to include sustaining related bugs 
+
+**** TODO Add wiki page FAQ about code review and fix branch process 
+
+*** Bugzilla extension example
+
+
+
+
 ** Qpid prototype
 *** Qpid and atmos related commands
-
 
 rest_client.rb -f createobject -p 323d42e9e77f49629b700e00cc84e7af/uid1 -k 8uXifHIjXfChG8LmcJdld5A3U/o= -u install.log
 
@@ -720,12 +781,13 @@ costenantadmin -a --userid t1a --tenid t1 -u MauiAdmin_pit -p 'password' --local
 cossubtenant -c --name st1 --authtype local -u t1a -p 'password' -t t1
 cosuid -c --name uid1 --subtenid st1 --email a@b.com -u t1a -p 'password' -t t1
 
-** TODOLIST [21/24]
+** TODOLIST [22/24]
 *** INPROGRESS Prepare code review sharing session
 *** TODO Think about how to summarize slony work to Rich
 *** DONE Send out email about response to review comment
 	 CLOSED: [2010-11-07 Sun 21:29]
-*** TODO Update slony wiki page on node replacement testing negative cases
+*** DONE Update slony wiki page on node replacement testing negative cases
+	 CLOSED: [2011-01-19 Wed 22:22]
 *** CANCELED seperate setnodeinfo to updatenodeinfo and insertnodeinfo, we have met several cases node UUID has changed due to setnodeInfo. bug #10948
 	 CLOSED: [2010-11-07 Sun 21:29]
 *** DONE Check reviewboard reporting feature
@@ -1940,7 +2002,7 @@ service_description {
 }
 
 then during installation/replace node/add new node, it will be very easy to decide what services should be configured in the node. It also become easier for other service developers to add a new service based on following configuration framework design.
-
+ 
 ** Installtion collection
 *** Switch configuration
 Refer to bug 5765
@@ -2279,6 +2341,12 @@ tcpdump -vXn -s 1500 port 80 -i lo
 
 strace -s200 -ftT -o log-t30 ./mauirexec.new  -e " mauisvcmgr -t 30 -s mauimds -c sync_pm" -n "RMG2-006" -l
 
+dmidecode -s system-product-name
+
+# Check AC power PDU current status
+omreport chassis pwrsupplies
+
+
 *** Debug REST API
 curl -v -k -D ./rcvHeaders.txt -d "" -H "x-atmos-tenantadmin:ta1" -H "x-atmos-tenantadminpassword:password" -H "x-atmos-authType:password" -H "x-atmos-uid:u1" -H "Accept:"  -H "User-Agent:" https://10.32.109.112:443/sysmgmt/tenants/t1/subtenants/t1/uids
 *** Debug POX API test
@@ -2511,7 +2579,51 @@ Controller 0 (SAS 6/iR Integrated)
 **** Check which process is using the disk
 # fuser -m /dev/sdb1
 
+*** Debug channel bonding issues
+
+Karthik fix SKT channel bonding issue steps: <2011-02-19 16:52>
+
+# mauisvcmgr –s mauimds –c triggercheckpoint
+# service mauimds stop
+# mauictl stop
+# atmosnetmgr add bond nics=eht1,eth2 mode=1 millmon=100
+# dmesg | grep “eth.*PCI”
+# grep HWADDR /etc/sysconfig/network-scripts/ifcfg-eth[0-3]
+# cat /proc/net/bonding/bond0
+# python modify_bonding_cfg.py
+# scp /tmp/check_bond.py
+# mauictl start
+# mauisvcmgr –s mauimds –c mauimds_isNodeInitialized
+# mauisvcmgr –s mauimds –c mauimds_ismaster
+
+** Authsrv failover collection
+
+Bug 14700.
+
+And yes, both automatic and manual failover only pickup a random available authsrv for the new master. If we want to failover to a specific one we need to use the steps below. 
+1. change master authsrv in db Command: mauimasterauthsrvdb –s <new_master_hostname> 
+2. config the new master authsrv Command: mauiauthutil –c master -l <new_master_hostname> <new_master_hostname> 
+3. notify each slave authsrv which the new master is. Command: mauiauthutil –c slave -l <new_master_hostname> <slave_master_hostname> Note: this command needs to be executed for all the available slave authsrv. For the unavailable authsrvs, they will change its status automatically during startup. 
+
+AND before we failover authsrv manually, we need to check the data of each authsrv to make sure the data is consistent. Here is the command, please execute it on each authsrv node and compare the result. ldapsearch -D cn=Admin,ou=maui,ou=tvg,dc=emc,dc=com -H ldap://$HOSTNAME:10389 -x -w 'atm0s2w0rld!' -b ou=people,ou=maui,ou=tvg,dc=emc,dc=com -LLL | grep dn 
+
 ** Policy distribution debugging
+*** Peer1 policy troubleshooting
+
+One subtenant - SubTenant406 has wrong default policy
+
+Check policyinfo data in the database to find out the batch ID and detail batch content
+# select content, batch_id from policyinfos where subtenant_uuid = '360f5f0428384cd8a004b7c92b611f53'; 
+Check batch distribution status
+Check MDS dump DB info
+# db_dump -p /mauimds-db/mds-1f7d263c-1502-4e5c-b945-5c8011fbde86/master/PmDb.bdbxml  > /tmp/policy.db
+
+first find subtenant ID to get policy desc ID
+ 523db420cf024e768db58bb7f2b67aa6:360f5f0428384cd8a004b7c92b611f53\00
+ \82\9a\01\1d
+
+find key \\82\\9a
+
 *** Whole CLI work flow
 Experience on debugging bug #13416.
 
@@ -2897,6 +3009,10 @@ Code commit and verify:
 - GUI
 - CLI
 - Large_Scale
+** Conary related commands
+Atmos devkit upgrade (version 1.4.1)
+# sudo conary migrate group-adk=adk.cap.emc.com@emc:adk-1.4-devel --interactive 
+
 ** Free discussion
 *** Why too many tasks?
 1. Lots of features - from customer
@@ -4875,6 +4991,26 @@ Upgrade process: (From management station client to trigger)
 5. Non-disruptive upgrade (NDU) call
 6. Post tasks to recover to previous environment
 * Learning 															  :THINK:
+** Year 2011
+*** Goal
+Find my passion in everyday life!
+**** Checkpoints
+*** Some collection on the passion
+
+**** 怎样找回工作激情
+许多人在刚刚踏入职场之初，干劲十足、激情高涨，对自己的职业前途寄予“厚望”。但用不了多长时间，工作的平淡就会磨平他们的工作激情，他们就会觉得自己像个机器人，每天重复着单调的动作，处理着枯燥的事物。他们每天想的不是怎样提高工作效率，提升自己的业绩。而是盼望着能早点下班，期望着上司不要把困难的工作分配给自己。每当工作中出现不顺心的事，就会“鼓励”自己换个工作环境，然而每一次跳出这一怪圈，他们就必须想办法找回工作激情。
+
+培养工作激情需要做到两点：
+
+首先，必须明确工作的目的。知道自己在为了什么而工作是非常重要的。如果是为了理想，为了展示自己实实在在的价值，被他人和社会需要和认可，为了没有白活一生而工作，而不仅仅是为了一份薪水而工作，那么就会感到快乐，感到工作总是有激情的。
+
+然后需要分阶段给自己确定目标。人们往往只在爬坡的时候，才会感到干劲十足，充满激情。当爬上山顶的时候，反而觉得迷茫。所以，人们需要不断地给自己树立新的目标，这样工作起来才会有方向、有动力、有奔头，才有助于保持高涨的工作热情。
+**** 工作的三种状态
+员工工作，存在三种状态。
+第一种状态叫“激情”，这是工作的最佳状态，在这样的状态下，员工工作干劲十足，总有用不完的力，总是在想问题，总是在想工作，总想把工作做得完美，在这种状态下，员工学习动力十足，总是在不断的接受新知识，掌握新技能，寻求新突破。
+第二种状态叫“耗”，这时，员工工作处于一种缺少新鲜感和热情的状态，每天都是前一天的重复，每天都在做不想做，但不得不做的事，对环境不满意，对上级不满意，对下属不满意，对大部分与工作相关的事，都提不起精神，每天盼望的，是下班的铃声。工作如同鸡肋，食之无味，弃之可惜。
+第三种状态叫“绝望”，员工对工作的绝望。对与工作相关的一切，厌烦透了。连日常的工作也不想去做了。员工对提升绝望，对提薪绝望，对未来绝望。唯一想做的事，就是尽快离开。这时候，上级对员工也同样陷入了绝望状态。
+
 ** Year 2010
 *** Daily plan
 坚持！
@@ -4903,6 +5039,14 @@ Upgrade process: (From management station client to trigger)
 下一个五年或十年的机会在哪里？体制内还是体制外？
 如何让自己得到更多的锻炼，挑战和机会？
 。。。
+
+*** Summary
+Overall average~
+
+工作生活缺少热情！害怕改变提高自己！
+
+work hard but not smart!
+
 
 ** My learning plan
 Record what I need to learn and improve for my self. (Internal motivated.)<2009-12-13 21:05>
@@ -5045,7 +5189,10 @@ Qualifications
 | skepticism     | 怀疑论                     |
 | reconciliation | 和解，调和                 |
 | corelation     | 关联                       |
-|                |                            |
+| solicit        | 恳求                       |
+| resilient      | 有弹力的                   |
+| rejuvenate     | 使恢复活力                 |
+| caveats        | 警告, 告诫                 |
 |                |                            |
 
 ** Reading
@@ -5510,6 +5657,38 @@ Give the 15-minute method a try. I think you'll find it useful on many levels. I
 **** how to identify the role of manager? tech? people?
 - depends on the team size. if 6-7, should be hands on and more focus on technical
 
+**** 1:1 learn <2010-12-31>
+Feedback是always key person, execution good, do things ok, always good feedback. However!!! no such breakthrough!没有闪光点！
+
+有leadership的potential，能够主动的去想一些事情，改进提高的方法，initiative不错。但是，还没有到他心中真正的HIPO！
+
+需要提高的地方：
+1. 做事情缺少一种霸气，没有太大的激情，只是感觉在静静的做而已。
+2. 做事情要学会找到最重要的事情做，并且能够有想法把它一步一步的做好，要有阶段性的展示。
+   如果和big boss很少的展示机会，如果用2分钟把你最大的价值体现出来。
+3. 做事情要经常去想大局观。为什么要做这件事情，如果要做，怎么做，分几个阶段做，做的结果怎么样，有什么价值，和最开始的目的是不是一样的？要明确你在未来3个月到半年要做的事情，要明确每个阶段的checkpoint和deliverable，how to show your value to others?
+
+hongbing是个不错的mentor，做事情很有passion并能影响周围的人
+chenhong也是个不错的人才，很内敛但是思路非常清晰，很有想法，coe非常缺这样的人才
+
+**** 1:1 learn <2011-1-27>
+
+***** Technical innovation thought 
+bring up some proposal on this part, like paper, patent, conference, etc
+
+***** Quality improvement community
+think about recruite new team member get whole team to be involved
+
+***** Sustaining suggestion - put your thought into Rulian's shoe and think about how to bring her success
+1. interview and learn from others and existing internal EMC sustaining team to build up knowledge on the team process and potential issues
+2. ask questions and give proposals to think about all potential for sustaining team, like which bug should be fix? how to prioritize different bugs? what metrics should be used to evaluate team member performance? how to speed up new team member learning process? how to collaborate and work together with Yi and new senior team members? how to make sure every team member can contribute more and learn more in this team? if someone like doing sustaining work, how to setup process to join this team?
+3. get draft document from Rulian and go through existing draft process
+
+build a good first impression and give professional background and knowledge. 
+
+dont treat yourself as a junior learning, but as a more senior professional. try to leverage other resource and stand in big giant's shoulder!
+
+
 **** 1on1 topics
 
 personal strength and weakness, make sure not critical weakness, how to enlarge the strength
@@ -5623,13 +5802,97 @@ About time management
 
 Set a proper goal is important. Goal is on family, career, person life etc.
 
+
+**** mentoring lunch 2011-01
+Talking about year summary and planning
+
+
+- no clear goal for 3 or 5 years long time, but have clear goal for the next year!
+- Capture random great innovation ideas
+- Be different. Think about what is the key differentiation from other team members
+  - Find out your passion area and do it in the right way
+
+- about 1on1 thought
+  - what's the purpose for each 1on1
+  - what i can get from each 1on1, manager expectation? feedback? improvement areas?
+  - always prepare topics
+
+Work with Kenny better (Kenny is HI)
+- Get key points from many thoughts
+  - Communicate more to understand the priority
+  - Try the thought but not just think, do it!
+
+About management style
+- career develop should always be employee's responsibility
+- 我可以把别人桌子上的菜端过来，但我绝不会喂到你嘴里。
+- keep all team members busy to reduce attrition
+
+
+**** mentoring lunch 2011-01
+
+
+ 
+*** From Eric Riedel
+**** 1on1 discussion - 2011/2/21
+
+Talk a little bit about projects I'm working on. Technical review for the project technical. 
+
+Setup regular schedule and think about what topics
+1. Technology trend
+2. Atmos opportunity and future innovation areas
+3. Technology career path successful
+
+CS, L3 - short term to fix customer issues
+
+Gen3 field area to look at document
+
+SES database. A procedure to start over. 
+We should not feel bad of issue in software. Situation is too confusing and messed up. 
+Sustaining project is not just blame anyone 
+
+Lot of node, lot of system, 
+
+Let's understand is there a way we can do in a creative solution rather than fix a bug. 
+
+CS, L3 - If we can make it easy for CS, L3, we don't need automatic solution. 
+
+Do we have a way to quickly back to operation for customer? 
+
+Sustaining team: which is the right way to fix the issue? 
+
+Engineer is separately from customer most of time. 
+
+Voice of customer - send engineer with PM to directly discuss with customer
+
+Think about the customer support piece and overall solution. 
+
+Discuss with CS - What things take you the longest time to diagnostic and fix? Then work down the list. 
+
+Technology trend of cloud is something error in node/disk should not have any impact to the system. 
+
+Google - just take it offline and we will fix later. 
+
+Every minute your system
+
+The system should be 
+
+Bring out a proposal when you have good ideas
+
+When you have design review, people will find problems and we need to do something in the end, then we can try this proposal 
+
+We are not going to fix it, there is a field procedure to fix this. We don't need to go back to software and double check with Engnieer... What should we do this fix this bug? Fix, any CS procedure? Think about the right level of fix. 
+
+Encourage you to think about creative solution even it's not write not amount of code, like service procedure, etc. 
+
+
 *** From Yubo
-1. how to motivate people? (e.g. if move Caihua to do another high priority thing and suspend current ongoing projects, caihua may have concern, what are good points to motivate?)
+**** 1. how to motivate people? 
+(e.g. if move Caihua to do another high priority thing and suspend current ongoing projects, caihua may have concern, what are good points to motivate?)
    - This is a good oppotunity for you to involve more components and bring your ideas to the team. If you have any good suggestion to the framework, then bring these out and let others know your opioion. We may not fix this in short term due to resource or other high priority things, but this would let others know your value in the team and would consider give you more oppotunity and responsibility if there has any good place. 
    - This is also a good chance for you to involve design discussion and think about improvements, a good practice chance
    - This is also good for you to learn from others during the daily upgrade review status meeting. Learn from Yubo how to organize and analyze existing issues and make a clear day by day. 
 
-1on1 with Yubo <2010-04-02 16:03>
+**** 1on1 with Yubo <2010-04-02 16:03>
 After Kenny joins the team, need to think about my next step focus and development areas I need in the career development. Below are some areas I need to think about to improve, not mean you have this problem but need to pay more attention on these.
 - Keep focus
 - Communication with Caihua, more listening and influence to accept your ideas
@@ -5641,6 +5904,11 @@ After Kenny joins the team, need to think about my next step focus and developme
 Not good:
 - Encourage people on the work which needs to improvement
 - Review work earlier than in later cycle to blame others
+**** 1:1 <2010-12-31 22:59>
+
+需要提高的地方
+1. 技术的积累，如何有清晰的思路对模块有个很好的设计和长期的想法
+2. bigger view for the team projects
 
 *** From Eve
 Always think about business when you focus on technical. It's also related to the self career development which you should run yourself as a business, following the business trend and understand how to run business...
@@ -5671,7 +5939,7 @@ BTW, if we need make any improvement, please track it in bugzilla and update the
 
 Think jump out of box - e.g. refine task module or think about another simple solution like state machine to solve
 
-p*** Management style from Kenny
+*** Management style from Kenny
 Notes from Ying, why Kenny is suitable for this position:
 1. People focus.
 2. Communication. Not only with US side and direct reports, but will individual engineers. 
@@ -6205,6 +6473,272 @@ Sukwoo recommend me to review paper on ACM transaction on Storage. it's a exciti
 5、成长比成绩重要
 6、榜样比命令重要
 
+*** my wiki backup 
+
+User:Chenj15
+From TVG Wiki
+Jump to: navigation, search
+Contents
+[hide]
+
+    * 1 Profile
+    * 2 Workspace
+          o 2.1 Planning
+          o 2.2 Working wiki pages
+          o 2.3 Current Projects
+          o 2.4 Quality Improvement Initiative
+    * 3 Focus Area
+          o 3.1 Ongoing discussion
+          o 3.2 Finished projects
+    * 4 Feedbacks
+    * 5 Test & Tools
+    * 6 Maui link
+    * 7 Other reference
+    * 8 Notes
+
+[edit] Profile
+
+Join CIG at August 2007. Working on system management related features, like installation, CM (cluster manager agent), database replication, upgrade, GUI, etc. I was responsible for Windows Drive development.
+
+My latest focus (Since 2009) on Atmos is management database scale out solution, installation and CM.
+
+    * Email: Chen_Jason@emc.com
+    * MSN: yfchen82@hotmail.com
+    * Phone: +86-21-60951100 ext. 2283
+    * Mobile: +86-15900400616 
+
+[edit] Workspace
+[edit] Planning
+
+    * My Resource Plan - new resource tracking since July 2010.
+    * Team resource planning - previous team resource tracking from August 2009 to June 2010.
+    * My bugs on bugzilla
+    * Team bug tracking - Track team members open bugs in each release
+    * Customer case support effort tracking 
+
+[edit] Working wiki pages
+
+    * Cluster Manager Service (CM) 
+
+[edit] Current Projects
+
+    * Mgmt database implementation details
+    * Management Database Improvement v1.4 -- A reliable, HA-solution Postgresql replication solution - Slony. Details investigation is here .
+    * eBay RMG removal
+    * Installation Recovery Design
+    * Rpath sles migration - support on atmos configuration part 
+
+[edit] Quality Improvement Initiative
+
+    * Code review space - Reviewboard workspace
+    * Effective Code Review by using ReviewBoard - Improve review process wiki 
+
+[edit] Focus Area
+
+    * Roadmaps: Installation and Configuration , Management (DB arch/CM/Monitoring/Reporting) 
+
+[edit] Ongoing discussion
+
+    * Future releases
+          o System Management Data Access Layer - ongoing discussion for system management next phase focus
+          o Distributed Synchronization - proposal from Sukwoo
+          o Common synchronization framework - our proposal to solve common distribution in atmos
+          o Mgmt RESTful API
+          o System management model design - future system management model?
+          o Cronjob_mgmt - a total solution to manage all system cronjob configuration 
+
+[edit] Finished projects
+
+    * System Management V1.3
+          o Mgmt database performance tuning v1.3
+          o SYR integration
+          o Project main page
+          o Scale out mgmt database v1.3
+          o Master node fail-over 
+
+    * Get well plan
+          o Sub-tenant root directory alias
+          o Get well installation
+          o Get well SysMgmt 
+
+    * System Management V1.2
+          o Project main page
+          o New installation design and process
+          o Refine postgres deployment
+          o CM SEDA enhancement
+          o CM Improvement v1.2
+          o GUI improvement (Flex/REST API)
+          o Upgrade framework design 
+
+    * Heartbeat Mechanism - heartbeat investigation for CM
+    * System mgmt V1.1
+    * Tenant/Subtenant v1.1
+    * System mgmt V1.0.x
+    * System_mgmt_V2_plan_and_schedule
+    * Windows Drive for Atmos - My first leading project after join Atmos 
+
+[edit] Feedbacks
+
+    * Comments_And_Suggestions - Very useful feedback from our field engineer. 
+
+[edit] Test & Tools
+
+    * Troubleshooting collection - My collection for trouble shooting, installation, CM, GUI...
+    * Debug collection - My collection for debugging
+    * Maui Tools - Collection of various tools from dev/QA/escalation
+    * System mgmt CLI usage - System mgmt command line tools. Used for administration and auto testing for controller
+    * ReviewBoard - A good code review tool to improve code review efficiency and quality
+    * git - used for fast local branch and merge, code review...
+    * Diagnostic Tools and Tips - Quite useful tips from Kam pang
+    * PIT - Auto deployment from appliance to Maui Testbed.
+    * PIT-Framework - Enhanced PIT, nice work from Matt!
+    * Maui TS - Maui Testing framework
+    * TeamCity - new CI tool used in CIG
+    * MaaP Testing - MaaP QA testing home page
+    * Grinder - Performance testing tool for WS
+    * JMeter - Performance testing tool for WS
+    * Policy distribution troubleshooting - Very good troubleshooting steps from Sukwoo 
+
+[edit] Maui link
+
+    * Atmos Architecture
+    * Training Material
+    * SEDA Framework
+    * Communication Stage
+    * MDS
+    * MDLS
+    * Storage Server Disk Management
+    * SNMP
+    * IPMI
+    * Seda Stats Stage
+    * Flex-out
+    * New JS
+    * LSO Design
+    * Bugzilla
+    * Bug Management Guidelines
+    * RedHat Build for Client RPM
+    * Project Document Template
+    * COS_CLI_CHANGE_HISTORY
+    * Disk capacity utilization
+    * New Hire Ramp up - Here organize some old Maui design docs 
+
+[edit] Other reference
+
+    * MaaS_Load_Balance_And_Fail_Over
+    * Team tech share session
+    * Bugzilla extenstion
+    * SQL_Server_primary_data_lack_of_disk_space - reduce SQL server Express data size (4G limit) for VC server (10.32.109.36) use
+    * EBAY Internal Drive RAID Setting Recovery
+    * Mozy Installation Validation 
+
+[edit] Notes
+
+    * CS ATT add RMG issue
+    * CS Goldman 2nd RMG missing
+    * Faster get appliance from build machine use wget. (6 times faster than copy from nfs) 
+
+# wget https://tvg01.lss.emc.com/shared/<image_path> --no-check-certificate --http-user=cheny7 --http-password=<pwd>
+
+    * Build appliance example 
+
+ssh autobuild@tvg-build03.lss.emc.com (autobuild)
+# /nfs/shared/appliance-scripts/maui-appliance.sh -c /nfs/shared/appliance-scripts/<properties> full
+
+    * SVN merge - e.g merge installation branch to trunk 
+
+cd $MAUI (trunk)
+svn merge -r 23409:25282 https://tvg01.lss.emc.com/svn/maui/branches/atmos-1.2-installation/
+
+The above operation is mostly used. If have a big range for merge, svn is hard to do this. One good way is using direct version merge. If use below way merge, make sure the second branch contains all the changes which in the first branch.
+
+svn merge https://tvg01.lss.emc.com/svn/maui/trunk@37959  https://tvg01.lss.emc.com/svn/maui/branches/atmos-1.3-mgmtdb@37996 . 
+
+    * Access DELL Open Manager web GUI 
+
+# /etc/init.d/dsm_om_connsvc start
+# https://10.32.169.5:1311/
+
+    * Make output refine 
+
+export MAUI_MAKE_TERSE=1
+
+    * Branch merge information:
+          o 1.2.1-perf-mgmt: 30275, 31615
+          o 1.3-mgmtdb: 28137, 29346, 31636, 32126, 32221(32157,32210,32218 haven't been merged), 33740, 35083, 36730, 37307, 37781, 37867, 37959
+          o 1.3-pm_dist: 32983, 33757, 35218
+          o 1.3-gui: 28137
+          o 1.3-cybercluster
+                + source: 40604
+                + deps: 40605 
+    * Add GCC to appliance in order to build new packages: 
+
+conary update gcc=rap-emc.rpath.com@rpath:emc-production-2 --resolve --config "includeConfigFile http://rba-shanghai.corp.emc.com/conaryrc"
+
+    * Add pylint to devkit or appliance: 
+
+sudo conary update pylint --install-label contrib.rpath.org@rpl:1 --resolve
+
+    * Add valgrind to devkit or appliance: 
+
+conary update valgrind=adk.cap.emc.com@emc:adk-1.3-devel --resolve --config 'includeConfigFile http://rba-ma.lss.emc.com/conaryrc'
+
+    * Upgrade 1.3 devkit 
+
+conary erase cap-CLI cap-plugin rapa raa-lighttpd rapa-plugin-rPath rapa-plugin-flipflop
+conary migrate group-adk=adk.cap.emc.com@emc:adk-1.3-devel --interactive --keep-required --config 'includeConfigFile http://rba-ma.lss.emc.com/conaryrc'
+
+Retrieved from "http://tvg01.lss.emc.com/mediawiki/index.php/User:Chenj15"
+Category: Jason Chen
+Views
+
+    * User page
+    * Discussion
+    * Edit
+    * History
+    * Move
+    * Watch
+
+Personal tools
+
+    * Chenj15
+    * My talk
+    * My preferences
+    * My watchlist
+    * My contributions
+    * Log out
+
+Navigation
+
+    * Main Page
+    * Community portal
+    * Current events
+    * Recent changes
+    * Random page
+    * Help
+    * sitesupport
+
+Search
+ 
+Toolbox
+
+    * What links here
+    * Related changes
+    * User contributions
+    * Logs
+    * E-mail this user
+    * Upload file
+    * Special pages
+    * Printable version
+    * Permanent link
+
+Powered by MediaWiki
+
+    * This page was last modified on 18 October 2010, at 02:12.
+    * This page has been accessed 4,545 times.
+    * Privacy policy
+    * About TVG Wiki
+    * Disclaimers
+
 *** nidan
 
 思月思人 
@@ -6684,4 +7218,3 @@ build good relation with Rich
 
 
 
-11/30 att delete UID case - 0.5 hour

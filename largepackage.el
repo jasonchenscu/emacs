@@ -17,7 +17,6 @@
 ;; See cedet/common/cedet.info for configuration details.
 (load-file "~/myemacs/cedet-1.0pre6/common/cedet.el")
 
-
 ;; Enable EDE (Project Management) features
 (global-ede-mode 1)
 

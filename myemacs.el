@@ -1,10 +1,10 @@
 (load-file "~/myemacs/windowsonly.el") ;;这是我自己定义的两个elips文件,使用时将这两行注释掉即可
 (load-file "~/myemacs/essentialpackage.el")
-(load-file "~/myemacs/otherpackage.el")
-(load-file "~/myemacs/largepackage.el")
-(load-file "~/myemacs/programming.el")
-(load-file "~/myemacs/beta.el")
-(load-file "~/myemacs/personal.el")
+;;(load-file "~/myemacs/otherpackage.el")
+;;(load-file "~/myemacs/largepackage.el")
+;;(load-file "~/myemacs/programming.el")
+;;(load-file "~/myemacs/beta.el")
+;;(load-file "~/myemacs/personal.el")
 ;;(load-file "~/myemacs/seldom.el")
 ;;----------------------------------------------------------------------------
 (set-language-environment "Chinese-GB18030")
@@ -31,6 +31,9 @@
 (setq display-time-24hr-format t)
 (setq display-time-day-and-date t)
 (global-font-lock-mode t);语法高亮
+(tool-bar-mode -1) ;Hide toolbar
+;;(menu-bar-mode -1) ;;Hide menubar ;;denny
+;;(scroll-bar-mode -1) ;;hide scroll bar
 (show-paren-mode t);显示括号匹配
 (setq column-number-mode t) ;显示列号
 (set-fill-column 120)
@@ -43,7 +46,7 @@
 (global-set-key [C-tab] 'other-window)                    ; 切换窗口
 (global-set-key [M-return] 'delete-other-windows)         ; 关闭其他窗口
 (global-set-key [(meta g)] 'goto-line);;M-g跳到指定行
-(desktop-save-mode 1) ;;自动打开上次打开的文件
+;;(desktop-save-mode 1) ;;自动打开上次打开的文件
 (setq inhibit-startup-message t) ;;去掉启动欢迎界面
 (autoload 'thumbs "thumbs" "Preview images in a directory." t)
 (setq debug-on-error t);;enter debugger if an error is signaled
@@ -85,20 +88,19 @@
 ;;快捷键
 (global-set-key [f1] 'describe-function) ;;elisp函数说明
 
-(global-set-key (kbd "<f7>") 'compile)
-(global-set-key (kbd "<f8>") 'gdb)
-(global-set-key [C-f12] 'comment-or-uncomment-region)     ; 注释 / 取消注释
-(global-set-key [f12] 'c-indent-line-or-region); 格式化代码
+;;(global-set-key (kbd "<f7>") 'compile)
+;;(global-set-key (kbd "<f8>") 'gdb)
+;;(global-set-key [C-f12] 'comment-or-uncomment-region)     ; 注释 / 取消注释
+;;(global-set-key [f12] 'c-indent-line-or-region); 格式化代码
 ;;----------------------------------------------------------------------------
 ;;diary
-(global-set-key [f4] 'calendar)
+;;(global-set-key [f4] 'calendar)
 ;;(setq diary-file "~/myemacs/data/jason-todo.org")
 ;;----------------------------------------------------------------------------
 ;;折叠功能 hide and show code block
 ;;(add-hook 'c-mode-common-hook 'hs-minor-mode)
-(add-hook 'java-mode-hook 'hs-minor-mode)
 (add-hook 'python-mode-hook 'hs-minor-mode)
-(global-set-key (kbd "<f9>") 'hs-toggle-hiding)
+;;(global-set-key (kbd "<f9>") 'hs-toggle-hiding)
 ;;----------------------------------------------------------------------------
 ;; hippie-expand 的补全方式。它是一个优先列表， hippie-expand 会优先使用表最前面的函数来补全。
 (global-set-key [(meta ?/)] 'hippie-expand)
@@ -218,14 +220,14 @@ With argument, do this that many times."
     (if (string= curbuf buf) nil (kill-buffer buf))
     )
   )
-(global-set-keppy [(meta p)(k)] 'kill-other-buffers)
+;;(global-set-keppy [(meta p)(k)] 'kill-other-buffers)
 ;;----------------------------------------------------------------------------
 (define-key global-map  (kbd "M-p <return>")   'view-mode)
 ;;打开文件时,除少量文件外,其它都使用view-mode模式
 ;;(add-hook 'find-file-hook  'open-view-mode)
 (defun open-view-mode()
   (interactive)
-  (setq except-files '("jason-todo.org" ".bbdb" "tmp.txt"))
+  (setq except-files '("jason-todo.org" ))
   (if (not (member (buffer-name) except-files))
       (progn
        (message "view-mode-enable")
@@ -299,10 +301,6 @@ With argument, do this that many times."
     )
   )
 ;;----------------------------------------------------------------------------
-(defun filebat ()
-   (interactive)
-   (find-file "~/myemacs/data/filebat.txt")
- )
 (defun bank ()
    (interactive)
    (find-file "~/myemacs/data/filebat.ledger")
@@ -366,8 +364,8 @@ With argument, do this that many times."
   (push-mark beg t t))
 ;;----------------------------------------------------------------------------
 (display-time)
-(add-hook 'diary-hook 'appt-make-list)
-(diary 0)
+;;(add-hook 'diary-hook 'appt-make-list)
+;;(diary 0)
 (setq calendar-week-start-day 1)
 ;;----------------------------------------------------------------------------
 ;;regexp query and replace
@@ -405,3 +403,14 @@ With argument, do this that many times."
   (set-marker rend nil)		
   nil)
 ;;----------------------------------------------------------------------------
+;; truncate lines always
+(add-hook 'find-file-hook 'auto-truncate-lines)
+(defun auto-truncate-lines ()
+  (progn
+    (if (stringp mode-name)
+        (if (or (string= mode-name "Org"))
+            (toggle-truncate-lines -1)
+        )
+    )
+  )
+)

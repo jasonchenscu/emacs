@@ -11,5 +11,191 @@ Archived entries from file c:/Jason/ntemacs/ntemacs23/myemacs/data/jason-todo.or
   :ARCHIVE_TODO: TODO
   :ARCHIVE_ITAGS: WORK
   :END:
+* DONE test org
+  :PROPERTIES:
+  :ARCHIVE_TIME: 2010-03-21 Sun 17:41
+  :ARCHIVE_FILE: ~/myemacs/data/jason-todo.org
+  :ARCHIVE_OLPATH: temp
+  :ARCHIVE_CATEGORY: jason-todo
+  :ARCHIVE_TODO: TODO
+  :END:
+
+* Postgresql changes
+  :PROPERTIES:
+  :ARCHIVE_TIME: 2010-03-25 Thu 11:45
+  :ARCHIVE_FILE: ~/myemacs/data/jason-todo.org
+  :ARCHIVE_OLPATH: Project development/Atmos 1.4 cycle
+  :ARCHIVE_CATEGORY: jason-todo
+  :ARCHIVE_ITAGS: WORK
+  :END:
+** DONE initDB -  --no-locale --encoding=EUC_JP
+   CLOSED: [2010-02-12 Fri 10:15]
+
+* Postgresql changes
+  :PROPERTIES:
+  :ARCHIVE_TIME: 2010-03-25 Thu 11:46
+  :ARCHIVE_FILE: ~/myemacs/data/jason-todo.org
+  :ARCHIVE_OLPATH: Project development/Atmos 1.4 cycle
+  :ARCHIVE_CATEGORY: jason-todo
+  :ARCHIVE_ITAGS: WORK
+  :END:
+** DONE initDB -  --no-locale --encoding=EUC_JP
+   CLOSED: [2010-02-12 Fri 10:15]
+* VISION - Installation
+  :PROPERTIES:
+  :ARCHIVE_TIME: 2011-05-25 Wed 15:15
+  :ARCHIVE_FILE: ~/myemacs/data/jason-todo.org
+  :ARCHIVE_OLPATH: Project development
+  :ARCHIVE_CATEGORY: jason-todo
+  :ARCHIVE_ITAGS: WORK
+  :END:
+
+phase:
+
+- make big logic into small module. small module is easy to handle error handing and extend
+
+** Think about future configuration management proposal
+
+Currently there have three ways to configure some services:
+1. normal config in GUI
+2. recovery config during node replacement
+3. task reload to config snmp/smtp
+
+It's somehow hard and difficult for service config owner to know which way to handle the config and config recover. It's better to provide a unified way to manage service configuration include initial installation, post configuration and config recovery. 
+
+say if we store service configuration into different server category instead of combine with physical model (like site/cluster/node...), it will make configuration and recovery simpler to handle whether should config any service or not. 
+
+support_service {
+  service_name1,
+  service_name2,
+  ...
+}
+
+service_description {
+  name:
+  scope:
+  commands:
+  param1:
+  param2:
+  ...
+}
+
+then during installation/replace node/add new node, it will be very easy to decide what services should be configured in the node. It also become easier for other service developers to add a new service based on following configuration framework design.
+ 
+* Installtion collection
+  :PROPERTIES:
+  :ARCHIVE_TIME: 2011-05-25 Wed 15:16
+  :ARCHIVE_FILE: ~/myemacs/data/jason-todo.org
+  :ARCHIVE_OLPATH: Project development
+  :ARCHIVE_CATEGORY: jason-todo
+  :ARCHIVE_ITAGS: WORK
+  :END:
+** Switch configuration
+Refer to bug 5765
+
+Steps to perform switch configuration:
+
+Connect PC serial port to serial port of Allied Telesis switch (requires DB9 to RJ45 style serial cable).
+
+Login as 'manager' and password=friend.
+
+==== PromoCode1 or PromoCode5 Systems ====
+
+//Clear out settings
+set config=none
+restart reboot
+
+//When it reboots, login again and enter:
+create vlan=private vid=2
+create vlan=public vid=4
+add vlan=private port=1,3,5,7,9,11,13,15,17,19,21,23 frame=untagged
+add vlan=public port=2,4,6,8,10,12,14,16,18,20,22,24 frame=untagged
+disable igmpsnooping
+enable ip
+enable ip remote
+add ip int=vlan2 ip=dhcp
+enable snmp
+create snmp community=atmosCommunity open=on
+create config Atmos_PC1-PC5_0v02.cfg
+set config Atmos_PC1-PC5_0v02.cfg
+
+==== PromoCode3 Systems ====
+
+==Private Network Switch==
+//Clear out settings
+set config=none
+restart reboot
+
+//When it reboots, login again and enter:
+create vlan=private vid=2
+add vlan=private port=1-24 frame=untagged
+disable igmpsnooping
+enable ip
+enable ip remote
+add ip int=vlan2 ip=dhcp
+enable snmp
+create snmp community=atmosCommunity open=on
+create config Atmos_PC3private_0v02.cfg
+set config Atmos_PC3private_0v02.cfg
+
+==Public Network Switch==
+//Clear out settings
+set config=none
+restart reboot
+
+//When it reboots, login again and enter:
+create vlan=public vid=4
+add vlan=public port=1-24 frame=untagged
+disable igmpsnooping
+enable ip
+enable ip remote
+add ip int=vlan4 ip=dhcp
+enable snmp
+create snmp community=atmosCommunity open=on
+create config Atmos_PC3public_0v02.cfg
+set config Atmos_PC3public_0v02.cfg
+
+------------------------------- spliter -------------------------------
+
+add ip int=vlan103 ip=dhcp
+** Anaconda installation process
+
+*** work around for mkinitrd 
+
+use kernaltag-handler
+
+/usr/libexec/conary/tags/kernel
+
+* VISION - Database server/client
+  :PROPERTIES:
+  :ARCHIVE_TIME: 2011-05-25 Wed 15:17
+  :ARCHIVE_FILE: ~/myemacs/data/jason-todo.org
+  :ARCHIVE_OLPATH: Project development
+  :ARCHIVE_CATEGORY: jason-todo
+  :ARCHIVE_ITAGS: WORK
+  :END: 
+** For DB API layer
+1st phase: hide the db deployment details to the client application
+- separate application and database 
+- existing db api layer function routine
+- have sql in the functions. 
+- C++ and python may can share the same logic by using adapter, but need more investigation and tradeoff
+
+2nd phase: have some small object level abstraction
+- for new created object can have a try on the object modeling for the eventually object modeling of data store layer
+
+
+3rd phase: provide ORM layer for the data store access
+- hide db deployment details also to the db api layer but into db connection side
+- easy to change data store type to other... like memcache, file, etc.
+** For DB server layer
+- Replication: Slony
+- Connection pool: pgpool
+
+
+
+
+
+
 
 

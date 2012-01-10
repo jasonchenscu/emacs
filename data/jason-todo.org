@@ -13,11 +13,10 @@
 
 * Non-project related
 ** Daily TODO list
-*** TODO code review knowledge sharing
-*** TODO analyze magic number in the code
-*** TODO qpid related document on troubleshooting
-*** TODO slony summary slide
-*** TODO 
+*** TODO Well defined API interface
+*** DONE IDP draft and review with Yubo
+	 CLOSED: [2011-07-20 Wed 16:42]
+
 *** 2010-10-25 
 **** DONE event pending
 	 CLOSED: [2010-11-07 Sun 21:29]
@@ -35,7 +34,7 @@
 	 CLOSED: [2011-01-19 Wed 22:18]
 ** Time management
 ** My timechart 
-*** From 6-28 To 9-3
+*** From 6-28 To 9-3												:ARCHIVE:
 **** Detail tasks
 6-28
 # (50%) Slony DB: Integrated Slony with installation component
@@ -210,9 +209,6 @@ Vacation: 2.5 days
 # Sick leave: 1.5 days
 # Normal vacation: 1 day
 
-** Discuss with Hongbing
-<2010-09-09 17:06>
-
 ** Initialtive on effective daily work
 
 *** Effective meeting
@@ -330,6 +326,9 @@ mysql>exit
 (e.g. #memcached -d -m 1024 -u root -l 10.32.109.87 -p 11211)
 
 Shoud specify "localhost" in -l option.
+
+For 10.32.109.87 RB server, use below command to enable memcached
+#sudo memcached -d -m 1024 -u root -l localhost -p 11211
 
 **** Good review comment
 ***** In 4726 on how to get key and value from dict in python from Ming
@@ -672,18 +671,467 @@ Ming's Concall Number:
 •	China : 108007121940 or 108001201940 
 •	Profile # 63910727 
 
+Rulian's concall number:
+US Toll Free: 
+	888-643-3086	 
+US Toll:
+	720-221-4876	 
+
+China Toll Free:
+	10800-712-1940 (Netcom)
+	10800-120-1940 (Telecom)
+
+Russia Toll Free:
+	81080022411044
+Russia Toll:
+	84992722053	
+
+Profile number (i.e. meeting ID):
+	22440408
+Password: 11223344
+
 * Project development 												   :WORK:
-** SKT 
+** L4 escalation
+*** Process improvement initiative thoughts
+**** Training
+**** Customer case update in dev team
+**** QA collaboration
+
+*** L4 case number since 2011-05-24 [16/16]
+**** DONE 17061 - Jason - eBay
+	 CLOSED: [2011-06-16 Thu 15:03]
+**** DONE 16731 - Eric - Video Time Spa Eric (Chen)
+	 CLOSED: [2011-06-16 Thu 15:03]
+**** DONE 16823 - Yi/John - SKT (Ritesh/John)
+	 CLOSED: [2011-06-16 Thu 15:03]
+**** DONE 16539 - John - Goldman Sachs (Rossen)
+	 CLOSED: [2011-06-16 Thu 15:03]
+**** DONE 16897 - John - ATT
+	 CLOSED: [2011-06-16 Thu 15:03]
+**** DONE 16896 - John - CSC Data Centre
+	 CLOSED: [2011-06-16 Thu 15:03]
+**** DONE 16874 - Shripad->John - TeraGate A (Ritesh/Huapeng)
+	 CLOSED: [2011-06-16 Thu 15:03]
+**** DONE 16708 - Stan - BI
+	 CLOSED: [2011-06-16 Thu 15:03]
+**** DONE 16841 - Steve/Jason/Shripad - CSC STorage as a Service
+	 CLOSED: [2011-06-16 Thu 15:03]
+**** DONE 16933 - Bo - eBay
+	 CLOSED: [2011-06-16 Thu 15:03]
+**** DONE 16950 - Bo/John - do I need to reassign to China L4?
+	 CLOSED: [2011-06-16 Thu 15:03]
+**** DONE 16959 - Yi
+	 CLOSED: [2011-06-16 Thu 15:03]
+**** DONE 16882 - Jason
+	 CLOSED: [2011-06-16 Thu 15:03]
+**** DONE 16943 - John - DUP to 16303
+	 CLOSED: [2011-05-27 Fri 10:33]
+**** DONE 16826 - Jason - BI (Ming)
+	 CLOSED: [2011-05-26 Thu 10:02]
+***** Beth Israel 
+***** 2011-05-24 BZ 16826, 16822, 16708, 16373
+
+***** Disable SS/MDS in kickstart
+
+Add below lines into /mnt/export/kickstarts/kickstart
+
+#For disable SS/MDS of node cumulus-006, we need to change the SS/MDS binaries.
+echo "`date`: Move SS and MDS binaries"
+chroot $OS_ROOT /bin/mv $MAUI_HOME/bin/mauiss $MAUI_HOME/bin/mauiss.bak
+chroot $OS_ROOT /bin/mv $MAUI_HOME/bin/mds $MAUI_HOME/bin/mds.bak
+
+***** FIX spread issue on node cumulus-006
+
+/usr/bin/sqlite3 -init /usr/local/maui/etc/mgmt/ses_db_create.sql /var/local/maui/sysmgmtdb/ses_db << EOF
+
+mv /sbin/fdisk /sbin/fdisk.bak
+mv /sbin/mkfs.ext3 /sbin/mkfs.ext3.bak
+
+psql -U postgres -hcumulus-001 rmg.db
+
+select id, nodeuuid, status from disks where nodeuuid='44454C4C-3000-1043-804B-CAC04F504A31';
+
+mauiconfig -f /etc/maui/node.cfg --config-spread
+
+ses -f /var/local/maui/sysmgmtdb/ses_db
+
+Fix "Services fields" of node.cfg in node cumulus-003, cumulus-004, cumulus-005, cumulus-007, cumulus-008, nimbostratus-008, nimbostratus-007, nimbostratus-003, nimbostratus-005
+
+# Services=CLIENT,CLAAS,WS,CC,JS,SSPROXY,RMS,SPREAD,MDS,SS
+
+Fix "services" field of nodecfgs table in system DB of records include node cumulus-003, cumulus-004, cumulus-005, cumulus-006, cumulus-007, cumulus-008, nimbostratus-003, nimbostratus-004, nimbostratus-005, nimbostratus-006, nimbostratus-007, nimbostratus-008
+
+Fix spread configuration (/etc/eventservice/es.location) in node cumulus-004, cumulus-007, cumulus-008
+
+Add SSPROXY service in node nimbostratus-002, nimbostratus-001, cumulus-001, cumulus-002 of node.cfg and nodecfgs table
+
+Start ssproxy service on node nimbostratus-004 and cumulus-006
 
 
-No real test on hardware LCD amber... No test cases...
 
-IPMI configuration.
+***** Follow up on L3 xDoctor and QA test cases
+**** DONE 16856 - Jason - iStockphoto (Ming)
+	 CLOSED: [2011-05-25 Wed 14:14]
 
 
-SKT expect automatic failover when master node is down.
+***** BI action item
+
+Create one bug to track the BI issue.
+
+*** L4 metrics discussion
+From: fiske, ru-Lian 
+Sent: Friday, July 01, 2011 10:34 AM
+To: Atmos L4 Theater Leads; Schmaelzle, Matt
+Subject: Captures of our discussion tonight
+
+
+1. We will review the L4 escalation bugzilla template that Rulian emailed out earlier today off line. Everyone should review it and mark up the doc with your comments/input, by COB next Wednesday EDT, 7/6. We will finalize it at our next week's meeting.
+
+2. Discussion on how to leverage the weekly report Matt produces.
+
+We want to be able to generate L4 metrics using the information. Ideas on the metrics:
+
+•	How many cases were first escalated into China and into US
+•	How many cases require developer resources outside of L4
+•	Average time for resolving the case in L4
+•	How many internal product bugs were generated from the escalations - should add this to the report; but how to track? Need cross-ref.
+•	How many test cases should be added (part of RCA, how did the bug escape to field) - Jason will send list of L4 escalation cases to QA on a weekly basis;
+•	Top areas of escalation;
+•	KB, contribution to Primus, scripts/procedures/tools (how to track/measure)
+•	Trainings provided to L2 and L3;
+
+Rulian will discuss with Matt next week to see how we can get started on this.
+
+3. Need to review the L4 guidelines on the wiki - Jason will send out the link.
+
+*** ESRS connect steps
+
+Connectivity into the is system is ESRS. Here are the connection steps:
+
+ESRS Gateway is passing requests through. Remote Support will need to manually
+connect to the Atmos with the following directions:
+
+1) Navigate to: https://esrs.emc.com/portal/ 
+2) Select "Manage Clusters" from the Device Management section in the lower
+left hand side of the page
+3) Search using the either Device or Party Number: In this case search by device ID:  CFL90111949132
+4) Select the Gateway
+5) Click on the device you wish to access
+6) On the right hand side of the page click on whichever session type you want
+(AtmosWebUI or CLIviaSSH)
+Devices will be seen automatically by RCC on the next install base query.
+
+*** Experiences learning
+**** Dealing with DL case and ext3 recover tool.
+
+Ming and Jason,
+
+Let me try to wade in here and take a step back.
+
+The lazarus tool that Matt created is actually a pretty small part of the overall process – Ming, as you say:
+
+“running the tool is just one small step in the whole process, we need preparation before running the tool, need to do post analysis on the data it produces. How to tell which one is possible candidate? How to do further analysis and validation? All these are not clear in the current action plan.”
+
+The preparation before running the tool is outlined by Matt below.  The best solution is to remove the affected disk(s) from the customer system and bring them into Cambridge for analysis.  That way performance impact during the scans/recovery are not an issue, and we can afford to make multiple passes without impact to foreground work.  Is this feasible in this case?  Can you remove the affected disks and do the recovery outside the system?  If not, the care that needs to be taken is 1) recover data onto another drive with spare capacity 2) run at a time when performance impact to other activity on the system is limited.  The tool will use significant amounts of system RAM will working and will consume disk space proportional to the amount of data recovered (so potentially as big as the physical size of the disk being recovered).
+
+The post-analysis on the data produced is the complicated step, and in that vein Matt really isn’t the expert.  In order to take the 1000s or 10s of thousands of anonymous data chunks that lazarus will produce and match them back up to customer objects is data-, configuration- and customer-dependent. What we did at A1 Telekom is take advantage of the fact that we knew that 50%-80% of the data to be recovered was JPEG files with known watermark and roughly-known structure to narrow the search space.  We also knew that almost all data on the formatted drives was data we wanted to recover – not newly-written customer data, or existing (undamaged) customer data.
+
+At the end of the day, the key problem is how to take a blob of anonymous data and match it with a filename/object-id that is known to the system.  At A1, we were counting on customer-created and customer-maintained checksums to accomplish this matching.  Since ultimately they only had checksums for a subset of their damaged objects, the ultimately resulting success rate was very low.
+
+If there are no checksums present, the only thing left is the size of the object before it was damaged.  If this matches or near-matches the size of an anonymous data blob, then there is a reasonable chance that the blob is the missing data object.  If there are multiple matches or inexact matches, all bets are off.
+
+This means that “which one is possible candidate?” and “How to do further analysis and validation?” are the key questions for the recovery team.  Neither Matt nor I have any special insight here and the lazarus tool will not shed much light.  In fact, when looking for a very small number of objects on a much-used filesystem, the chance is lazarus will create much much more noise (hay) than signal (needle).
+
+A suggestion of concrete next steps based on the A1 experience:
+
+- remove affected drives from system and send to Cambridge
+- (assuming this isn’t possible, then)
+- create a list of still-good blobs on the drives (find -ls) and checksum (md5sum) on the live filesystems of all affected disks
+- run lazarus against one or two of the affected drives, create a list of blob sizes (find -ls) and checksums (md5sum) of the recovered data
+- remove all blobs on the still-good list from the lazarus list
+- create a list of all available MDS metadata for the objects you are looking for
+- (see if customer has checksums for the missing objects, or any objects for that matter)
+- compare the sizes and file types known from MDS with the remaining not-still-good list from lazarus list
+- hope for a small number of potential matches (or customer checksums)
+
+I hope that this and the detailed answers Matt provided below about lazarus (NULL-termination problem, potential performance impact, don’t run on live filesystem, difficulty with fragmented files, ….) help you make progress.
+
+Jason, I think I touched all your questions as well except “what is current criteria to use ext3-level data recovery in the case of DL?”
+
+I think the best answer to this is “it depends on the situation”, some considerations:
+
+-	How much does the customer care about the data that is lost? (the higher the caring, the higher the desire to try forensic recovery)
+-	Do they have application-level checksums for the lost data? (if yes, the chance of ultimate success is much higher)
+-	How long after the damage action (formatting, etc.) did new objection writes and creates continue? (the longer, the worse for the recovery)
+-	What fraction of the data on the affected drives needs to be recovered? (this has a varying impact; lots of “noise” data – bytes that aren’t to be recovered and aren’t “live” anymore will negatively impact recovery success; recovering a few objects from a little-written drive is best; but large amounts of well-structured or well-understood (checksums, sizes, matches with known-good data) bytes can be just as successful in principle.  So again “it varies”)
+-	How much is known about the lost data? (checksums best, known structure good (JPEG, MPEG), highly varying sizes good – worst is fixed size data chunks of unknown provenance/format)
+
+Those are what come to mind on short notice, but basically “it depends”. As Matt notes at one point below, we really need to figure out ways to keep ourselves out of this situation.  Within the AD team, we are using the lessons of A1 to prototype and organize some proposals around additional checksums and modifications to our on-disk structures to make recovery like this more likely to succeed in the future, but those won’t roll out until future releases, obviously won’t help the current customers.
+
+Cheers,
+
+Erik
+
+
+Hi Matt, Erik, 
+
+Firstly I would like to thank you for your involvement and efforts on this case. During the follow up and these two days progress of this case, I have some questions and concerns on the current planning about ext3-level data recovery. 
+
+1.	Regarding to the nice tool developed by Matt, what testing you have done for this handy tool? Is there any side effect or impact to existing data on the disk? I’m just trying to understand what the risk is on this new power tool to the customer production system. 
+2.	After we run the tool and get a very big list of files with file size from those 12 SS disks, what is the next step plan to recover the object? If there have a few recovered objects with the same size we need to recover, how we handle this case? Do we need to ask customer to double check with their customers for every object? 
+
+With above questions answered, we might have a better view on the risk estimation and how many engineering efforts we need to spend on this case. These information are also useful for CS to set customer expectations of those 8 objects recovery. 
+
+Back to this case data recovery, if we all agree this should be the actions we will do next, I would strongly suggest Matt can help to start at least the first disk recovery. L4 engineer will learn Matt and do all the rest disks recovery. Is this possible? 
+
+Moving forward on the general ext3-level data recovery, what is current criteria to use ext3-level data recovery in the case of DL? It’s always the trade-off and balance we need to consider on “try our best to recover from every level” and “engineering efforts”. I’m not sure whether it’s realist to us on spending these efforts for every DL object. What do you think? 
+
+Btw, during Bo’s local testing of the tool (lazarus), we found there have a inconsistency of recovery object size with the original file size. In our testing, we have put one binary file (/usr/local/maui/bin/mauiss) in Atmos, the file size is 10029960. Then we have formatted the disk and try the tool to recover from ext3 level. After the recovery, the new size is 10029959 which is smaller than the original size. Below is the detail. Is this the expect behavior or we need to add the null padding to the new recovered file. 
+
+[root@141UP-r1s1-001 recovery_drive]# find . -type f|xargs ls -l
+-rw-r--r-- 1 root root 134217726 2011-10-14 06:31 ./025/000000001045
+-rw-r--r-- 1 root root  10029959 2011-10-14 06:31 ./192/000000829452    Recovered object size
+-rw-r--r-- 1 root root       216 2011-10-14 06:31 ./indirect.lst
+-rw-r--r-- 1 root root    999103 2011-10-14 06:31 ./recover.log
+[root@141UP-r1s1-001 recovery_drive]# ll /usr/local/maui/bin/mauiss
+-rwxr-xr-x 1 root root 10029960 2011-01-23 16:45 /usr/local/maui/bin/mauiss   Original object size
+
+Thanks,
+Jason
+
+**** Check whether disk is OK or not
+Double check xDr whether has disk check status check to make sure it enables. sometimes node replacement will enable 
+
+Here is the steps on how to identify the bad disk on node vpatmos306-002: 
+
+1. Since there have two disks (sdaw and sdax) with the same device serial NO, there should have one bad disk between these two disks. The idea is to beacon on four disks and there should have ONLY three disks are beacon on (amber light). Then remove the bad disk which doesn't show beacon light.
+
+Case1: sdaw cannot beacon on. Remove sdaw from DAE. 
+
+  sdav   sdaw   sdax   sday
+   OK     XX     OK     OK
+
+Case2: sdax cannot beacon on. Remove sdax from DAE. 
+
+  sdav   sdaw   sdax   sday
+   OK     OK     XX     OK
+
+2. Commands need to run to beacon the 4 disks: 
+
+# ses --database=/var/local/maui/sysmgmtdb/ses_db --beacon=blink --daeuuid='ab6b61d6-274a-409f-8ae3-98171f8089dc' --slot=10
+
+
+** Troubleshooting Atmos tips
+*** Disk mgmt related
+
+cat tunereport | grep created | cut -c31-37,47-50 | sort | uniq -c
+cat smartreport | egrep "Model|health" | sort | uniq -c
+
+mkdir eriklogs
+pushd eriklogs
+mauirexec "ls /dev/sd*1 | xargs -L 1 tune2fs -l" > tunereport
+mauirexec "df" > dfreport
+mauirexec "cat /proc/scsi/scsi" > scsireport
+mauirexec "ls -l /dev/disk/by-id" > idreport
+mauirexec "cat /var/log/maui/alert.log" > alertreport
+mauirexec "cat /var/log/maui/ses.log" > sesreport
+mauirexec "cat /var/log/maui/cc.log" > ccreport
+mauirexec "cat /var/log/maui/js.log" > jsreport
+mauirexec "cat /var/log/maui/manualRecover.log" > manualreport
+mauirexec "ls /var/log" > logreport
+mauirexec "ls /etc/maui/batch/* | xargs -t -L 1 cat" > policyreport
+mauirexec "ls /dev/sg* | xargs -L 1 smartctl --all" > smartreport
+mauirexec "cat /var/log/messages" > messagesreport
+mauirexec "cat ~/.bash_history" > historyreport
+popd
+tar cvf - eriklogs | bzip2 > eriklogs-date.tbz2
+
+
+*** grep maui objID in MDS transaction logs.
+You should use 'db_printlog' to convert txn log first. Otherwise, even you find the obj id in the raw txn log, you don't know what it means (object create, update, deletion or namespace change etc).
+
+For example, you want to check log.0000000001. You should run 'db_printlog -b 1/0 -e 2/0 > <location you want to store the output>'. "-b 1/0" means starting from log file 1, offset 0. "-e 2/0" means ending at log file 2, offset 0.
+
+After you dump the log with db_printlog, could try to use script similar to https://tvg01.lss.emc.com/svn/maui/trunk/src/common/tools/recover/extract_md_log.py to extract info you want to get.
+
+
+** Command Atmos mgmt command
+cossetup -u SecurityAdmin -p '#1Passwd' --userpass '#1Passwd' --userinfo n --local
+cosuser -u SecurityAdmin -p '#1Passwd' -c --userid MauiAdmin --userpass 'password' --local
+cossysadmin -u SecurityAdmin -p '#1Passwd' -a --userid MauiAdmin --authtype local --local
+
+ssh_do 10.32.182.197 'cosrmg -u MauiAdmin_pit -p '\''password'\'' --local         -a --rmgname '\''trunk4-r1'\'' --rmgloc '\''Boston'\'' --transtype unicast         --enablesmtp n --userpass '\''ChangeMe'\''         --host 10.32.182.197 --startip 10.32.182.197 --endip 10.32.182.198         --gateway 10.32.180.1 --subnetmask 255.255.252.0         --hostprefix '\''trunk4-r1s1'\'' --dnsserver 10.32.97.148         --dnssuffix lss.emc.com --ntpserver external --ntpaddress 10.32.72.28 --ssmode manual         --diskratio '\''1:4'\'' --sspattern '\''default_pattern'\''         --placement '\''optimal,optimal'\'' --acttype '\''n,c'\'' --plattype 0'
+
+# Create tenant/tenantadmin/subtenant/UID list
+cosuser -u MauiAdmin_pit -p 'password' -c --userid t1a --userpass 'password' --local
+costenant -c --name t1 --authtype local -u MauiAdmin_pit -p password --local
+costenantadmin -a --userid t1a --tenid t1 -u MauiAdmin_pit -p 'password' --local
+cossubtenant -c --name st1 --authtype local -u t1a -p 'password' -t t1
+cosuid -c --name uid1 --subtenid st1 --email a@b.com -u t1a -p 'password' -t t1
+
+
+** Data recovery collection
+
+*** BZ 17691 - recover object path from SS mapping DB when metadata lost.
+
+1. Copy two scripts (ss_get_oid.py and osd2path_v1.py) to the first nodes /root directory from below location:
+   ss_get_oid.py: https://tvg01.lss.emc.com/svn/maui/trunk/src/common/tools/recover/ss_get_oid.py
+   osd2path_v1.py: https://tvg01.lss.emc.com/svn/maui/trunk/src/common/tools/recover/osd2path_v1.py
+   
+2. Copy two scripts to all nodes /root directory.
+   # mauiscp ss_get_oid.py /root
+   # mauiscp osd2path_v1.py /root
+
+3. Copy object ID into a file and copy to all nodes /root directory
+   # echo "4bc4f1a2a1f1120a04bc4f518af98804c3c347c8a615" > /root/bohica.txt
+   # mauiscp /root/bohica.txt /root
+
+4. Do SS checkpoint in all nodes
+   # mauirexec "mauisvcmgr -s mauiss -c do_checkpoint"
+
+5. Check SS mapping DB size. If any node SS mapping DB size is larger than 20 GB, contact engineer. 
+   # mauirexec "du -h /mauiss-db/ssbdb/mid.db"
+
+6. Copy SS mapping DB to /root directory
+   # mauirexec "cp /mauiss-db/ssbdb/mid.db /root"
+
+7. Get OSD ID from object ID in all nodes
+   # mauirexec "python ss_get_oid.py mid.db bohica.txt | tee -a /root/snafu.txt"
+   
+   Expected output should contain below similar information in one or more nodes:
+
+   # Output from host : <HOST_NAME>
+   # ('4bc4f1a2a1f1120a04bc4f518af98804c3c347c8a615', '1', '1', ['<OSD_ID>'])
+   # Closing db and exiting   
+
+8. Get OSD ID disk index and path name from target HOST_NAME
+   # ssh <HOST_NAME> "python osd2path_v1.py <OSD_ID>"
+
+   Expected output should contain below similar information in one or more nodes:
+   # Disk_id = <DISK_ID>
+   # <PATH_ID>
+
+9. Get final object data path from target HOST_NAME disk index
+   # ssh <HOST_NAME> "ls /mauiss-disks/ss*/<PATH_ID>*"
+   
+   The command output will be data path. This should be the final data customer requires. 
+
+If any command fails, please contact engineer. 
+
 
 ** Sustaining
+*** QA metrics devel environment setup
+**** Server deployment information details 
+Server: 10.32.171.181
+OS: RHEL 5.0
+
+Necessary packages: 
+- mysql-5.0.45-7.el5.x86_64.rpm
+- mysql-devel-5.0.45-7.el5.x86_64.rpm
+- mysql-ruby-2.8.1.tar.gz
+- rubygems-1.3.1.tgz
+- ruby-mysql-0.2.6.tar.gz
+- ruby-1.9-stable.tar.gz
+
+Gem list: 
+- mysql2 (0.3.2, 0.2.7)
+- ruby-mysql (2.9.4)
+
+Server package: 
+- qametrics_server_20110509.tgz to location /opt/sustaining_metrics
+
+Client package:
+- qametrics_client_20110509.tgz to location /opt/lampp/htdocs/metrics
+
+How to start server side:
+- Go to /opt/sustaining_metrics
+- ruby script/rails server -d
+
+How to start client side:
+- /opt/lampp/lampp start
+
+Configuration changes after create a new Rails project:
+1. File /opt/sustaining_metrics/config/routes.rb
+   uncomment line: 57 match ':controller(/:action(/:id(.:format)))'
+2. File /opt/sustaining_metrics/config/database.yml
+   overwrite with new mysql connection information details
+3. Dir /opt/sustaining_metrics/app
+   overwrite with https://tvg01.lss.emc.com/svn/mauitools/trunk/QA/QA_metrics/rails-3.0.3/app
+
+**** Steps to add one chart in sustaining metrics
+Login to the system as your user account (cheny7)
+- Update on client side
+  - Modify pods.xml in dir /opt/lampp/htdocs/metrics/data
+  - Add new pod panel in the bottom with view 'sustaining', modify the data source to the proper REST link of server side
+
+- Update on server side
+  - Modify sustaining_controller.rb in dir /opt/sustaining_metrics/app/controllers
+  - Add new action in the controller (e.g. assignment)
+
+**** Requirement draft after discuss with Rulian
+1. Metrics of most interest to upper mgmt:
+• Total # of backlog bugs by week; (ideally, we want to be able to drill down into the bugs by component; by severity; by release found in, etc.);
+• # of backlog bugs added by week;
+• # of sustaining bus resolved per week
+
+2. Metrics that helps driving the bugzilla scrubbing effort:
+• Total # of backlog bugs by week;
+• Total # of backlog bugs tagged with sustaining keyword by week;
+• Total # of backlog bugs reviewed by week;
+
+3. Metrics that shows sustaining project team member status:
+• Bug assignment status by sustaining team member (can drill down into status by geography location)
+• Bug resolved status by sustaining team member (can drill down into status by geography location)
+ 
+4. Metrics that shows sustaining focus by component:
+• Bug assignment status by component
+• Bug resolved status by component
+ 
+5. Metrics that shows incoming bugs trend, by component
+• All new open bugs with GA version by component
+
+**** Useful information for bugzilla object model
+mysql -h 10.32.72.48 -ubugs -ptvgsql bugs
+
+
+*** Sustaining roadmap
+
+
+**** Backlog trend / sustaining metrics
+
+
+
+**** Bug analysis and summary
+
+Shared to the team on the bug summary
+
+ 
+**** Training / Knowledge base
+
+
+
+**** Team wide initiative
+
+
+
+
+
+*** list of todo-items
+**** DONE Discuss with Steven about sustaining hardware/VM resources
+	 CLOSED: [2011-03-25 Fri 11:39]
+**** DONE Discuss with Rulian about Yi's regular talk
+	 CLOSED: [2011-03-25 Fri 11:39]
+**** DONE Discuss with Rulian about team member goals not too aggressive
+	 CLOSED: [2011-03-25 Fri 11:40]
+**** TODO Avoid regression issue - setup full cycle test, refine test guideline
+**** TODO About kona release improvement thoughts
+**** TODO About lab machine lable
+**** TODO About bugzilla update and email discussion, make sure to put all email discussion on the bugzilla
+
+*** Team achievement
+
+*** Team issues
+3 regression issues (Mar. 25th)
 
 *** General issues during bug review
 1. GUI concurrent issue. GUI doesn't have any lock mechanism during perform some operations which might mess the configuration file
@@ -691,14 +1139,8 @@ SKT expect automatic failover when master node is down.
 3. No follow up.
 4. Give good information on what is the issue, how to reproduce the issue, 
 
-   
-
-*** Questions discuss with Rulian
-1. If the new fix require big effort but very useful to customer, do we need to cover it or discuss with all other managers to prioritize the tasks?
-2. 
-
+**** TODO Metrics collection
 *** NTP related discussion
-
 
 ATT and French Telecom require backup NTP server
 
@@ -709,8 +1151,8 @@ Can we define different level stratum for internal NTP servers?
 Next step we will summarize the issue and see what the next step is. 
 
 
-
-**** TODO Ask Anne about NTP requirement document
+**** CANCELED Ask Anne about NTP requirement document
+	 CLOSED: [2011-03-05 Sat 10:13]
 
 **** TODO Confirm with Rulian whether we need to ask QA/CS for their feedbacks on the bug fix suggestion and their pain points.
 **** DONE Bo on NTP issue
@@ -718,13 +1160,40 @@ Next step we will summarize the issue and see what the next step is.
 	 
 **** TODO Think about communicate (concall) with QA/CS/L3/L4, weekly or bi-weekly review?
 
-**** TODO Add bugzilla custom search to include sustaining related bugs 
+**** DONE Add bugzilla custom search to include sustaining related bugs 
+	 CLOSED: [2011-03-05 Sat 10:13]
 
-**** TODO Add wiki page FAQ about code review and fix branch process 
+**** DONE Add wiki page FAQ about code review and fix branch process 
+	 CLOSED: [2011-03-05 Sat 10:13]
 
-*** Bugzilla extension example
+** SYR discussion
+2011-06-16
 
+SYR discussion
 
+Centera 
+
+product behavior in the field. Know the product early than Customer notice. come from Symmetrix. Callback system. Service ticket will be automatically generated for specific problem. Dailing back EMC. all information kept in database. look the system overtime on what is look and how they are used. analyze behavior. 
+
+we can detect 
+
+how to use SYR effectively? every time alert in SYR will generate ticket and CE will check that. health report to check history of system. 
+
+how is product is used in the field? 
+
+in Atmos, as much as possible to put configuration in health report. 
+
+not temperory situation, and report some critical alerts.
+
+all events are in the atmos 1.4 guide. set down with support folks and determine which kind of alerts can be sent through CS based on dell trap. map dell trap code 1 to 1 to symcode.
+
+Need to review with CS people. 
+
+no mechanism for python. only through CM piece currently. need a wrapper for python.
+
+a bouch xml file to , create new xml file . symcode is as err code (hex value). 
+
+multiple handler to call SYR. 
 
 
 ** Qpid prototype
@@ -759,31 +1228,16 @@ Qpid mgmt tools usage: https://cwiki.apache.org/qpid/mgmtc.html
 
 *** Prototype commands
 
-
-
 *** Random notes when reading amqp spec 0-10
 
 We use the term subscription to mean the entity that controls how a specific client application receives messages from a message queue.
 
 client only receive message from message queue but not from exchange or route
 
-** Command Atmos mgmt command
-cossetup -u SecurityAdmin -p '#1Passwd' --userpass '#1Passwd' --userinfo n --local
-cosuser -u SecurityAdmin -p '#1Passwd' -c --userid MauiAdmin --userpass 'password' --local
-cossysadmin -u SecurityAdmin -p '#1Passwd' -a --userid MauiAdmin --authtype local --local
-
-ssh_do 10.32.182.197 'cosrmg -u MauiAdmin_pit -p '\''password'\'' --local         -a --rmgname '\''trunk4-r1'\'' --rmgloc '\''Boston'\'' --transtype unicast         --enablesmtp n --userpass '\''ChangeMe'\''         --host 10.32.182.197 --startip 10.32.182.197 --endip 10.32.182.198         --gateway 10.32.180.1 --subnetmask 255.255.252.0         --hostprefix '\''trunk4-r1s1'\'' --dnsserver 10.32.97.148         --dnssuffix lss.emc.com --ntpserver external --ntpaddress 10.32.72.28 --ssmode manual         --diskratio '\''1:4'\'' --sspattern '\''default_pattern'\''         --placement '\''optimal,optimal'\'' --acttype '\''n,c'\'' --plattype 0'
-
-
-cosuser -u MauiAdmin_pit -p 'password' -c --userid t1a --userpass 'password' --local
-costenant -c --name t1 --authtype local -u MauiAdmin_pit -p password --local
-costenantadmin -a --userid t1a --tenid t1 -u MauiAdmin_pit -p 'password' --local
-cossubtenant -c --name st1 --authtype local -u t1a -p 'password' -t t1
-cosuid -c --name uid1 --subtenid st1 --email a@b.com -u t1a -p 'password' -t t1
-
-** TODOLIST [22/24]
+** TODOLIST [23/24]
 *** INPROGRESS Prepare code review sharing session
-*** TODO Think about how to summarize slony work to Rich
+*** CANCELED Think about how to summarize slony work to Rich
+	 CLOSED: [2011-03-05 Sat 10:13]
 *** DONE Send out email about response to review comment
 	 CLOSED: [2010-11-07 Sun 21:29]
 *** DONE Update slony wiki page on node replacement testing negative cases
@@ -829,20 +1283,1059 @@ cosuid -c --name uid1 --subtenid st1 --email a@b.com -u t1a -p 'password' -t t1
 	 CLOSED: [2010-04-21 Wed 13:52]
 *** DONE Add a patch to change mongrel session config to memory store
 	 CLOSED: [2010-04-07 Wed 16:23]
-** Atmos 1.5 cycle
-*** Disk management
-**** Learning existing design
-***** Questions
-1. When in "partition status", why change to "new" when received remove or ioerr event.
-2. 
+** SKT 
+No real test on hardware LCD amber... No test cases...
+IPMI configuration.
+SKT expect automatic failover when master node is down.
 
-Issues:
+*** SKT configure channel bonding commands
+atmosnetmgr add bond nics=eth1,eth2 mode=1 miimon=100
 
-1. should not set task status during CmDiskStage::waitAddDiskCb
-2. 
+** Atmos IMPROVEMENT areas
+*** Cluster Task module redesign - sync framework
+Design consideration:
+1. K.I.S.S
+2. Think more in a large scale
+**** learn from celery about a distributed task framework design
 
-** Atmos 1.4 cycle
-*** Slony replication for postgres
+AMQP model:
+- Message Broker
+- Client subscriber
+- Publisher
+
+how to decouple task execute engine and detail task command ?
+if there has any relations between tasks, should these task be *divided* into several small tasks?
+
+*** Pylib document and standard refine
+If we want to have a common library for others to use, we should improve following areas:
+- Clear design on pylib architecture and function category
+- Have a common standard convention to enhance and maintain pylib source code, easy to maintain and extend
+- Good document to find out API easily (sphinix?)
+- Have owner to review all codes related to pylib
+
+*** DB related
+**** db connection timeout for C++ and python
+From Yubo:
+
+Sounds good.
+
+_____________________________________________
+From: Chen, Jason (CIG) 
+Sent: Tuesday, April 13, 2010 10:57 AM
+To: Yin, Caihua; Zhao, Yubo
+Subject: RE: The way to set connection timeout for C and python library
+
+
+From my understanding, postgresql C library doesn’t provide this kind of capability from its document. 
+
+For GUI, we all depends on ActiveRecords to handle db connection and execution. We need to dig into its implementation to check whether we can handle timeout during sql execution time. Currently when GUI access DB each time, db connection interface will have a try on update db records to check whether it can be accessible.
+
+For CM, I agree with Caihua, we need to handle this log in an upper level. This can reduce the issue happen frequency rate but not totally solve it. Another improvement is use transactions for some time consuming job to ensure data consistency. Till now we don’t have much trouble on this side but it’s one area we need to improve. We will put this one into db improvement roadmap and consider after we finish existing slony things. 
+
+Thanks,
+Jason
+_____________________________________________
+From: Yin, Caihua 
+Sent: Tuesday, April 13, 2010 9:09 AM
+To: Zhao, Yubo; Chen, Jason (CIG)
+Subject: RE: The way to set connection timeout for C and python library
+
+
+Rummage this topic via Google, but don't get any useful information. Jason, do you have any idea about this?
+
+As I think, for both GUI and CM, we can avoid long held connection at application level. Take log collection for example, let's assume a time consuming job which need access db during its execution, we can change the application flow as follows reduce the hang rate:
+….
+Connect db
+Time consuming job
+Operation on db
+Close db
+...
+	|
+	|
+           V
+….
+Time consuming job
+Connect db
+Operation on db
+Close db
+…
+
+However, it's just an alternative way to bypass this issue. It will be better if we can solve it on db side.
+
+_____________________________________________ 
+From: 	Zhao, Yubo  
+Sent:	2010年4月12日 19:55
+To:	Yin, Caihua; Chen, Jason (CIG)
+Subject:	RE: RE: The way to set connection timeout for C and python library
+
+I assume this problem exists for GUI and CM as well.
+It’s not a blocking issue for now, but it will be great if we can decrease the timeout value to less one minutes. For example, in GUI, if the DB get down in the middle of log collection, it will like hang there, which is not user friendly. Not sure whether there is any place to configure this value, did you find there are similar issue reports on internet?
+
+_____________________________________________
+From: Yin, Caihua 
+Sent: Monday, April 12, 2010 5:25 PM
+To: Zhao, Yubo; Chen, Jason (CIG)
+Subject: RE: The way to set connection timeout for C and python library
+
+
+
+Late follow up.
+
+For the case that connection is established successfully and then node is down or network is disconnected, we still met the hang issue during the process of transaction( For python library, it will hang for around 15 minutes. ) 
+
+Since currently we don't have any long held connections for daemon applications, this case may rarely happen. Therefore, I think we can simply keep this issue in mind and just add the timeout logic for connection operation. What's your opinion?
+
+-----Original Message-----
+From: Yin, Caihua 
+Sent: 2010年4月2日 21:21
+To: Zhao, Yubo; Chen, Jason (CIG)
+Subject: RE: The way to set connection timeout for C and python library
+
+Only cover the connection test now, need further verification for that case. Thanks for pointing it out.
+
+Thanks,
+Caihua
+
+--- original message ---
+From: "Zhao, Yubo" <Zhao_Yubo@emc.com>
+Subject: RE: The way to set connection timeout for C and python library
+Date: 02nd April 2010
+Time: 8:18:54 
+
+Good job! Thanks Caihua.
+
+Does this timeout work on a transaction in process? I mean if the slave node get down when a transaction is in progress.
+
+_____________________________________________
+From: Yin, Caihua 
+Sent: Friday, April 02, 2010 5:48 PM
+To: Chen, Jason (CIG)
+Cc: Zhao, Yubo
+Subject: The way to set connection timeout for C and python library
+
+
+Hi Jason,
+
+We can set the connection time out for both C/C++ and python library. This morning's talk recalls me something about this in postgresql doc. The solution is as follows:
+
+For C( libpq ):
+	Use the DSN like this: "host=10.32.171.148 dbname=system.db user=postgres connect_timeout=5"
+	Then when the app tries to connect a postgresql which is down there, it will be timeout after 5 seconds, not hang there for a long while as follows.
+	
+For python: 
+	There's no such parameter connect_timeout in python library, but another way: set PGCONNECT_TIMEOUT=5 as environment variable before connecting to the db. 
+
+
+It seems both the CM and db.py don't have this setting, it will be helpful to reduce the hang time by this.
+
+Thanks,
+Caihua
+** Debug command collection
+*** MISC commands
+select id, call, input, status, retval from tasks order by id;
+select id,scope, scopeuuid, call, input, status, retval from tasks where id>10 and call='synclb' order by id;
+
+/bin/cp -f cm /usr/local/maui/bin/; /bin/cp -f libmauimgmt* /usr/local/maui/lib/
+ scp bin/cm lib/libmauimgmt* root@10.32.165.126:.
+
+time cosuid -c --name jasonc3 --subtenid DevTen1 -u DevTestUser -p password -t DevTest -i 10.32.109.89
+cosuid -l --subtenid t1 -u t1admin -p password -t t1 -i 10.32.165.132
+cosuid -r --name bob --subtenid t1 -u t1admin -p password -t t1 -i 10.32.165.132
+cossubtenant -c --name st8 --authtype local -u t1admin -p password -t t1 -i 10.32.165.128
+
+select id, call, input, status, retval from tasks where id > 260 order by id;
+
+su - postgres -c "/usr/bin/pgreplicate -D /srv/pgsql/8.2/etc -l"
+
+psql -U postgres -d system.db -c "select id, call, input, status, retval from tasks order by id;"
+psql -U postgres -d system.db -c "select * from syncinfos order by id;"
+psql -U postgres -d system.db -c "delete from tasks where id > 11;"
+psql -U postgres -d system.db -c "select * from subtenantpolicies order by id;"
+
+cospolicy -c --policy polSpecJason --customrep y,y --numreps 2 --reptype a,s --locmod otherThan,sameAs --locplace '$client,$client' --serverplace optimal,optimal --serveract any,none --striping y,y --stripenum 8,16 --stripesize 1000,5 --stripeunit kb,gb --retention n --deletion n --readaccess random --metalocmod sameAs --metalocplace 'Beijing'  -u t1admin -p 'password' -t t1 -i 10.32.165.126
+cospolicyselector -c --name polSelJason --policy polSpecJason --polmode u --metatag filename --matchoper equals --metaval file.txt --onevent on_create -u t1admin -p 'password' -t t1 -i 10.32.165.126
+cospolicyselector -d --name polSelJason -u t1admin -p 'password' -t t1 -i 10.32.165.126
+rest_client.rb -f createobject -p <subtenantid>/u1 -k <key> -u <a local filename>
+./create_object -s 127.0.0.1 -p jason -u /root/install.log  -a jason=f,foo=w -g other=n -m part1=buy -b part4/part7/part8=quick  -k aQE/L+VQgFMezbyFfhyJgNOpfEs=
+
+cstadmin configure LocalDirectory MauiLocalDirectory -passphrase=#1Password FileName=/etc/maui/cst/auth_db.xml  PasswordDays=365 PasswordLength=4 MaxPasswordLength=10 SpecialCharsRequired=false  AlphaNumericRequired=false MixedCaseRequired=false NumPasswords=1
+
+cstadmin sign-file /etc/maui/cst/auth_db.xml -passphrase=#1Password
+
+logcopy --lclevel ALL --srchosts ALL --dstdir /root --dsthost 10.32.109.238 --dstuser root --dstpass ChangeMe
+
+svn pd svn:executable *
+svn propset svn:executable '' post_node_clear_rails_session_v1.3.1.py 
+svn proplist post_node_clear_rails_session_v1.3.1.py 
+
+valgrind --tool=memcheck --leak-check=full --show-reachable=yes --trace-children=yes --max-stackframe=3000000 --num-callers=50 -v --log-file=memleak.log cm -s /etc/maui/cm_sys.xml -c /etc/maui/cm_cfg.xml -g /var/local/maui/sysmgmtdb/ses_db -d &
+
+valgrind --tool=memcheck --leak-check=full --log-file=valgrind.log /usr/local/maui/bin/cm -s /etc/maui/cm_sys.xml -c /etc/maui/cm_cfg.xml -g /var/local/maui/sysmgmtdb/ses_db -d &
+
+cli_func_test.sh password ja1 password balanced 10.32.109.95
+cosclientaccess -c --nodeid EMC-001 --sharepath test1 --host * --io rw --squash all_squash --sync yes -u t1admin -p password -t t1
+cosclientaccess -l --nodeid EMC-001 -u admin -p password -t eBay
+cosclientaccess -m --nodeid EMC-001 --sharepath caihua --host 192.168.1.* --io rw --squash all_squash --sync yes -u admin -p password -t eBay
+cosclientaccess -d --nodeid EMC-001 --sharepath alend -u admin -p password -t eBay
+mauisvcmgr -s mauicm -c reload_tracer_cfg
+
+cosuser -c --userid Test111 --userpass password -u SecurityAdmin -p password --local -i 10.32.109.112
+cossysadmin -a --userid Test111 --authtype local -u SecurityAdmin -p password --local -i 10.32.109.112
+
+rpm -ivh atmos-cli-1.3.0-b39377.x86_64.rpm 
+rpm -qa atmos-cli
+rpm -e atmos-cli
+
+netconfig --eth0=192.168.11.12 --eth0_mask=255.255.255.0 --eth0_gw=192.168.11.2 --eth1=10.5.116.87 --eth1_mask=255.255.255.0 --eth1_gw=10.5.116.2
+mauimdlsutil -q -m '*'
+cat /proc/mounts  | grep mauimds |  cut -d ' ' -f2
+mauisvcmgr -s mauimds -c mauimds_getMdsSet
+mauirexec "cat /etc/maui/node.cfg | grep SS_Placement"
+mauisvcmgr -s mauicm -c mauicm_start_provision -a 'cmd=create_maui,user=MauiAdmin,seguuid=293e4386-507f-496a-b429-3d3ff9cf0730,siteuuid=8c6f4c96-3de5-4265-b248-679422b17ace'
+route add -host 10.32.165.132 gw 10.32.165.158
+netstat -natp |grep 5432 |grep SYN_RECV |cut -d':' -f 2 |sort
+netstat -natp |grep 5432 |grep ESTABLISHED | wc -l
+q "netstat -anp | grep :5432" | tee out.txt
+select  id, scope, scopename, call, input, status, retval, starttime from tasks where (status=2 or status=0 or status=1) and id < 1000 order by id;
+
+DB deadlock check:
+SELECT pg_class.relname, pg_locks.pid, pg_stat_activity.waiting, pg_stat_activity.current_query  from pg_class, pg_locks, pg_stat_activity where pg_class.relfilenode = pg_locks.relation and pg_locks.pid = pg_stat_activity.procpid order by pg_class.relname;
+
+vaccum full
+
+/usr/bin/pg_dump -U postgres -Ft -b system.db
+/usr/bin/pg_restore -U postgres -d <>
+
+diff -rupN original/ new/ > original.patch
+
+psql -U postgres -c "select * from pg_stat_activity"
+
+Cybercluster recover commands:
+rsync --server --sender -logDtprz . /srv/pgsql/8.2/data/pg_xlog
+rsync -a -r -z --delete -e ssh -o StrictHostKeyChecking=no auto3-130A-001:/srv/pgsql/8.2/data/pg_xlog /srv/pgsql/8.2/data
+
+vi /var/log/boot.log
+vi /var/log/secure
+vi /srv/pgsql/start.log
+
+find  -name "*" -type f -exec grep -Hn mauiconfig {} \;
+tar czvf JasonBash.tgz `la`
+find . -type d -name '.svn' -exec rm -rf {} \;
+find . -name "*.rhtml" -type f -exec grep Maui -Hn {} \;
+find . -exec grep -q "itf" '{}' \; -print | xargs sed -i 's/itf/production/g'
+
+# Find files which older than 5 minutes and delete
+find /path/to/files* -mtime +5 -exec rm {} \;
+
+develop your own grep example : (~/bin/greps)
+#!/bin/bash
+find . -type f \{ -name "*.c" -o -name "*.h"\} - print | xargs grep "$@"
+
+for i in `seq 1 100`; do cosuid -r --name uid$i tenid tenant2 -u tony2 -p 123456 -t tenant2; done
+
+while true; do ping -c 1 10.32.169.213; sleep 3; echo "wait for 30 seconds...."; done
+
+select nextval('test_id_seq');
+select currval('test_id_seq');
+select setval('test_id_seq', (select max(id) from test));
+echo "select setval('sites_id_seq', (select max(id) from sites));" | su - postgres -c "psql -d system.db"
+
+echo "select setval('sites_id_seq', (select max(id) from sites));" | su - postgres -c "psql -d system.db"
+
+netstat -anp |grep 'tcp\|udp' | awk '{print $5}' | cut -d: -f1 | sort | uniq -c | sort -n
+
+svn copy  https://tvg01.lss.emc.com/svn/maui/trunk  https://tvg01.lss.emc.com/svn/maui/branches/atmos-1.3-cybercluster -m "create branch for cybercluster bug fixing to improve management database stability"
+
+svn copy  https://tvg01.lss.emc.com/svn/maui/branches/atmos-1.2.0  https://tvg01.lss.emc.com/svn/maui/branches/atmos-1.2.5-gui -m "create branch from 1.2.0 (r37176) for gui 1.2.5 getwell projects."
+
+tcpdump -vXn -s 1500 port 80 -i lo
+
+strace -s200 -ftT -o log-t30 ./mauirexec.new  -e " mauisvcmgr -t 30 -s mauimds -c sync_pm" -n "RMG2-006" -l
+
+dmidecode -s system-product-name
+
+# Check AC power PDU current status
+omreport chassis pwrsupplies
+
+# Disk beacon on and beacon off
+
+get daeuuid from daes table. get slot ID from disks table in SES DB.
+
+# beacon on
+ses --database=/var/local/maui/sysmgmtdb/ses_db --beacon=blink --daeuuid='ab6b61d6-274a-409f-8ae3-98171f8089dc' --slot=10
+# beacon off
+ses --database=/var/local/maui/sysmgmtdb/ses_db --beacon=off --daeuuid='ab6b61d6-274a-409f-8ae3-98171f8089dc' --slot=10
+
+# disk related
+
+ls /sys/block/scsi
+
+
+
+*** Debug REST API
+
+_Create UID_
+curl -v -k -D ./rcvHeaders.txt -d "" -H "x-atmos-tenantadmin:ta1" -H "x-atmos-tenantadminpassword:password" -H "x-atmos-authType:password" -H "x-atmos-uid:u1" -H "Accept:"  -H "User-Agent:" https://10.32.109.112:443/sysmgmt/tenants/t1/subtenants/t1/uids
+
+_Delete UID_
+curl  -v -k -D ./rcvHeaders.txt -X "DELETE" -H "x-atmos-tenantadmin:t1_admin"  -H "x-atmos-tenantadminpassword:password" -H "x-atmos-authType:password" -H "x-atmos-uid:u2" -H "Accept:" -H "User-Agent:" https://10.32.89.193:443/sysmgmt/tenants/t1/subtenants/t1/uids/user111
+
+_LIST UID_
+curl -v -k -D ./rcvHeaders.txt  \
+        -H "x-atmos-tenantadmin:t1_admin"   \
+        -H "x-atmos-tenantadminpassword:password" \
+        -H "x-atmos-authType:password" \
+        -H "Accept:"    \
+        -H "User-Agent:"        \
+        https://10.32.89.193:443/sysmgmt/tenants/t1/subtenants/t1/uids/u01
+
+
+*** Debug POX
+*** Debug POX API test
+login and create cookie for sysadmin
+# curl -d "auth_type=local&auth_addr=&username=MauiAdmin_pit&password=password" -k https://10.32.171.51:443/mgmt_login/verify -v -H "Accept:application/xml" -c sysadmin_cookie
+
+list tenant by sysadmin - need to specify cookied just generated.
+# curl -d "auth_type=local&auth_addr=&username=MauiAdmin_pit&password=password" -k https://10.32.171.51:443/maui_admin/list_tenant -v -H "Accept:application/xml" -b sysadmin_cookie
+
+assign node for NFS access - need cookie
+# curl -k https://10.32.171.51:443/maui_admin/submit_assign_tenant_node -v -H "Accept:application/xml" -b sysadmin_cookie -d "tenant_name=t1&nodes[auto-130A-004]=on&fs[auto-130A-004]=nfs"
+
+assign node for WS access - need cookie
+# curl -k https://10.32.171.51:443/maui_admin/submit_assign_tenant_node -v -H "Accept:application/xml" -b sysadmin_cookie -d "tenant_name=t1&nodes[auto-130A-004]=on&ws[auto-130A-004]=on"
+
+create cookie for tenantadmin
+# curl -d "tenant_name=t1&username=t1a&password=password" -k https://10.32.171.51:443/user/verify -v -H "Accept:application/xml" -c tenantadmin_cookie
+
+create nfs share under tenant t1 - need cookie
+# curl -k https://10.32.171.51:443/sub_tenant_admin/submit_add_node_nfs -v -H "Accept:application/xml" -b tenantadmin_cookie -d "node_uuid=50288D1B-47AE-77A6-875D-EAE4855F1F73&subtenant_name=t1&share_path=nfs_path&host=*&io=rw&squash=no_root_squash&sync=no&idmap=&secure=no&anonuid=&anongid=&squash_uids=&squash_gids=&sub_tenant_name=t1"
+
+*** Debug large scale installation
+
+cat /etc/hosts | grep 10.32 | sort | wc -l
+
+mauirexec "cat /etc/maui/provision " > prov_stat
+
+grep PRO prov_stat  -C 1
+
+mauirexec "grep LongString /var/log/maui/cm.log " > longstring_stat
+
+mauirexec "grep TaskUUIDList /var/log/maui/cm.log " > TaskUUIDList_stat
+
+*** MaaS login info from Sukwoo
+Jumpbox: 
+  - id: kangs5@bos01-cig02.emcatmos.com
+  - passwd: Steel4Celery66
+
+  - id: chenj15@bos01-cig02.emcatmos.com
+  - passwd: pass@word1
+
+Master node: 
+  - id: wangc14@172.16.16.80
+  - passwd: ChangeMe
+  - su - (passwd: Steel4Celery66)
+	
+*** Debug UID task creation failure
+
+psql -U postgres system.db
+
+system.db=# select uuid, call,  status, retval, succnum, failnum, totalnum from tasks where id> 10000 and call='synclb' order by id;
+                 uuid                 |  call  | status | retval | succnum | failnum | totalnum 
+--------------------------------------+--------+--------+--------+---------+---------+----------
+ 1f461446-d359-40d1-9bce-f9b725f0eb26 | synclb |      3 |      0 |       2 |       0 |        2
+ 632e8325-ac11-467a-b9d0-b8fc51d10d3f | synclb |      3 |      0 |       2 |       0 |        2
+ 83e0d18e-456a-452d-b145-5250aa388b29 | synclb |      3 |      1 |       1 |       1 |        2
+
+rmg.db=# select uuid, call,  status, retval, succnum, failnum, totalnum from tasks where parentuuid='83e0d18e-456a-452d-b145-5250aa388b29' order by id;
+                 uuid                 |  call  | status | retval | succnum | failnum | totalnum 
+--------------------------------------+--------+--------+--------+---------+---------+----------
+ 2b6d1db4-0358-4d2d-ba9a-985b2918576f | synclb |      3 |      0 |      43 |       0 |       43
+
+Go to 2nd RMG db
+
+[root@BOSTON-001 ~]# psql -U postgres rmg.db -h NYC-001
+
+rmg.db=# select uuid, call,  status, retval, succnum, failnum, totalnum from tasks where parentuuid='83e0d18e-456a-452d-b145-5250aa388b29' order by id;
+                 uuid                 |  call  | status | retval | succnum | failnum | totalnum 
+--------------------------------------+--------+--------+--------+---------+---------+----------
+ 934fb0aa-9712-44a9-9f7d-07902d719b49 | synclb |      3 |      1 |      43 |       1 |       44
+
+rmg.db=# select uuid, output,scopeuuid, call,  status, retval, succnum, failnum, totalnum from tasks where parentuuid='934fb0aa-9712-44a9-9f7d-07902d719b49' and retval!=0 order by id;
+                 uuid                 |                                                             output                                                             |              scopeuuid               |  call  | status | retval | succnum | failnum | totalnum 
+--------------------------------------+--------------------------------------------------------------------------------------------------------------------------------+--------------------------------------+--------+--------+--------+---------+---------+----------
+ 0c8b2fa7-00f5-481b-8456-f9343f54d52a | Add UID failed: 65280  19b98290a848440ab99cfd9f9a479ff3:19b98290a848440ab99cfd9f9a479ff3:UID6951  eyXXfdCtVzUz14j0qyqxNY9cb2E= | 44454C4C-4200-1050-8047-B3C04F5A4631 | synclb |      3 |      1 |       0 |       0 |        0
+                                      :                                                                                                                              
+rmg.db=# select hostname from nodes where uuid='44454C4C-4200-1050-8047-B3C04F5A4631';
+   hostname   
+--------------
+ R610-NYC-008
+(1 row)
+
+*** Debug IPMI related issues
+Many discussion on R610 IPMI support: https://tvg01.lss.emc.com/bugzilla/show_bug.cgi?id=9308
+
+A snippet from the setup script that is part of the installation is below:
+
+   ipmitool lan set 1 ipsrc static
+   ipmitool lan set 1 ipaddr $IPADDR
+   ipmitool lan set 1 netmask $NETMASK
+   ipmitool lan set 1 defgw ipaddr $DEFGW
+   ipmitool lan set 1 access on
+   # UserID2 is defined by the standard as the privileged user, which appears as "root"
+   ipmitool user set password 2 $ROOTPW
+
+ipmictl -H 192.168.13.140 -U root -P passwd power_status
+ipmitool -H 192.168.17.11 -U root -P passwd power status
+
+ipmiscan -d  -e eth0:0 1234 interface eth0:0
+
+for i in `seq 1 10`; do ipmictl -H 192.168.13.141 power_status;ipmitool -H 192.168.13.141 -U root -P passwd power status;date;sleep 2; done
+
+Check ipmi mgmt controller status
+# ipmitool mc info
+
+# omreport system version
+
+ Version Report
+
+---------------------
+Main System Chassis
+---------------------
+
+Name       : BIOS
+Version    : 1.3.6
+Updateable : N/A
+
+
+Name       : iDRAC6
+Version    : 1.30
+Updateable : N/A
+
+# ethtool -i eth1
+driver: bnx2
+version: 1.9.3
+firmware-version: 5.0.11 NCSI 2.0.5
+bus-info: 0000:01:00.1
+
+based on bug 9308, can you update NIC FW to 5.0.12 and try it again? thanks.
+
+        
+------- Comment  #94 From Matthew Sargeant
+
+Testing shows the 1.30 iDRAC firmware fixes the two original issues (node
+discovery and iDRAC becoming unresponsive).  The new issue of the iDRAC network
+becoming unresponsive after reboot has been determined to be caused by
+gratuitous arp messages on eth1 impacting the shared network interface to the
+iDRAC during startup.  Testing shows network controller firmware 5.0.12 fixes
+this issue.
+
+R610 based systems need to be updated to use main BIOS to 1.3.6, iDRAC firmware
+to 1.30, and the network controller firmware to 5.0.12.
+
+An ECO has been started by Fred Malpass to release this new firmware/BIOS.
+
+Until a dtk issue can be fixed, two ISOs need to be used to achieve the
+complete update:
+
+Main BIOS and iDRAC:
+http://opseroom01.corp.emc.com/eRoom/SPOmidrangesysdiv/SPOAppServers/0_16ef3d
+
+Network Controller:
+http://opseroom01.corp.emc.com/eRoom/SPOmidrangesysdiv/SPOAppServers/0_16ef3e
+
+*** Debug disk related issues
+
+Internal disk allocation check /var/log/message
+**** Get vdisk detail information by omreport
+# omreport storage vdisk
+List of Virtual Disks in the System
+
+Controller SAS 6/iR Integrated (Embedded)
+ID                  : 0
+Status              : Non-Critical
+Name                : Virtual Disk 0
+State               : Degraded
+Progress            : Not Applicable
+Layout              : RAID-1
+Size                : 231.90 GB (248999051264 bytes)
+Device Name         : /dev/sda
+Type                : SATA
+Read Policy         : No Read Ahead
+Write Policy        : Write Through
+Cache Policy        : Not Applicable
+Stripe Element Size : Not Applicable
+Disk Cache Policy   : Enabled
+
+[root@RMGLAB5-001 maui]# omreport system alertlog |less
+Alert Log
+
+Alert Log contains...
+
+Severity      : Ok
+ID            : 2065
+Date and Time : Fri Sep  3 18:58:57 2010
+Category      : Storage Service
+Description   : Physical disk Rebuild started:  Physical Disk 0:0:0 Controller
+0, Connector 0
+
+Severity      : Ok
+ID            : 2330
+Date and Time : Fri Sep  3 18:58:55 2010
+Category      : Storage Service
+Description   : SAS port report: SAS wide port 0 restored link on PHY 0.: 
+Controller 0 (SAS 6/iR Integrated)
+
+Severity      : Ok
+ID            : 2052
+Date and Time : Fri Sep  3 18:58:55 2010
+Category      : Storage Service
+Description   : Physical disk inserted:  Physical Disk 0:0:0 Controller 0,
+Connector 0
+
+Severity      : Non-Critical
+ID            : 2049
+Date and Time : Fri Sep  3 18:58:52 2010
+Category      : Storage Service
+Description   : Physical disk removed:  Physical Disk 0:0:0 Controller 0,
+Connector 0
+
+Severity      : Non-Critical
+ID            : 2329
+Date and Time : Fri Sep  3 18:58:51 2010
+Category      : Storage Service
+Description   : SAS port report: SAS wide port 0 lost link on PHY 0.: 
+Controller 0 (SAS 6/iR Integrated)
+
+Severity      : Non-Critical
+ID            : 2123
+Date and Time : Fri Sep  3 18:58:51 2010
+Category      : Storage Service
+Description   : Redundancy lost:  Virtual Disk 0 (Virtual Disk 0) Controller 0
+(SAS 6/iR Integrated)
+
+Severity      : Non-Critical
+ID            : 2057
+Date and Time : Fri Sep  3 18:58:51 2010
+Category      : Storage Service
+Description   : Virtual disk degraded:  Virtual Disk 0 (Virtual Disk 0)
+Controller 0 (SAS 6/iR Integrated)
+**** Rescan SCSI disk drive after adding a new virtual disk 
+# echo "- - -" > /sys/class/scsi_host/host0/scan
+
+**** Check which process is using the disk
+# fuser -m /dev/sdb1
+
+*** Debug channel bonding issues
+
+Karthik fix SKT channel bonding issue steps: <2011-02-19 16:52>
+
+# mauisvcmgr –s mauimds –c triggercheckpoint
+# service mauimds stop
+# mauictl stop
+# atmosnetmgr add bond nics=eth1,eth2 mode=1 millmon=100
+# dmesg | grep “eth.*PCI”
+# grep HWADDR /etc/sysconfig/network-scripts/ifcfg-eth[0-3]
+# cat /proc/net/bonding/bond0
+# python modify_bonding_cfg.py
+# scp /tmp/check_bond.py
+# mauictl start
+# mauisvcmgr –s mauimds –c mauimds_isNodeInitialized
+# mauisvcmgr –s mauimds –c mauimds_ismaster
+
+** Authsrv failover collection
+
+Bug 14700.
+
+And yes, both automatic and manual failover only pickup a random available authsrv for the new master. If we want to failover to a specific one we need to use the steps below. 
+1. change master authsrv in db Command: mauimasterauthsrvdb –s <new_master_hostname> 
+2. config the new master authsrv Command: mauiauthutil –c master -l <new_master_hostname> <new_master_hostname> 
+3. notify each slave authsrv which the new master is. Command: mauiauthutil –c slave -l <new_master_hostname> <slave_master_hostname> Note: this command needs to be executed for all the available slave authsrv. For the unavailable authsrvs, they will change its status automatically during startup. 
+
+AND before we failover authsrv manually, we need to check the data of each authsrv to make sure the data is consistent. Here is the command, please execute it on each authsrv node and compare the result. ldapsearch -D cn=Admin,ou=maui,ou=tvg,dc=emc,dc=com -H ldap://$HOSTNAME:10389 -x -w 'atm0s2w0rld!' -b ou=people,ou=maui,ou=tvg,dc=emc,dc=com -LLL | grep dn 
+
+
+Bug 17610 Issue: User can’t login to GUI from some nodes.
+1. Check authsrv master
+# mauimasterauthsrvdb –g
+
+2. On each node with authsrv service checking the master information
+# mauiauthutil –s CS-001  
+
+3. Mauiauthutil  -q SysAdmin      ---  the binary should be after 1.4.1
+dn: uid=SysAdmin,ou=people,ou=maui,ou=tvg,dc=emc,dc=com
+uid: SysAdmin
+cn: SysAdmin
+objectClass: account
+objectClass: posixAccount
+objectClass: shadowAccount
+loginShell: /bin/bash
+uidNumber: 3001
+gidNumber: 3001
+homeDirectory: /home/SysAdmin
+userPassword:: e1NTSEF9eFpiZEs5Z09FdUpVRk8zcDZ3ZlhpRk1YRHIvcS9XVXM=
+
+4.	Use ldap commond  and modify ldap hostname , here uid is the login account.
+ldapsearch -D cn=Admin,ou=maui,ou=tvg,dc=emc,dc=com -H ldap://NYPA-IS1-001:10389 -x -w 'atm0s2w0rld!' -b uid=SecurityAdmin,ou=people,ou=maui,ou=tvg,dc=emc,dc=com –LLL
+
+a.	Remove entry uid=SecurityAdmin we can get all login information on the ldap server.
+b.	Redirect the info to file .
+c.	Diff the file from different authsrv server, we can check if there is any inconsistency.
+5.	Solution for replacement of  ldap db.
+a.	Back up authsrv  
+Copy –dbR /var/local/maui/authsrv  authsrv.backup
+b.	Copy the authsrv from other node 
+c.	Service mauiauthsrv restart
+
+*** Manual authsrv failover steps
+= Manual Authsrv failover =
+1. Before manual failover, we need to do sanity check -- a) check the authsrvs status and b) data consistence.
+- Check authsrvs status
+-- Check the CM DB with "mauimasterauthsrvdb -g".
+-- Check the master authsrv info recorded inside each authsrv DB with "mauirexec 'mauiauthutil -s \$HOSTNAME'".
+-- The master info should be consistent between CM DB and authsrv DBs
+- Check the data consistence among authsrvs.
+-- Command: 
+--- ldapsearch -D cn=Admin,ou=maui,ou=tvg,dc=emc,dc=com -H ldap://$HOSTNAME:10389 -x -w 'atm0s2w0rld!' -b ou=people,ou=maui,ou=tvg,dc=emc,dc=com -LLL | grep dn
+--- From kona release, the command is "mauiauthutil -a all | grep dn"
+-- Please execute the command on each authsrv node and compare the results.
+
+2. After sanity check, we could proceed the manual failover.
+- manual failover method 1
+-- Command: mauisvcmgr -s mauicm -c maui_manualAuthsrvFailover -a host=<current_master_authsrv>
+-- Note: failover is triggered immediately. It only pickups a random available authsrv for the new master.
+- manual failover method 2 (if the method 1 fails or if you want to failover to a specific node)
+-- change master authsrv in db
+--- Command: mauimasterauthsrvdb –s <new_master_hostname>
+-- config the new master authsrv
+--- Command: mauiauthutil –c master -l <new_master_hostname>   <new_master_hostname>                    
+-- notify each slave authsrv which the new master is.  
+--- Command: mauiauthutil –c slave -l <new_master_hostname>   <slave_master_hostname>                     
+--- Note: this command needs to be executed for all the available slave authsrv.  For the unavailable authsrvs, they will change its status automatically during startup.
+
+3. After the failover, please check the authsrvs status again to confirm.
+
+** Policy distribution debugging
+*** Peer1 policy troubleshooting
+
+One subtenant - SubTenant406 has wrong default policy
+
+Check policyinfo data in the database to find out the batch ID and detail batch content
+# select content, batch_id from policyinfos where subtenant_uuid = '360f5f0428384cd8a004b7c92b611f53'; 
+Check batch distribution status
+Check MDS dump DB info
+# db_dump -p /mauimds-db/mds-1f7d263c-1502-4e5c-b945-5c8011fbde86/master/PmDb.bdbxml  > /tmp/policy.db
+
+first find subtenant ID to get policy desc ID
+ 523db420cf024e768db58bb7f2b67aa6:360f5f0428384cd8a004b7c92b611f53\00
+ \82\9a\01\1d
+
+find key \\82\\9a
+
+*** Whole CLI work flow
+Experience on debugging bug #13416.
+
+When execute CLI, e.g. cospolicyselector, by default it will use sync mode and default timeout value in CLI is 300s. 
+
+# cospolicyselector -c --name 600_update_test2 --policy 600 --polmode u --metatag DataPolicy --matchoper equals --metaval 600 --onevent on_umd_update  -u mbova -p password -t WS -i 10.6.145.50
+
+1. GUI controller trigger CM to do distribute policy
+2. CM will have a global manager to sync policy with local manager to all nodes
+3. GUI create syncpm task to query policy sync status and notify MDS if policy distribution finished
+4. There have several retry inside syncpm logic
+   1. wait for distribution status by check global and local batch status in batchdecs table, here will continue retry, timeout value is 300s
+   2. if distribute succeeds, it notifies all nodes MDS to reload policy by call "mauisvcmgr -t 60 -s mauimds -c sync_pm,mauisvcmgr -t 60 -s mauimds -c sync_hn", here will retry 3 times. max timeout value is 2 * 3 * 60 = 360s
+
+** PIT, mauits, netinstall setup notes
+*** New PIT framework usage
+# ssh cheny7@10.32.180.27
+
+# cd /opt/pit-framework/
+
+# bin/pit.sh -c conf/testbeds/maap/cheny7-174.1-100.conf --image /share/pub/MauiImages/atmos-auto-1.3.0.44603-x86_64-disc1.iso -i cheny7
+
+------------------------------- spliter -------------------------------
+
+destroy upgrade large scale testbed and start new installtion large scale testbed 
+1. make below change in new pit framework code. 
+cheny7@Kaylin ~/pit-framework$ svn diff lib/maap/libmaap.sh
+Index: lib/maap/libmaap.sh
+===================================================================
+--- lib/maap/libmaap.sh	(revision 46652)
++++ lib/maap/libmaap.sh	(working copy)
+@@ -1333,7 +1333,7 @@
+         host_vm_destroy $node_name || return 1
+     }
+ 
+-    __maap_create_vm $rmg $seg $node || return 1
++    #__maap_create_vm $rmg $seg $node || return 1
+     return 0
+ }
+ 
+@@ -1760,7 +1760,9 @@
+         # Sleep for a while before (re)boot next slave so that the IP addresses
+         # are assgined in order, the last node in this SEG does not need to wait
+         #
+-        ((node < node_count)) && util_wait 10s
++        # FIXME: increase power on slave from 10s to 1 minute
++        # ORIGINAL: ((node < node_count)) && util_wait 10s
++        ((node < node_count)) && util_wait 60s
+         log_message "Slave node '$node_name' ($node_ip) (re)booted," \
+             "it should boot from NIC #1 (eth0) automatically"
+     done
+
+2. bin/pit.sh -c conf/testbeds/maap/cheny7-upgrade-174.11-90.conf --image /share/pub/MauiImages/atmos-auto-1.3.0.48080-x86_64-disc1.iso os
+3. bin/pit.sh -c conf/testbeds/maap/cheny7-upgrade-174.91-150.conf --image /share/pub/MauiImages/atmos-auto-1.3.0.48080-x86_64-disc1.iso os
+4. revert back change of __maap_create_vm to enable create vm os
+5. bin/pit.sh -c conf/testbeds/maap/cheny7-174.11-202.conf --image /share/pub/MauiImages/atmos-auto-1.3.0.48080-x86_64-disc1.iso
+
+*** netinstall setup in RHEL5
+1. install DHCP, get rpm from RHEL ISO
+# wget http://10.32.72.28/share/pub/OSimages/RHEL5.2-x64/extracted/Server/dhcp-3.0.5-13.el5.x86_64.rpm
+# rpm -ivh dhcp-3.0.5-13.el5.x86_64.rpm
+
+2. configure DHCP - add below to /etc/dhcpd.conf
+      1 #
+      2 # DHCP Server Configuration file.
+      3 #   see /usr/share/doc/dhcp*/dhcpd.conf.sample
+      4 #
+      5 ddns-update-style interim;
+      6 subnet 10.32.171.0 netmask 255.255.255.0 {
+      7         range 10.32.171.3 10.32.171.255;
+      8         default-lease-time 3600;
+      9         max-lease-time 4800;
+     10         option routers 10.32.180.1;
+     11         option domain-name-servers 10.32.97.148;
+     12         option subnet-mask 255.255.255.0;
+     13         filename "pxelinux.0";
+     14         next-server 10.32.171.181;
+     15 }       
+3. install tftp, xinetd rpm package from ISO
+# wget http://10.32.72.28/share/pub/OSimages/RHEL5.2-x64/extracted/Server/tftp-server-0.42-3.1.x86_64.rpm 
+# wget http://10.32.72.28/share/pub/OSimages/RHEL5.2-x64/extracted/Server/xinetd-2.3.14-10.el5.x86_64.rpm
+ 
+4. configure tftp
+modify /etc/xinetd.d/tftp and change _disable_ to *no*
+
+5. copy pxelinux.0
+cp /usr/lib/syslinux/pxelinux.0 /tftpboot
+
+6. make sure httpd service is running, if not installed, get rpm and install
+# wget http://10.32.72.28/share/pub/OSimages/RHEL5.2-x64/extracted/Server/httpd-2.2.3-11.el5_1.3.x86_64.rpm
+
+7. follow netinstall step in [[https://tvg01.lss.emc.com/mediawiki/index.php/Netinstall#Installation_Guide][wiki page]]
+   svn co https://tvg01.lss.emc.com/svn/mauitools/trunk/QA/CAT-Project/CAT-code/netinstall
+   cd netinstall
+   su                                  # Need root permission
+   ./install.sh                        # Run without argument to see usage
+   ./install.sh netinstall             # Install to "netinstall" under web root
+
+8. modify netinstall configuration file
+# cd /var/www/html/netinstall/
+# vi index-defs.php
+  change pxe_subnets, maap_iso_dirs, cap_iso_dirs and rhel_iso_dirs.
+
+9. test netinstall in debug mode
+   - netinstall debug message:
+------------------------------- spliter -------------------------------
+DEBUG: tftpboot_root: /tftpboot
+DEBUG: install_tag: atmos-dev-21__00-22-19-b1-03-26
+DEBUG: ks_cfg: /var/www/html/netinstall/data/atmos-dev-21__00-22-19-b1-03-26/ks.cfg
+DEBUG: pxe_cfg: /tftpboot/pxelinux.cfg/01-00-22-19-b1-03-26
+DEBUG: pxe_cfg_upper: /tftpboot/pxelinux.cfg/01-00-22-19-B1-03-26
+DEBUG: boot_label: atmos-dev-21__00-22-19-b1-03-26
+DEBUG: pxe_bootdir_abs: /tftpboot/netinstall/atmos-dev-21__00-22-19-b1-03-26
+DEBUG: pxe_bootdir: /netinstall/atmos-dev-21__00-22-19-b1-03-26
+DEBUG: image_path: /iso/,mnt,nfs45,iso_tools,adk-1.3.1.0-x86_64-disc1.iso/isolinux
+DEBUG: dest_vmlinuz: /tftpboot/netinstall/atmos-dev-21__00-22-19-b1-03-26/vmlinuz
+DEBUG: dest_initrd: /tftpboot/netinstall/atmos-dev-21__00-22-19-b1-03-26/initrd.img
+[1] vmlinuz copied from /iso/,mnt,nfs45,iso_tools,adk-1.3.1.0-x86_64-disc1.iso/isolinux/vmlinuz to/tftpboot/netinstall/atmos-dev-21__00-22-19-b1-03-26/vmlinuz
+
+[2] initrd.img copied from /iso/,mnt,nfs45,iso_tools,adk-1.3.1.0-x86_64-disc1.iso/isolinux/initrd.img to /tftpboot/netinstall/atmos-dev-21__00-22-19-b1-03-26/initrd.img
+
+DEBUG: content of /var/www/html/netinstall/data/atmos-dev-21__00-22-19-b1-03-26/ks.cfg:
+# Kickstart file generated by netinstall
+
+install
+text
+lang en_US.UTF-8
+keyboard us
+timezone America/New_York
+skipx
+network --device eth0 --onboot yes --hostname atmos-dev-21 --bootproto static --ip 10.32.171.21 --netmask 255.255.255.0 --gateway 10.32.171.1 --nameserver 10.32.97.148
+url --url http://10.32.171.181/iso/,mnt,nfs45,iso_tools,adk-1.3.1.0-x86_64-disc1.iso
+rootpw "ChangeMe"
+firewall --disabled
+selinux --disabled
+authconfig --enableshadow --enablemd5
+bootloader --location=mbr --append quiet
+clearpart --all --initlabel
+part /boot --fstype ext3 --size=100 --ondisk=sda --asprimary
+part swap --size=1024 --ondisk=sda --asprimary
+part / --fstype ext3 --size=512 --grow --ondisk=sda --asprimary
+reboot
+
+%packages
+@everything
+
+%post
+[3] Kickstart config written to /var/www/html/netinstall/data/atmos-dev-21__00-22-19-b1-03-26/ks.cfg
+
+DEBUG: content of /tftpboot/pxelinux.cfg/01-00-22-19-b1-03-26:
+default atmos-dev-21__00-22-19-b1-03-26
+label atmos-dev-21__00-22-19-b1-03-26
+    kernel /netinstall/atmos-dev-21__00-22-19-b1-03-26/vmlinuz
+    append loglevel=debug nokill ks=http://10.32.171.181/netinstall/data/atmos-dev-21__00-22-19-b1-03-26/ks.cfg initrd=/netinstall/atmos-dev-21__00-22-19-b1-03-26/initrd.img devfs=nomount ramdisk_size=16384 ksdevice=00:22:19:b1:03:26
+[4] pxelinux config written to /tftpboot/pxelinux.cfg/01-00-22-19-b1-03-26
+
+DEBUG: content of /tftpboot/pxelinux.cfg/01-00-22-19-B1-03-26:
+default atmos-dev-21__00-22-19-b1-03-26
+label atmos-dev-21__00-22-19-b1-03-26
+    kernel /netinstall/atmos-dev-21__00-22-19-b1-03-26/vmlinuz
+    append loglevel=debug nokill ks=http://10.32.171.181/netinstall/data/atmos-dev-21__00-22-19-b1-03-26/ks.cfg initrd=/netinstall/atmos-dev-21__00-22-19-b1-03-26/initrd.img devfs=nomount ramdisk_size=16384 ksdevice=00:22:19:b1:03:26
+[5] Pxelinux config written to /tftpboot/pxelinux.cfg/01-00-22-19-B1-03-26
+
+[6] Now power on your machine and boot from network
+
+Succeed.
+------------------------------- spliter -------------------------------
+
+*** Preparation setup - by Yue:
+1) Prepare pit config file or even pit extend config file. 
+2) Created an account for PIT: pit:password
+3) Checked out the latest PIT script from <https://tvg01/svn/mauitools/trunk/QA/pit> to /home/pit/pit.jason
+4) Checked out the latest trunk mauits script from <https://tvg01/svn/mauitools/trunk/QA/mauits> to /home/pit/mauits
+5) Following the instruction in mauits/README, checked out the latest TET ware to /home/pit/tet_src and installed TET in /home/pit/tet
+6) Export TET_ROOT=/home/pit/tet and update pit user’s .bashrc file.
+7) Configure PIT to use the mauits in /home/pit/mauits
+
+*** Setup PIT environment on ESX server -- no DHCP server deployment in public network
+1) Prepare a VM (RHEL 5.0 VM node) which will be used as PIT bridge - with only one public NIC interface
+2) Covert this VM to template
+3) If deployed DHCP on public network, at this time just prepare ready for pit configuration file, than run PIT command to start auto-deployment
+4) If no DHCP deployed, deploy a bridge VM for target ESX server. 
+   - Add additionial internal NIC card based on the RMG number and pit configuration on the $PRIVATE_SWITCH. 
+   - Power on the bridge VM and configure a static public IP address for eth0
+   - Then start run PIT command.   
+
+*** Start running PIT and mauits after settled down:
+1. Run pit
+   - Go to pit src directory
+   - ./runpit.sh -i DB-test -c ../pit.conf.jason -t -b atmos-mgmtdb-1.3.0.33865-x86_64-disc1.iso
+2. Run mauits
+   - ./runpit.sh -i DB-test -c ../pit.conf.jason -t --tasklist "testing"
+3. Create snapshot
+   - ./createsnapshot.ksh 10.32.109.36 cheny7 password snapshot_name ../hostlist-171.33
+4. Revert snapshot
+   + ./revertsnapshot.ksh 10.32.109.36 cheny7 password snapshot_name ../hostlist-171.33
+
+- Tip for skip precheck process
+# ./runpit.sh -i DB-test -c ../pit.conf.jason -t --tasklist "install install_ext config_rmg1 config_rmg2 config_ext post_install config_client testing"
+
+# /home/pit/pit.jason/runpit.sh -i auto-mgmt-1.3.0.34358-1 -c pit_171.34.conf.jason -b atmos-mgmtdb-1.3.0.34453-x86_64-disc1.iso -t  --tasklist "testing"
+
+Verify result: see email which mauits has sent out.
+
+*** Set up large scale testbed - NEW
+# ssh cheny7@10.32.180.27
+
+# cd /opt/pit-framework/
+
+# bin/pit.sh -c conf/testbeds/maap/cheny7-174.11-202.conf --image /share/pub/MauiImages/atmos-1.3.1/atmos-auto-1.3.1.50016-x86_64-disc1.iso -i cheny7 os product
+
+*** Set up large scale testbed for mgmt DB test - OLD
+------------------------------- spliter -------------------------------
+DONT USE THIS WAY. It's for old PIT.
+------------------------------- spliter -------------------------------
+
+1. ssh cheny7@10.32.109.95 password
+2. Go to pit directory
+3. Prepare configuration files
+4. Manually add bridge proxy which is created based on RHEL template. Configure eth0 public IP address and add internal network which is the same as RMG's eth0. We need to manual configure public IP since we don't have a DHCP server on public network.
+5. Install first two RMGs
+   - ./runpit.sh -i RMG1-RMG2 -c ../large-scale.jason/RMG1-169.5-RMG2-171.35 -t
+6. Prepare new segment configuration file
+7. Add second segment in first RMG
+   - ./addis.sh -i RMG1-IS2 -c ../large-scale.jason/RMG2-IS1-169.6 -t
+8. Prepare hostlist for create snapshot. hostlist contains all nodes hostname
+9. Create snapshot after add segment
+   - ./createsnapshot.ksh 10.32.109.36 cheny7 password RMG1-IS2-ready ../hostlist-RMG1-IS2
+10. Repeat step 4,5,6,7 and continue installation until finished.
+
+If failed at some step during add segment, first revert to previous good shape snapshot, and then continue add more segments.
+   - ./revertsnapshot.ksh 10.32.109.36 cheny7 password RMG1-IS2-ready ../hostlist-RMG1-IS
+
+*** Full cycle 1.3 testing on hulk - 169.209 ~ 169.216
+========= NEW PIT ==============
+1. ssh cheny7@10.32.180.27 (password)
+2. find out one install image on /share/pub/MauiImages
+3. run command: 
+   bin/pit.sh -c conf/testbeds/maap/cheny7-169.209-216.conf --image /share/pub/MauiImages/atmos-1.3.1/atmos-auto-1.3.1.49512-x86_64-disc1.iso -i cheny7
+
+==========OLD ways for PIT =================
+1. ssh cheny7@10.32.169.18 (password)
+2. cd pit-hulk/
+3. ./startpit jason_full_130_44138 209.cfg
+4. Check log until pit finished
+
+===========mauits ==================
+Running full cycle testing:
+   1) login to 10.32.180.27 (cheny7)
+   2) go to /home/cheny7/mauits and mauits config are located in /home/cheny7/mauits/config, e.g. config/1.3full_209_44138.cfg
+   3) bin/configure.ksh -F config/1.3full_209_44138.cfg
+   4) bin/run.ksh -F config/1.3full_209_44138.cfg all
+
+*** VC manage
+host: 10.32.109.36
+admin/password
+
+*** TC agent setup
+only have start service part, not include package installation part
+
+login as e2eauto
+
+cd ~/teamcity
+
+export PATH=/home/e2eauto/teamcity/Java/jdk1.6.0_14/bin:$PATH
+
+cd TC_Agent/
+
+vim conf/buildAgent.properties (update serverUrl as TC server, name of this build agent which has been identified in TC server)
+
+bin/agent.sh start
+
+*** Troubleshooting
+
+**** master node cannot boot from ISO
+Currently PIT need to copy ISO image from remote nfs/ftp to local storage by using scp, sometimes scp copy image may fail with unknown reason(network?). 
+To solve this issue, try with another iso image. Or first delete this image from local storage and reboot ESX server.
+
+**** DONE send mail fail -- Need to check with IT
+	 CLOSED: [2009-06-22 Mon 15:50]
+Configure a meaningful host name and add to /etc/hosts. 
+Configure DNS server and search suffix.
+Start sendmail service.
+Do nothing but all right after the weekend.
+
+Testing command:
+/usr/sbin/sendmail -O NoRecipientAction=add-to -F PIT_NoReply@emc.com chen_jason@emc.com <<MAIL
+< test
+< MAIL
+
+Jun 19 16:56:55 frost sendmail[4323]: n5J8utX9004323: from=root, size=7, class=0, nrcpts=1, msgid=<200906190856.n5J8utX9004323@frost.lss.emc.com>, relay=root@localhost
+Jun 19 16:56:56 frost sendmail[4324]: n5J8ut0b004324: from=<root@frost.lss.emc.com>, size=334, class=0, nrcpts=1, msgid=<200906190856.n5J8utX9004323@frost.lss.emc.com>, proto=ESMTP, daemon=MTA, relay=localhost.localdomain [127.0.0.1]
+Jun 19 16:56:56 frost sendmail[4323]: n5J8utX9004323: to=chen_jason@emc.com, ctladdr=root (0/0), delay=00:00:01, xdelay=00:00:01, mailer=relay, pri=30007, relay=[127.0.0.1] [127.0.0.1], dsn=2.0.0, stat=Sent (n5J8ut0b004324 Message accepted for delivery)
+Jun 19 16:56:58 frost sendmail[4327]: n5J8ut0b004324: to=<chen_jason@emc.com>, ctladdr=<root@frost.lss.emc.com> (0/0), delay=00:00:03, xdelay=00:00:02, mailer=esmtp, pri=120334, relay=mailhub.lss.emc.com. [10.254.3.30], dsn=2.0.0, stat=Sent (n5J92Lq6025236 Message accepted for delivery)
+
+Jun 20 00:25:43 localhost sendmail[5272]: n5JGPh1t005272: from=root, size=7, class=0, nrcpts=1, msgid=<200906191625.n5JGPh1t005272@jason.lss.emc.com>, relay=root@localhost
+Jun 20 00:25:43 localhost sendmail[5273]: n5JGPheb005273: from=<root@jason.lss.emc.com>, size=334, class=0, nrcpts=1, msgid=<200906191625.n5JGPh1t005272@jason.lss.emc.com>, proto=ESMTP, daemon=MTA, relay=localhost.localdomain [127.0.0.1]
+Jun 20 00:25:43 localhost sendmail[5272]: n5JGPh1t005272: to=chen_jason@emc.com, ctladdr=root (0/0), delay=00:00:00, xdelay=00:00:00, mailer=relay, pri=30007, relay=[127.0.0.1] [127.0.0.1], dsn=2.0.0, stat=Sent (n5JGPheb005273 Message accepted for delivery)
+Jun 20 00:25:45 localhost sendmail[5275]: n5JGPheb005273: to=<chen_jason@emc.com>, delay=00:00:02, xdelay=00:00:02, mailer=esmtp, pri=120334, relay=mailhub.lss.emc.com. [10.254.3.30], dsn=2.0.0, stat=Sent (n5J8xnu6021224 Message accepted for delivery)
+**** Another send mail issue resolved by Matt
+The server failed to send out PIT email.
+
+Type "mail" as user e2eauto to see the returned email.
+Final-Recipient: RFC822; wang_matthew@emc.com
+Action: failed
+Status: 5.1.8
+Remote-MTA: DNS; mailhub.lss.emc.com
+Diagnostic-Code: SMTP; 553 5.1.8 <wang_matthew@emc.com>... Domain of sender addr
+ess e2eauto@localhost.localdomain does not exist
+Last-Attempt-Date: Wed, 3 Mar 2010 18:47:19 +0800
+
+Already fixed with following solution:
+1.	Set a real hostname: hostname lion
+2.	Add a line to /etc/hosts: 10.32.171.186    ion.lss.emc.com lion
+Please archive this email in case you met this again on new agent.
+
+Matt
+
+**** Why PIT need to disable ping for slave when do hulk installation?
+Because postgresql will check its peer. disable ping will make master think there has no slave on line. Then slave will be restarted by ssh commands and then PXE installation.
+
+** Project lesson learn 											   :WORK:
+*** Plan
+**** Checklist
+1. 
+
+**** Reminder
+1. Don't over commit.
+2. Detail the scope and consider plan/design/develop/test/verify even buffer time.
+
+*** Design
+**** Checklist
+
+*** Development
+**** Checklist
+
+*** Test
+**** Checklist
+
+*** Quality improvement
+Learn from PSP (Personal Software Process)
+- The PSP phase structure includes two review phases:
+    * Design Review
+    * Code Review
+To do an effective review, you need to follow a structured review process. The PSP recommends using *checklists* to help developers to consistently follow an orderly procedure.
+
+- PSP strong focus on *root-cause analysis* of an individual’s software defects and overruns, and on developing personal checklists and practices to avoid future recurrence, has significantly reduced personal defect rates.
+
+*** Customer support 
+**** Get things better understand and prioritize what should be solve first
+**** Find easy way and simple step to solve the problem or provide the workaround
+
+*** Code review
+Tools: coderev by matt, reviewboard, viewvc
+
+Common Checklist:
+1. Proper code comment for functions and code block
+2. Enough meaningful logs with proper log level
+3. Sigh name on new file
+
+Atmos Checklist:
+1. Impact package installation, (will tool need to impact /exports/makefile/)
+2. Impact installation (master, slave, add RMG/segment)
+3. Impact CM protocal changes
+4. Impact upgrade changes (db schema, data migration)
+** Best practice
+*** Bugzilla comments and update
+When you update a bug in bugzilla, you need to always check what's most useful and necessary information should be updated.
+1. Bug troubleshooting process 
+2. Bug root cause
+3. Fix plan in which release 
+4. If no fix plan in this release, whether need to add into release notes? Release notes should include:
+   * Symptom - This bug would cause what problem
+   * Workaround - What workaround should be do to fix this issue. This could be a manually process.
+
+Code commit and verify:
+1. When commit the code, make sure first update the repository first to avoid confliction
+2. The build should be first clean, then rebuild the whole directory
+*** [[https://tvg01.lss.emc.com/mediawiki/index.php/Bugzilla_UDK_List][Bugzilla UDK]] (user defined keywords)
+- Investigating
+- Underfixing
+- Underreviewing
+- GUI
+- CLI
+- Large_Scale
+** Conary related commands
+Atmos devkit upgrade (version 1.4.1)
+# sudo conary migrate group-adk=adk.cap.emc.com@emc:adk-1.4-devel --interactive 
+
+** Free discussion
+*** Why too many tasks?
+1. Lots of features - from customer
+2. Across feature and across components
+3. Parallel releases
+4. Continuous requirement changes
+5. CM redesign, all components redesign
+6. Less experienced people
+7. Unclear requirement, dependency of different requirements
+
+Suggestion:
+1. Assign task by feature to reduce switch
+2. Divide people into feature/release
+3. If too many new hires, need to change process for the management, like code review...
+** Atmos 1.4 cycle													:ARCHIVE:
+*** Slony replication for postgres									:ARCHIVE:
 **** Mgmt expection
 
 1st phase - basic installation and replication
@@ -1399,7 +2892,7 @@ in local_listen.c, when get STORE_PATH event which is generated by slave node, m
 Change loglevel in /usr/local/maui/etc/mgmt/postgresql.conf 
 Change debuglevel to 4 in /usr/local/maui/mgmtdb/postgresql/lib/slon-tools.pm
 
-*** Installation code refactor
+*** Installation code refactor										:ARCHIVE:
 	 CLOSED: [2010-04-09 Fri 09:56]
 **** Refactor checklist
 
@@ -1540,7 +3033,7 @@ At this time just after finish eBay work, we suggest continuing to work on phase
 Thanks,
 Jason
 
-*** Installation restore procedure
+*** Installation restore procedure									:ARCHIVE:
 **** decouple genprofile for better organise and rereuse code, consider ip change and reconfiguration together.
 **** Restore services and service related data
 - ais: 
@@ -1703,7 +3196,7 @@ restart_svc_list = ['RMS', 'MDLS', ...]
 For the common interfaces above, like update_etc_hosts(), update_cm_cfg(), etc, all these interfaces should be added into pylib since other configuration tools will also need the same functionality. 
 
 
-*** [#C] Task module improvement
+*** [#C] Task module improvement									:ARCHIVE:
 
 Yubo suggestion:
 1. Need to think about how to describle the issue properly and push the improvement in the group. 
@@ -1714,7 +3207,7 @@ Yubo suggestion:
 Action items:
 1. Think about above suggestion and send a proposal to Yubo
 
-*** pylib enhancement
+*** pylib enhancement												:ARCHIVE:
 **** Add one stop wiki page for all system mgmt developement process
 **** refine topology in mauiutility 
 **** Team tea session discussion - I 
@@ -1731,7 +3224,7 @@ Action items:
 7. refine topology in mauiutility - Jason
 8. need to add log in pylib. investigate how to log in pylib - Yubo
 9. add module division to wiki page - Denny & Jason
-*** Patch management
+*** Patch management												:ARCHIVE:
 
 solve common copy
 
@@ -1950,1083 +3443,6 @@ Starting Agent...
 This agent has been promoted while it was down.
 It will now be restarted as a primary agent.
 [root@Jason-130A-002 bin]# ping 10.32.171.80
-
-** VISION - Database server/client 
-*** For DB API layer
-1st phase: hide the db deployment details to the client application
-- separate application and database 
-- existing db api layer function routine
-- have sql in the functions. 
-- C++ and python may can share the same logic by using adapter, but need more investigation and tradeoff
-
-2nd phase: have some small object level abstraction
-- for new created object can have a try on the object modeling for the eventually object modeling of data store layer
-
-
-3rd phase: provide ORM layer for the data store access
-- hide db deployment details also to the db api layer but into db connection side
-- easy to change data store type to other... like memcache, file, etc.
-*** For DB server layer
-- Replication: Slony
-- Connection pool: pgpool
-** VISION - Installation
-
-phase:
-
-- make big logic into small module. small module is easy to handle error handing and extend
-
-*** Think about future configuration management proposal
-
-Currently there have three ways to configure some services:
-1. normal config in GUI
-2. recovery config during node replacement
-3. task reload to config snmp/smtp
-
-It's somehow hard and difficult for service config owner to know which way to handle the config and config recover. It's better to provide a unified way to manage service configuration include initial installation, post configuration and config recovery. 
-
-say if we store service configuration into different server category instead of combine with physical model (like site/cluster/node...), it will make configuration and recovery simpler to handle whether should config any service or not. 
-
-support_service {
-  service_name1,
-  service_name2,
-  ...
-}
-
-service_description {
-  name:
-  scope:
-  commands:
-  param1:
-  param2:
-  ...
-}
-
-then during installation/replace node/add new node, it will be very easy to decide what services should be configured in the node. It also become easier for other service developers to add a new service based on following configuration framework design.
- 
-** Installtion collection
-*** Switch configuration
-Refer to bug 5765
-
-Steps to perform switch configuration:
-
-Connect PC serial port to serial port of Allied Telesis switch (requires DB9 to RJ45 style serial cable).
-
-Login as 'manager' and password=friend.
-
-==== PromoCode1 or PromoCode5 Systems ====
-
-//Clear out settings
-set config=none
-restart reboot
-
-//When it reboots, login again and enter:
-create vlan=private vid=2
-create vlan=public vid=4
-add vlan=private port=1,3,5,7,9,11,13,15,17,19,21,23 frame=untagged
-add vlan=public port=2,4,6,8,10,12,14,16,18,20,22,24 frame=untagged
-disable igmpsnooping
-enable ip
-enable ip remote
-add ip int=vlan2 ip=dhcp
-enable snmp
-create snmp community=atmosCommunity open=on
-create config Atmos_PC1-PC5_0v02.cfg
-set config Atmos_PC1-PC5_0v02.cfg
-
-==== PromoCode3 Systems ====
-
-==Private Network Switch==
-//Clear out settings
-set config=none
-restart reboot
-
-//When it reboots, login again and enter:
-create vlan=private vid=2
-add vlan=private port=1-24 frame=untagged
-disable igmpsnooping
-enable ip
-enable ip remote
-add ip int=vlan2 ip=dhcp
-enable snmp
-create snmp community=atmosCommunity open=on
-create config Atmos_PC3private_0v02.cfg
-set config Atmos_PC3private_0v02.cfg
-
-==Public Network Switch==
-//Clear out settings
-set config=none
-restart reboot
-
-//When it reboots, login again and enter:
-create vlan=public vid=4
-add vlan=public port=1-24 frame=untagged
-disable igmpsnooping
-enable ip
-enable ip remote
-add ip int=vlan4 ip=dhcp
-enable snmp
-create snmp community=atmosCommunity open=on
-create config Atmos_PC3public_0v02.cfg
-set config Atmos_PC3public_0v02.cfg
-
-------------------------------- spliter -------------------------------
-
-add ip int=vlan103 ip=dhcp
-*** Anaconda installation process
-
-**** work around for mkinitrd 
-
-use kernaltag-handler
-
-/usr/libexec/conary/tags/kernel
-
-** Atmos IMPROVEMENT areas
-*** Cluster Task module redesign - sync framework
-Design consideration:
-1. K.I.S.S
-2. Think more in a large scale
-**** learn from celery about a distributed task framework design
-
-AMQP model:
-- Message Broker
-- Client subscriber
-- Publisher
-
-how to decouple task execute engine and detail task command ?
-if there has any relations between tasks, should these task be *divided* into several small tasks?
-
-*** Pylib document and standard refine
-If we want to have a common library for others to use, we should improve following areas:
-- Clear design on pylib architecture and function category
-- Have a common standard convention to enhance and maintain pylib source code, easy to maintain and extend
-- Good document to find out API easily (sphinix?)
-- Have owner to review all codes related to pylib
-
-*** DB related
-**** db connection timeout for C++ and python
-From Yubo:
-
-Sounds good.
-
-_____________________________________________
-From: Chen, Jason (CIG) 
-Sent: Tuesday, April 13, 2010 10:57 AM
-To: Yin, Caihua; Zhao, Yubo
-Subject: RE: The way to set connection timeout for C and python library
-
-
-From my understanding, postgresql C library doesn’t provide this kind of capability from its document. 
-
-For GUI, we all depends on ActiveRecords to handle db connection and execution. We need to dig into its implementation to check whether we can handle timeout during sql execution time. Currently when GUI access DB each time, db connection interface will have a try on update db records to check whether it can be accessible.
-
-For CM, I agree with Caihua, we need to handle this log in an upper level. This can reduce the issue happen frequency rate but not totally solve it. Another improvement is use transactions for some time consuming job to ensure data consistency. Till now we don’t have much trouble on this side but it’s one area we need to improve. We will put this one into db improvement roadmap and consider after we finish existing slony things. 
-
-Thanks,
-Jason
-_____________________________________________
-From: Yin, Caihua 
-Sent: Tuesday, April 13, 2010 9:09 AM
-To: Zhao, Yubo; Chen, Jason (CIG)
-Subject: RE: The way to set connection timeout for C and python library
-
-
-Rummage this topic via Google, but don't get any useful information. Jason, do you have any idea about this?
-
-As I think, for both GUI and CM, we can avoid long held connection at application level. Take log collection for example, let's assume a time consuming job which need access db during its execution, we can change the application flow as follows reduce the hang rate:
-….
-Connect db
-Time consuming job
-Operation on db
-Close db
-...
-	|
-	|
-           V
-….
-Time consuming job
-Connect db
-Operation on db
-Close db
-…
-
-However, it's just an alternative way to bypass this issue. It will be better if we can solve it on db side.
-
-_____________________________________________ 
-From: 	Zhao, Yubo  
-Sent:	2010年4月12日 19:55
-To:	Yin, Caihua; Chen, Jason (CIG)
-Subject:	RE: RE: The way to set connection timeout for C and python library
-
-I assume this problem exists for GUI and CM as well.
-It’s not a blocking issue for now, but it will be great if we can decrease the timeout value to less one minutes. For example, in GUI, if the DB get down in the middle of log collection, it will like hang there, which is not user friendly. Not sure whether there is any place to configure this value, did you find there are similar issue reports on internet?
-
-_____________________________________________
-From: Yin, Caihua 
-Sent: Monday, April 12, 2010 5:25 PM
-To: Zhao, Yubo; Chen, Jason (CIG)
-Subject: RE: The way to set connection timeout for C and python library
-
-
-
-Late follow up.
-
-For the case that connection is established successfully and then node is down or network is disconnected, we still met the hang issue during the process of transaction( For python library, it will hang for around 15 minutes. ) 
-
-Since currently we don't have any long held connections for daemon applications, this case may rarely happen. Therefore, I think we can simply keep this issue in mind and just add the timeout logic for connection operation. What's your opinion?
-
------Original Message-----
-From: Yin, Caihua 
-Sent: 2010年4月2日 21:21
-To: Zhao, Yubo; Chen, Jason (CIG)
-Subject: RE: The way to set connection timeout for C and python library
-
-Only cover the connection test now, need further verification for that case. Thanks for pointing it out.
-
-Thanks,
-Caihua
-
---- original message ---
-From: "Zhao, Yubo" <Zhao_Yubo@emc.com>
-Subject: RE: The way to set connection timeout for C and python library
-Date: 02nd April 2010
-Time: 8:18:54 
-
-Good job! Thanks Caihua.
-
-Does this timeout work on a transaction in process? I mean if the slave node get down when a transaction is in progress.
-
-_____________________________________________
-From: Yin, Caihua 
-Sent: Friday, April 02, 2010 5:48 PM
-To: Chen, Jason (CIG)
-Cc: Zhao, Yubo
-Subject: The way to set connection timeout for C and python library
-
-
-Hi Jason,
-
-We can set the connection time out for both C/C++ and python library. This morning's talk recalls me something about this in postgresql doc. The solution is as follows:
-
-For C( libpq ):
-	Use the DSN like this: "host=10.32.171.148 dbname=system.db user=postgres connect_timeout=5"
-	Then when the app tries to connect a postgresql which is down there, it will be timeout after 5 seconds, not hang there for a long while as follows.
-	
-For python: 
-	There's no such parameter connect_timeout in python library, but another way: set PGCONNECT_TIMEOUT=5 as environment variable before connecting to the db. 
-
-
-It seems both the CM and db.py don't have this setting, it will be helpful to reduce the hang time by this.
-
-Thanks,
-Caihua
-** Debug command collection
-*** MISC commands
-select id, call, input, status, retval from tasks order by id;
-select id,scope, scopeuuid, call, input, status, retval from tasks where id>10 and call='synclb' order by id;
-
-/bin/cp -f cm /usr/local/maui/bin/; /bin/cp -f libmauimgmt* /usr/local/maui/lib/
- scp bin/cm lib/libmauimgmt* root@10.32.165.126:.
-
-time cosuid -c --name jasonc3 --subtenid DevTen1 -u DevTestUser -p password -t DevTest -i 10.32.109.89
-cosuid -l --subtenid t1 -u t1admin -p password -t t1 -i 10.32.165.132
-cosuid -r --name bob --subtenid t1 -u t1admin -p password -t t1 -i 10.32.165.132
-cossubtenant -c --name st8 --authtype local -u t1admin -p password -t t1 -i 10.32.165.128
-
-select id, call, input, status, retval from tasks where id > 260 order by id;
-
-su - postgres -c "/usr/bin/pgreplicate -D /srv/pgsql/8.2/etc -l"
-
-psql -U postgres -d system.db -c "select id, call, input, status, retval from tasks order by id;"
-psql -U postgres -d system.db -c "select * from syncinfos order by id;"
-psql -U postgres -d system.db -c "delete from tasks where id > 11;"
-psql -U postgres -d system.db -c "select * from subtenantpolicies order by id;"
-
-cospolicy -c --policy polSpecJason --customrep y,y --numreps 2 --reptype a,s --locmod otherThan,sameAs --locplace '$client,$client' --serverplace optimal,optimal --serveract any,none --striping y,y --stripenum 8,16 --stripesize 1000,5 --stripeunit kb,gb --retention n --deletion n --readaccess random --metalocmod sameAs --metalocplace 'Beijing'  -u t1admin -p 'password' -t t1 -i 10.32.165.126
-cospolicyselector -c --name polSelJason --policy polSpecJason --polmode u --metatag filename --matchoper equals --metaval file.txt --onevent on_create -u t1admin -p 'password' -t t1 -i 10.32.165.126
-cospolicyselector -d --name polSelJason -u t1admin -p 'password' -t t1 -i 10.32.165.126
-rest_client.rb -f createobject -p <subtenantid>/u1 -k <key> -u <a local filename>
-./create_object -s 127.0.0.1 -p jason -u /root/install.log  -a jason=f,foo=w -g other=n -m part1=buy -b part4/part7/part8=quick  -k aQE/L+VQgFMezbyFfhyJgNOpfEs=
-
-cstadmin configure LocalDirectory MauiLocalDirectory -passphrase=#1Password FileName=/etc/maui/cst/auth_db.xml  PasswordDays=365 PasswordLength=4 MaxPasswordLength=10 SpecialCharsRequired=false  AlphaNumericRequired=false MixedCaseRequired=false NumPasswords=1
-
-cstadmin sign-file /etc/maui/cst/auth_db.xml -passphrase=#1Password
-
-logcopy --lclevel ALL --srchosts ALL --dstdir /root --dsthost 10.32.109.238 --dstuser root --dstpass ChangeMe
-
-svn pd svn:executable *
-svn propset svn:executable '' post_node_clear_rails_session_v1.3.1.py 
-svn proplist post_node_clear_rails_session_v1.3.1.py 
-
-valgrind --tool=memcheck --leak-check=full --show-reachable=yes --trace-children=yes --max-stackframe=3000000 --num-callers=50 -v --log-file=memleak.log cm -s /etc/maui/cm_sys.xml -c /etc/maui/cm_cfg.xml -g /var/local/maui/sysmgmtdb/ses_db -d &
-
-valgrind --tool=memcheck --leak-check=full --log-file=valgrind.log /usr/local/maui/bin/cm -s /etc/maui/cm_sys.xml -c /etc/maui/cm_cfg.xml -g /var/local/maui/sysmgmtdb/ses_db -d &
-
-cli_func_test.sh password ja1 password balanced 10.32.109.95
-cosclientaccess -c --nodeid EMC-001 --sharepath test1 --host * --io rw --squash all_squash --sync yes -u t1admin -p password -t t1
-cosclientaccess -l --nodeid EMC-001 -u admin -p password -t eBay
-cosclientaccess -m --nodeid EMC-001 --sharepath caihua --host 192.168.1.* --io rw --squash all_squash --sync yes -u admin -p password -t eBay
-cosclientaccess -d --nodeid EMC-001 --sharepath alend -u admin -p password -t eBay
-mauisvcmgr -s mauicm -c reload_tracer_cfg
-
-cosuser -c --userid Test111 --userpass password -u SecurityAdmin -p password --local -i 10.32.109.112
-cossysadmin -a --userid Test111 --authtype local -u SecurityAdmin -p password --local -i 10.32.109.112
-
-rpm -ivh atmos-cli-1.3.0-b39377.x86_64.rpm 
-rpm -qa atmos-cli
-rpm -e atmos-cli
-
-netconfig --eth0=192.168.11.12 --eth0_mask=255.255.255.0 --eth0_gw=192.168.11.2 --eth1=10.5.116.87 --eth1_mask=255.255.255.0 --eth1_gw=10.5.116.2
-mauimdlsutil -q -m '*'
-cat /proc/mounts  | grep mauimds |  cut -d ' ' -f2
-mauisvcmgr -s mauimds -c mauimds_getMdsSet
-mauirexec "cat /etc/maui/node.cfg | grep SS_Placement"
-mauisvcmgr -s mauicm -c mauicm_start_provision -a 'cmd=create_maui,user=MauiAdmin,seguuid=293e4386-507f-496a-b429-3d3ff9cf0730,siteuuid=8c6f4c96-3de5-4265-b248-679422b17ace'
-route add -host 10.32.165.132 gw 10.32.165.158
-netstat -natp |grep 5432 |grep SYN_RECV |cut -d':' -f 2 |sort
-netstat -natp |grep 5432 |grep ESTABLISHED | wc -l
-q "netstat -anp | grep :5432" | tee out.txt
-select  id, scope, scopename, call, input, status, retval, starttime from tasks where (status=2 or status=0 or status=1) and id < 1000 order by id;
-
-DB deadlock check:
-SELECT pg_class.relname, pg_locks.pid, pg_stat_activity.waiting, pg_stat_activity.current_query  from pg_class, pg_locks, pg_stat_activity where pg_class.relfilenode = pg_locks.relation and pg_locks.pid = pg_stat_activity.procpid order by pg_class.relname;
-
-vaccum full
-
-/usr/bin/pg_dump -U postgres -Ft -b system.db
-/usr/bin/pg_restore -U postgres -d <>
-
-diff -rupN original/ new/ > original.patch
-
-psql -U postgres -c "select * from pg_stat_activity"
-
-Cybercluster recover commands:
-rsync --server --sender -logDtprz . /srv/pgsql/8.2/data/pg_xlog
-rsync -a -r -z --delete -e ssh -o StrictHostKeyChecking=no auto3-130A-001:/srv/pgsql/8.2/data/pg_xlog /srv/pgsql/8.2/data
-
-vi /var/log/boot.log
-vi /var/log/secure
-vi /srv/pgsql/start.log
-
-find  -name "*" -type f -exec grep -Hn mauiconfig {} \;
-tar czvf JasonBash.tgz `la`
-find . -type d -name '.svn' -exec rm -rf {} \;
-find . -name "*.rhtml" -type f -exec grep Maui -Hn {} \;
-find . -exec grep -q "itf" '{}' \; -print | xargs sed -i 's/itf/production/g'
-
-# Find files which older than 5 minutes and delete
-find /path/to/files* -mtime +5 -exec rm {} \;
-
-develop your own grep example : (~/bin/greps)
-#!/bin/bash
-find . -type f \{ -name "*.c" -o -name "*.h"\} - print | xargs grep "$@"
-
-for i in `seq 1 100`; do cosuid -r --name uid$i tenid tenant2 -u tony2 -p 123456 -t tenant2; done
-
-while true; do ping -c 1 10.32.169.213; sleep 3; echo "wait for 30 seconds...."; done
-
-select nextval('test_id_seq');
-select currval('test_id_seq');
-select setval('test_id_seq', (select max(id) from test));
-echo "select setval('sites_id_seq', (select max(id) from sites));" | su - postgres -c "psql -d system.db"
-
-echo "select setval('sites_id_seq', (select max(id) from sites));" | su - postgres -c "psql -d system.db"
-
-netstat -anp |grep 'tcp\|udp' | awk '{print $5}' | cut -d: -f1 | sort | uniq -c | sort -n
-
-svn copy  https://tvg01.lss.emc.com/svn/maui/trunk  https://tvg01.lss.emc.com/svn/maui/branches/atmos-1.3-cybercluster -m "create branch for cybercluster bug fixing to improve management database stability"
-
-svn copy  https://tvg01.lss.emc.com/svn/maui/branches/atmos-1.2.0  https://tvg01.lss.emc.com/svn/maui/branches/atmos-1.2.5-gui -m "create branch from 1.2.0 (r37176) for gui 1.2.5 getwell projects."
-
-tcpdump -vXn -s 1500 port 80 -i lo
-
-strace -s200 -ftT -o log-t30 ./mauirexec.new  -e " mauisvcmgr -t 30 -s mauimds -c sync_pm" -n "RMG2-006" -l
-
-dmidecode -s system-product-name
-
-# Check AC power PDU current status
-omreport chassis pwrsupplies
-
-
-*** Debug REST API
-curl -v -k -D ./rcvHeaders.txt -d "" -H "x-atmos-tenantadmin:ta1" -H "x-atmos-tenantadminpassword:password" -H "x-atmos-authType:password" -H "x-atmos-uid:u1" -H "Accept:"  -H "User-Agent:" https://10.32.109.112:443/sysmgmt/tenants/t1/subtenants/t1/uids
-*** Debug POX API test
-login and create cookie for sysadmin
-# curl -d "auth_type=local&auth_addr=&username=MauiAdmin_pit&password=password" -k https://10.32.171.51:443/mgmt_login/verify -v -H "Accept:application/xml" -c sysadmin_cookie
-
-list tenant by sysadmin - need to specify cookied just generated.
-# curl -d "auth_type=local&auth_addr=&username=MauiAdmin_pit&password=password" -k https://10.32.171.51:443/maui_admin/list_tenant -v -H "Accept:application/xml" -b sysadmin_cookie
-
-assign node for NFS access - need cookie
-# curl -k https://10.32.171.51:443/maui_admin/submit_assign_tenant_node -v -H "Accept:application/xml" -b sysadmin_cookie -d "tenant_name=t1&nodes[auto-130A-004]=on&fs[auto-130A-004]=nfs"
-
-assign node for WS access - need cookie
-# curl -k https://10.32.171.51:443/maui_admin/submit_assign_tenant_node -v -H "Accept:application/xml" -b sysadmin_cookie -d "tenant_name=t1&nodes[auto-130A-004]=on&ws[auto-130A-004]=on"
-
-create cookie for tenantadmin
-# curl -d "tenant_name=t1&username=t1a&password=password" -k https://10.32.171.51:443/user/verify -v -H "Accept:application/xml" -c tenantadmin_cookie
-
-create nfs share under tenant t1 - need cookie
-# curl -k https://10.32.171.51:443/sub_tenant_admin/submit_add_node_nfs -v -H "Accept:application/xml" -b tenantadmin_cookie -d "node_uuid=50288D1B-47AE-77A6-875D-EAE4855F1F73&subtenant_name=t1&share_path=nfs_path&host=*&io=rw&squash=no_root_squash&sync=no&idmap=&secure=no&anonuid=&anongid=&squash_uids=&squash_gids=&sub_tenant_name=t1"
-
-*** Debug large scale installation
-
-cat /etc/hosts | grep 10.32 | sort | wc -l
-
-mauirexec "cat /etc/maui/provision " > prov_stat
-
-grep PRO prov_stat  -C 1
-
-mauirexec "grep LongString /var/log/maui/cm.log " > longstring_stat
-
-mauirexec "grep TaskUUIDList /var/log/maui/cm.log " > TaskUUIDList_stat
-
-*** MaaS login info from Sukwoo
-Jumpbox: 
-  - id: kangs5@bos01-cig02.emcatmos.com
-  - passwd: Steel4Celery66
-
-  - id: chenj15@bos01-cig02.emcatmos.com
-  - passwd: pass@word1
-
-Master node: 
-  - id: wangc14@172.16.16.80
-  - passwd: ChangeMe
-  - su - (passwd: Steel4Celery66)
-	
-*** Debug UID task creation failure
-
-psql -U postgres system.db
-
-system.db=# select uuid, call,  status, retval, succnum, failnum, totalnum from tasks where id> 10000 and call='synclb' order by id;
-                 uuid                 |  call  | status | retval | succnum | failnum | totalnum 
---------------------------------------+--------+--------+--------+---------+---------+----------
- 1f461446-d359-40d1-9bce-f9b725f0eb26 | synclb |      3 |      0 |       2 |       0 |        2
- 632e8325-ac11-467a-b9d0-b8fc51d10d3f | synclb |      3 |      0 |       2 |       0 |        2
- 83e0d18e-456a-452d-b145-5250aa388b29 | synclb |      3 |      1 |       1 |       1 |        2
-
-rmg.db=# select uuid, call,  status, retval, succnum, failnum, totalnum from tasks where parentuuid='83e0d18e-456a-452d-b145-5250aa388b29' order by id;
-                 uuid                 |  call  | status | retval | succnum | failnum | totalnum 
---------------------------------------+--------+--------+--------+---------+---------+----------
- 2b6d1db4-0358-4d2d-ba9a-985b2918576f | synclb |      3 |      0 |      43 |       0 |       43
-
-Go to 2nd RMG db
-
-[root@BOSTON-001 ~]# psql -U postgres rmg.db -h NYC-001
-
-rmg.db=# select uuid, call,  status, retval, succnum, failnum, totalnum from tasks where parentuuid='83e0d18e-456a-452d-b145-5250aa388b29' order by id;
-                 uuid                 |  call  | status | retval | succnum | failnum | totalnum 
---------------------------------------+--------+--------+--------+---------+---------+----------
- 934fb0aa-9712-44a9-9f7d-07902d719b49 | synclb |      3 |      1 |      43 |       1 |       44
-
-rmg.db=# select uuid, output,scopeuuid, call,  status, retval, succnum, failnum, totalnum from tasks where parentuuid='934fb0aa-9712-44a9-9f7d-07902d719b49' and retval!=0 order by id;
-                 uuid                 |                                                             output                                                             |              scopeuuid               |  call  | status | retval | succnum | failnum | totalnum 
---------------------------------------+--------------------------------------------------------------------------------------------------------------------------------+--------------------------------------+--------+--------+--------+---------+---------+----------
- 0c8b2fa7-00f5-481b-8456-f9343f54d52a | Add UID failed: 65280  19b98290a848440ab99cfd9f9a479ff3:19b98290a848440ab99cfd9f9a479ff3:UID6951  eyXXfdCtVzUz14j0qyqxNY9cb2E= | 44454C4C-4200-1050-8047-B3C04F5A4631 | synclb |      3 |      1 |       0 |       0 |        0
-                                      :                                                                                                                              
-rmg.db=# select hostname from nodes where uuid='44454C4C-4200-1050-8047-B3C04F5A4631';
-   hostname   
---------------
- R610-NYC-008
-(1 row)
-
-*** Debug IPMI related issues
-A snippet from the setup script that is part of the installation is below:
-
-   ipmitool lan set 1 ipsrc static
-   ipmitool lan set 1 ipaddr $IPADDR
-   ipmitool lan set 1 netmask $NETMASK
-   ipmitool lan set 1 defgw ipaddr $DEFGW
-   ipmitool lan set 1 access on
-   # UserID2 is defined by the standard as the privileged user, which appears as "root"
-   ipmitool user set password 2 $ROOTPW
-
-ipmictl -H 192.168.13.140 -U root -P passwd power_status
-ipmitool -H 192.168.17.11 -U root -P passwd power status
-
-ipmiscan -d  -e eth0:0 1234 interface eth0:0
-
-for i in `seq 1 10`; do ipmictl -H 192.168.13.141 power_status;ipmitool -H 192.168.13.141 -U root -P passwd power status;date;sleep 2; done
-
-Check ipmi mgmt controller status
-# ipmitool mc info
-
-# omreport system version Version Report
-
----------------------
-Main System Chassis
----------------------
-
-Name       : BIOS
-Version    : 1.3.6
-Updateable : N/A
-
-
-Name       : iDRAC6
-Version    : 1.30
-Updateable : N/A
-
-# ethtool -i eth1
-driver: bnx2
-version: 1.9.3
-firmware-version: 5.0.11 NCSI 2.0.5
-bus-info: 0000:01:00.1
-
-based on bug 9308, can you update NIC FW to 5.0.12 and try it again? thanks.
-
-        
-------- Comment  #94 From Matthew Sargeant
-
-Testing shows the 1.30 iDRAC firmware fixes the two original issues (node
-discovery and iDRAC becoming unresponsive).  The new issue of the iDRAC network
-becoming unresponsive after reboot has been determined to be caused by
-gratuitous arp messages on eth1 impacting the shared network interface to the
-iDRAC during startup.  Testing shows network controller firmware 5.0.12 fixes
-this issue.
-
-R610 based systems need to be updated to use main BIOS to 1.3.6, iDRAC firmware
-to 1.30, and the network controller firmware to 5.0.12.
-
-An ECO has been started by Fred Malpass to release this new firmware/BIOS.
-
-Until a dtk issue can be fixed, two ISOs need to be used to achieve the
-complete update:
-
-Main BIOS and iDRAC:
-http://opseroom01.corp.emc.com/eRoom/SPOmidrangesysdiv/SPOAppServers/0_16ef3d
-
-Network Controller:
-http://opseroom01.corp.emc.com/eRoom/SPOmidrangesysdiv/SPOAppServers/0_16ef3e
-
-*** Debug disk related issues
-
-Internal disk allocation check /var/log/message
-**** Get vdisk detail information by omreport
-# omreport storage vdisk
-List of Virtual Disks in the System
-
-Controller SAS 6/iR Integrated (Embedded)
-ID                  : 0
-Status              : Non-Critical
-Name                : Virtual Disk 0
-State               : Degraded
-Progress            : Not Applicable
-Layout              : RAID-1
-Size                : 231.90 GB (248999051264 bytes)
-Device Name         : /dev/sda
-Type                : SATA
-Read Policy         : No Read Ahead
-Write Policy        : Write Through
-Cache Policy        : Not Applicable
-Stripe Element Size : Not Applicable
-Disk Cache Policy   : Enabled
-
-[root@RMGLAB5-001 maui]# omreport system alertlog |less
-Alert Log
-
-Alert Log contains...
-
-Severity      : Ok
-ID            : 2065
-Date and Time : Fri Sep  3 18:58:57 2010
-Category      : Storage Service
-Description   : Physical disk Rebuild started:  Physical Disk 0:0:0 Controller
-0, Connector 0
-
-Severity      : Ok
-ID            : 2330
-Date and Time : Fri Sep  3 18:58:55 2010
-Category      : Storage Service
-Description   : SAS port report: SAS wide port 0 restored link on PHY 0.: 
-Controller 0 (SAS 6/iR Integrated)
-
-Severity      : Ok
-ID            : 2052
-Date and Time : Fri Sep  3 18:58:55 2010
-Category      : Storage Service
-Description   : Physical disk inserted:  Physical Disk 0:0:0 Controller 0,
-Connector 0
-
-Severity      : Non-Critical
-ID            : 2049
-Date and Time : Fri Sep  3 18:58:52 2010
-Category      : Storage Service
-Description   : Physical disk removed:  Physical Disk 0:0:0 Controller 0,
-Connector 0
-
-Severity      : Non-Critical
-ID            : 2329
-Date and Time : Fri Sep  3 18:58:51 2010
-Category      : Storage Service
-Description   : SAS port report: SAS wide port 0 lost link on PHY 0.: 
-Controller 0 (SAS 6/iR Integrated)
-
-Severity      : Non-Critical
-ID            : 2123
-Date and Time : Fri Sep  3 18:58:51 2010
-Category      : Storage Service
-Description   : Redundancy lost:  Virtual Disk 0 (Virtual Disk 0) Controller 0
-(SAS 6/iR Integrated)
-
-Severity      : Non-Critical
-ID            : 2057
-Date and Time : Fri Sep  3 18:58:51 2010
-Category      : Storage Service
-Description   : Virtual disk degraded:  Virtual Disk 0 (Virtual Disk 0)
-Controller 0 (SAS 6/iR Integrated)
-**** Rescan SCSI disk drive after adding a new virtual disk 
-# echo "- - -" > /sys/class/scsi_host/host0/scan
-
-**** Check which process is using the disk
-# fuser -m /dev/sdb1
-
-*** Debug channel bonding issues
-
-Karthik fix SKT channel bonding issue steps: <2011-02-19 16:52>
-
-# mauisvcmgr –s mauimds –c triggercheckpoint
-# service mauimds stop
-# mauictl stop
-# atmosnetmgr add bond nics=eht1,eth2 mode=1 millmon=100
-# dmesg | grep “eth.*PCI”
-# grep HWADDR /etc/sysconfig/network-scripts/ifcfg-eth[0-3]
-# cat /proc/net/bonding/bond0
-# python modify_bonding_cfg.py
-# scp /tmp/check_bond.py
-# mauictl start
-# mauisvcmgr –s mauimds –c mauimds_isNodeInitialized
-# mauisvcmgr –s mauimds –c mauimds_ismaster
-
-** Authsrv failover collection
-
-Bug 14700.
-
-And yes, both automatic and manual failover only pickup a random available authsrv for the new master. If we want to failover to a specific one we need to use the steps below. 
-1. change master authsrv in db Command: mauimasterauthsrvdb –s <new_master_hostname> 
-2. config the new master authsrv Command: mauiauthutil –c master -l <new_master_hostname> <new_master_hostname> 
-3. notify each slave authsrv which the new master is. Command: mauiauthutil –c slave -l <new_master_hostname> <slave_master_hostname> Note: this command needs to be executed for all the available slave authsrv. For the unavailable authsrvs, they will change its status automatically during startup. 
-
-AND before we failover authsrv manually, we need to check the data of each authsrv to make sure the data is consistent. Here is the command, please execute it on each authsrv node and compare the result. ldapsearch -D cn=Admin,ou=maui,ou=tvg,dc=emc,dc=com -H ldap://$HOSTNAME:10389 -x -w 'atm0s2w0rld!' -b ou=people,ou=maui,ou=tvg,dc=emc,dc=com -LLL | grep dn 
-
-** Policy distribution debugging
-*** Peer1 policy troubleshooting
-
-One subtenant - SubTenant406 has wrong default policy
-
-Check policyinfo data in the database to find out the batch ID and detail batch content
-# select content, batch_id from policyinfos where subtenant_uuid = '360f5f0428384cd8a004b7c92b611f53'; 
-Check batch distribution status
-Check MDS dump DB info
-# db_dump -p /mauimds-db/mds-1f7d263c-1502-4e5c-b945-5c8011fbde86/master/PmDb.bdbxml  > /tmp/policy.db
-
-first find subtenant ID to get policy desc ID
- 523db420cf024e768db58bb7f2b67aa6:360f5f0428384cd8a004b7c92b611f53\00
- \82\9a\01\1d
-
-find key \\82\\9a
-
-*** Whole CLI work flow
-Experience on debugging bug #13416.
-
-When execute CLI, e.g. cospolicyselector, by default it will use sync mode and default timeout value in CLI is 300s. 
-
-# cospolicyselector -c --name 600_update_test2 --policy 600 --polmode u --metatag DataPolicy --matchoper equals --metaval 600 --onevent on_umd_update  -u mbova -p password -t WS -i 10.6.145.50
-
-1. GUI controller trigger CM to do distribute policy
-2. CM will have a global manager to sync policy with local manager to all nodes
-3. GUI create syncpm task to query policy sync status and notify MDS if policy distribution finished
-4. There have several retry inside syncpm logic
-   1. wait for distribution status by check global and local batch status in batchdecs table, here will continue retry, timeout value is 300s
-   2. if distribute succeeds, it notifies all nodes MDS to reload policy by call "mauisvcmgr -t 60 -s mauimds -c sync_pm,mauisvcmgr -t 60 -s mauimds -c sync_hn", here will retry 3 times. max timeout value is 2 * 3 * 60 = 360s
-
-** PIT, mauits, netinstall setup notes
-*** New PIT framework usage
-# ssh cheny7@10.32.180.27
-
-# cd /opt/pit-framework/
-
-# bin/pit.sh -c conf/testbeds/maap/cheny7-174.1-100.conf --image /share/pub/MauiImages/atmos-auto-1.3.0.44603-x86_64-disc1.iso -i cheny7
-
-------------------------------- spliter -------------------------------
-
-destroy upgrade large scale testbed and start new installtion large scale testbed 
-1. make below change in new pit framework code. 
-cheny7@Kaylin ~/pit-framework$ svn diff lib/maap/libmaap.sh
-Index: lib/maap/libmaap.sh
-===================================================================
---- lib/maap/libmaap.sh	(revision 46652)
-+++ lib/maap/libmaap.sh	(working copy)
-@@ -1333,7 +1333,7 @@
-         host_vm_destroy $node_name || return 1
-     }
- 
--    __maap_create_vm $rmg $seg $node || return 1
-+    #__maap_create_vm $rmg $seg $node || return 1
-     return 0
- }
- 
-@@ -1760,7 +1760,9 @@
-         # Sleep for a while before (re)boot next slave so that the IP addresses
-         # are assgined in order, the last node in this SEG does not need to wait
-         #
--        ((node < node_count)) && util_wait 10s
-+        # FIXME: increase power on slave from 10s to 1 minute
-+        # ORIGINAL: ((node < node_count)) && util_wait 10s
-+        ((node < node_count)) && util_wait 60s
-         log_message "Slave node '$node_name' ($node_ip) (re)booted," \
-             "it should boot from NIC #1 (eth0) automatically"
-     done
-
-2. bin/pit.sh -c conf/testbeds/maap/cheny7-upgrade-174.11-90.conf --image /share/pub/MauiImages/atmos-auto-1.3.0.48080-x86_64-disc1.iso os
-3. bin/pit.sh -c conf/testbeds/maap/cheny7-upgrade-174.91-150.conf --image /share/pub/MauiImages/atmos-auto-1.3.0.48080-x86_64-disc1.iso os
-4. revert back change of __maap_create_vm to enable create vm os
-5. bin/pit.sh -c conf/testbeds/maap/cheny7-174.11-202.conf --image /share/pub/MauiImages/atmos-auto-1.3.0.48080-x86_64-disc1.iso
-
-*** netinstall setup in RHEL5
-1. install DHCP, get rpm from RHEL ISO
-# wget http://10.32.72.28/share/pub/OSimages/RHEL5.2-x64/extracted/Server/dhcp-3.0.5-13.el5.x86_64.rpm
-# rpm -ivh dhcp-3.0.5-13.el5.x86_64.rpm
-
-2. configure DHCP - add below to /etc/dhcpd.conf
-      1 #
-      2 # DHCP Server Configuration file.
-      3 #   see /usr/share/doc/dhcp*/dhcpd.conf.sample
-      4 #
-      5 ddns-update-style interim;
-      6 subnet 10.32.171.0 netmask 255.255.255.0 {
-      7         range 10.32.171.3 10.32.171.255;
-      8         default-lease-time 3600;
-      9         max-lease-time 4800;
-     10         option routers 10.32.180.1;
-     11         option domain-name-servers 10.32.97.148;
-     12         option subnet-mask 255.255.255.0;
-     13         filename "pxelinux.0";
-     14         next-server 10.32.171.181;
-     15 }       
-3. install tftp, xinetd rpm package from ISO
-# wget http://10.32.72.28/share/pub/OSimages/RHEL5.2-x64/extracted/Server/tftp-server-0.42-3.1.x86_64.rpm 
-# wget http://10.32.72.28/share/pub/OSimages/RHEL5.2-x64/extracted/Server/xinetd-2.3.14-10.el5.x86_64.rpm
- 
-4. configure tftp
-modify /etc/xinetd.d/tftp and change _disable_ to *no*
-
-5. copy pxelinux.0
-cp /usr/lib/syslinux/pxelinux.0 /tftpboot
-
-6. make sure httpd service is running, if not installed, get rpm and install
-# wget http://10.32.72.28/share/pub/OSimages/RHEL5.2-x64/extracted/Server/httpd-2.2.3-11.el5_1.3.x86_64.rpm
-
-7. follow netinstall step in [[https://tvg01.lss.emc.com/mediawiki/index.php/Netinstall#Installation_Guide][wiki page]]
-   svn co https://tvg01.lss.emc.com/svn/mauitools/trunk/QA/CAT-Project/CAT-code/netinstall
-   cd netinstall
-   su                                  # Need root permission
-   ./install.sh                        # Run without argument to see usage
-   ./install.sh netinstall             # Install to "netinstall" under web root
-
-8. modify netinstall configuration file
-# cd /var/www/html/netinstall/
-# vi index-defs.php
-  change pxe_subnets, maap_iso_dirs, cap_iso_dirs and rhel_iso_dirs.
-
-9. test netinstall in debug mode
-   - netinstall debug message:
-------------------------------- spliter -------------------------------
-DEBUG: tftpboot_root: /tftpboot
-DEBUG: install_tag: atmos-dev-21__00-22-19-b1-03-26
-DEBUG: ks_cfg: /var/www/html/netinstall/data/atmos-dev-21__00-22-19-b1-03-26/ks.cfg
-DEBUG: pxe_cfg: /tftpboot/pxelinux.cfg/01-00-22-19-b1-03-26
-DEBUG: pxe_cfg_upper: /tftpboot/pxelinux.cfg/01-00-22-19-B1-03-26
-DEBUG: boot_label: atmos-dev-21__00-22-19-b1-03-26
-DEBUG: pxe_bootdir_abs: /tftpboot/netinstall/atmos-dev-21__00-22-19-b1-03-26
-DEBUG: pxe_bootdir: /netinstall/atmos-dev-21__00-22-19-b1-03-26
-DEBUG: image_path: /iso/,mnt,nfs45,iso_tools,adk-1.3.1.0-x86_64-disc1.iso/isolinux
-DEBUG: dest_vmlinuz: /tftpboot/netinstall/atmos-dev-21__00-22-19-b1-03-26/vmlinuz
-DEBUG: dest_initrd: /tftpboot/netinstall/atmos-dev-21__00-22-19-b1-03-26/initrd.img
-[1] vmlinuz copied from /iso/,mnt,nfs45,iso_tools,adk-1.3.1.0-x86_64-disc1.iso/isolinux/vmlinuz to/tftpboot/netinstall/atmos-dev-21__00-22-19-b1-03-26/vmlinuz
-
-[2] initrd.img copied from /iso/,mnt,nfs45,iso_tools,adk-1.3.1.0-x86_64-disc1.iso/isolinux/initrd.img to /tftpboot/netinstall/atmos-dev-21__00-22-19-b1-03-26/initrd.img
-
-DEBUG: content of /var/www/html/netinstall/data/atmos-dev-21__00-22-19-b1-03-26/ks.cfg:
-# Kickstart file generated by netinstall
-
-install
-text
-lang en_US.UTF-8
-keyboard us
-timezone America/New_York
-skipx
-network --device eth0 --onboot yes --hostname atmos-dev-21 --bootproto static --ip 10.32.171.21 --netmask 255.255.255.0 --gateway 10.32.171.1 --nameserver 10.32.97.148
-url --url http://10.32.171.181/iso/,mnt,nfs45,iso_tools,adk-1.3.1.0-x86_64-disc1.iso
-rootpw "ChangeMe"
-firewall --disabled
-selinux --disabled
-authconfig --enableshadow --enablemd5
-bootloader --location=mbr --append quiet
-clearpart --all --initlabel
-part /boot --fstype ext3 --size=100 --ondisk=sda --asprimary
-part swap --size=1024 --ondisk=sda --asprimary
-part / --fstype ext3 --size=512 --grow --ondisk=sda --asprimary
-reboot
-
-%packages
-@everything
-
-%post
-[3] Kickstart config written to /var/www/html/netinstall/data/atmos-dev-21__00-22-19-b1-03-26/ks.cfg
-
-DEBUG: content of /tftpboot/pxelinux.cfg/01-00-22-19-b1-03-26:
-default atmos-dev-21__00-22-19-b1-03-26
-label atmos-dev-21__00-22-19-b1-03-26
-    kernel /netinstall/atmos-dev-21__00-22-19-b1-03-26/vmlinuz
-    append loglevel=debug nokill ks=http://10.32.171.181/netinstall/data/atmos-dev-21__00-22-19-b1-03-26/ks.cfg initrd=/netinstall/atmos-dev-21__00-22-19-b1-03-26/initrd.img devfs=nomount ramdisk_size=16384 ksdevice=00:22:19:b1:03:26
-[4] pxelinux config written to /tftpboot/pxelinux.cfg/01-00-22-19-b1-03-26
-
-DEBUG: content of /tftpboot/pxelinux.cfg/01-00-22-19-B1-03-26:
-default atmos-dev-21__00-22-19-b1-03-26
-label atmos-dev-21__00-22-19-b1-03-26
-    kernel /netinstall/atmos-dev-21__00-22-19-b1-03-26/vmlinuz
-    append loglevel=debug nokill ks=http://10.32.171.181/netinstall/data/atmos-dev-21__00-22-19-b1-03-26/ks.cfg initrd=/netinstall/atmos-dev-21__00-22-19-b1-03-26/initrd.img devfs=nomount ramdisk_size=16384 ksdevice=00:22:19:b1:03:26
-[5] Pxelinux config written to /tftpboot/pxelinux.cfg/01-00-22-19-B1-03-26
-
-[6] Now power on your machine and boot from network
-
-Succeed.
-------------------------------- spliter -------------------------------
-
-*** Preparation setup - by Yue:
-1) Prepare pit config file or even pit extend config file. 
-2) Created an account for PIT: pit:password
-3) Checked out the latest PIT script from <https://tvg01/svn/mauitools/trunk/QA/pit> to /home/pit/pit.jason
-4) Checked out the latest trunk mauits script from <https://tvg01/svn/mauitools/trunk/QA/mauits> to /home/pit/mauits
-5) Following the instruction in mauits/README, checked out the latest TET ware to /home/pit/tet_src and installed TET in /home/pit/tet
-6) Export TET_ROOT=/home/pit/tet and update pit user’s .bashrc file.
-7) Configure PIT to use the mauits in /home/pit/mauits
-
-*** Setup PIT environment on ESX server -- no DHCP server deployment in public network
-1) Prepare a VM (RHEL 5.0 VM node) which will be used as PIT bridge - with only one public NIC interface
-2) Covert this VM to template
-3) If deployed DHCP on public network, at this time just prepare ready for pit configuration file, than run PIT command to start auto-deployment
-4) If no DHCP deployed, deploy a bridge VM for target ESX server. 
-   - Add additionial internal NIC card based on the RMG number and pit configuration on the $PRIVATE_SWITCH. 
-   - Power on the bridge VM and configure a static public IP address for eth0
-   - Then start run PIT command.   
-
-*** Start running PIT and mauits after settled down:
-1. Run pit
-   - Go to pit src directory
-   - ./runpit.sh -i DB-test -c ../pit.conf.jason -t -b atmos-mgmtdb-1.3.0.33865-x86_64-disc1.iso
-2. Run mauits
-   - ./runpit.sh -i DB-test -c ../pit.conf.jason -t --tasklist "testing"
-3. Create snapshot
-   - ./createsnapshot.ksh 10.32.109.36 cheny7 password snapshot_name ../hostlist-171.33
-4. Revert snapshot
-   + ./revertsnapshot.ksh 10.32.109.36 cheny7 password snapshot_name ../hostlist-171.33
-
-- Tip for skip precheck process
-# ./runpit.sh -i DB-test -c ../pit.conf.jason -t --tasklist "install install_ext config_rmg1 config_rmg2 config_ext post_install config_client testing"
-
-# /home/pit/pit.jason/runpit.sh -i auto-mgmt-1.3.0.34358-1 -c pit_171.34.conf.jason -b atmos-mgmtdb-1.3.0.34453-x86_64-disc1.iso -t  --tasklist "testing"
-
-Verify result: see email which mauits has sent out.
-
-*** Set up large scale testbed - NEW
-# ssh cheny7@10.32.180.27
-
-# cd /opt/pit-framework/
-
-# bin/pit.sh -c conf/testbeds/maap/cheny7-174.11-202.conf --image /share/pub/MauiImages/atmos-1.3.1/atmos-auto-1.3.1.50016-x86_64-disc1.iso -i cheny7 os product
-
-*** Set up large scale testbed for mgmt DB test - OLD
-------------------------------- spliter -------------------------------
-DONT USE THIS WAY. It's for old PIT.
-------------------------------- spliter -------------------------------
-
-1. ssh cheny7@10.32.109.95 password
-2. Go to pit directory
-3. Prepare configuration files
-4. Manually add bridge proxy which is created based on RHEL template. Configure eth0 public IP address and add internal network which is the same as RMG's eth0. We need to manual configure public IP since we don't have a DHCP server on public network.
-5. Install first two RMGs
-   - ./runpit.sh -i RMG1-RMG2 -c ../large-scale.jason/RMG1-169.5-RMG2-171.35 -t
-6. Prepare new segment configuration file
-7. Add second segment in first RMG
-   - ./addis.sh -i RMG1-IS2 -c ../large-scale.jason/RMG2-IS1-169.6 -t
-8. Prepare hostlist for create snapshot. hostlist contains all nodes hostname
-9. Create snapshot after add segment
-   - ./createsnapshot.ksh 10.32.109.36 cheny7 password RMG1-IS2-ready ../hostlist-RMG1-IS2
-10. Repeat step 4,5,6,7 and continue installation until finished.
-
-If failed at some step during add segment, first revert to previous good shape snapshot, and then continue add more segments.
-   - ./revertsnapshot.ksh 10.32.109.36 cheny7 password RMG1-IS2-ready ../hostlist-RMG1-IS
-
-*** Full cycle 1.3 testing on hulk - 169.209 ~ 169.216
-========= NEW PIT ==============
-1. ssh cheny7@10.32.180.27 (password)
-2. find out one install image on /share/pub/MauiImages
-3. run command: 
-   bin/pit.sh -c conf/testbeds/maap/cheny7-169.209-216.conf --image /share/pub/MauiImages/atmos-1.3.1/atmos-auto-1.3.1.49512-x86_64-disc1.iso -i cheny7
-
-==========OLD ways for PIT =================
-1. ssh cheny7@10.32.169.18 (password)
-2. cd pit-hulk/
-3. ./startpit jason_full_130_44138 209.cfg
-4. Check log until pit finished
-
-===========mauits ==================
-Running full cycle testing:
-   1) login to 10.32.180.27 (cheny7)
-   2) go to /home/cheny7/mauits and mauits config are located in /home/cheny7/mauits/config, e.g. config/1.3full_209_44138.cfg
-   3) bin/configure.ksh -F config/1.3full_209_44138.cfg
-   4) bin/run.ksh -F config/1.3full_209_44138.cfg all
-
-*** VC manage
-host: 10.32.109.36
-admin/password
-
-*** TC agent setup
-only have start service part, not include package installation part
-
-login as e2eauto
-
-cd ~/teamcity
-
-export PATH=/home/e2eauto/teamcity/Java/jdk1.6.0_14/bin:$PATH
-
-cd TC_Agent/
-
-vim conf/buildAgent.properties (update serverUrl as TC server, name of this build agent which has been identified in TC server)
-
-bin/agent.sh start
-
-*** Troubleshooting
-
-**** master node cannot boot from ISO
-Currently PIT need to copy ISO image from remote nfs/ftp to local storage by using scp, sometimes scp copy image may fail with unknown reason(network?). 
-To solve this issue, try with another iso image. Or first delete this image from local storage and reboot ESX server.
-
-**** DONE send mail fail -- Need to check with IT
-	 CLOSED: [2009-06-22 Mon 15:50]
-Configure a meaningful host name and add to /etc/hosts. 
-Configure DNS server and search suffix.
-Start sendmail service.
-Do nothing but all right after the weekend.
-
-Testing command:
-/usr/sbin/sendmail -O NoRecipientAction=add-to -F PIT_NoReply@emc.com chen_jason@emc.com <<MAIL
-< test
-< MAIL
-
-Jun 19 16:56:55 frost sendmail[4323]: n5J8utX9004323: from=root, size=7, class=0, nrcpts=1, msgid=<200906190856.n5J8utX9004323@frost.lss.emc.com>, relay=root@localhost
-Jun 19 16:56:56 frost sendmail[4324]: n5J8ut0b004324: from=<root@frost.lss.emc.com>, size=334, class=0, nrcpts=1, msgid=<200906190856.n5J8utX9004323@frost.lss.emc.com>, proto=ESMTP, daemon=MTA, relay=localhost.localdomain [127.0.0.1]
-Jun 19 16:56:56 frost sendmail[4323]: n5J8utX9004323: to=chen_jason@emc.com, ctladdr=root (0/0), delay=00:00:01, xdelay=00:00:01, mailer=relay, pri=30007, relay=[127.0.0.1] [127.0.0.1], dsn=2.0.0, stat=Sent (n5J8ut0b004324 Message accepted for delivery)
-Jun 19 16:56:58 frost sendmail[4327]: n5J8ut0b004324: to=<chen_jason@emc.com>, ctladdr=<root@frost.lss.emc.com> (0/0), delay=00:00:03, xdelay=00:00:02, mailer=esmtp, pri=120334, relay=mailhub.lss.emc.com. [10.254.3.30], dsn=2.0.0, stat=Sent (n5J92Lq6025236 Message accepted for delivery)
-
-Jun 20 00:25:43 localhost sendmail[5272]: n5JGPh1t005272: from=root, size=7, class=0, nrcpts=1, msgid=<200906191625.n5JGPh1t005272@jason.lss.emc.com>, relay=root@localhost
-Jun 20 00:25:43 localhost sendmail[5273]: n5JGPheb005273: from=<root@jason.lss.emc.com>, size=334, class=0, nrcpts=1, msgid=<200906191625.n5JGPh1t005272@jason.lss.emc.com>, proto=ESMTP, daemon=MTA, relay=localhost.localdomain [127.0.0.1]
-Jun 20 00:25:43 localhost sendmail[5272]: n5JGPh1t005272: to=chen_jason@emc.com, ctladdr=root (0/0), delay=00:00:00, xdelay=00:00:00, mailer=relay, pri=30007, relay=[127.0.0.1] [127.0.0.1], dsn=2.0.0, stat=Sent (n5JGPheb005273 Message accepted for delivery)
-Jun 20 00:25:45 localhost sendmail[5275]: n5JGPheb005273: to=<chen_jason@emc.com>, delay=00:00:02, xdelay=00:00:02, mailer=esmtp, pri=120334, relay=mailhub.lss.emc.com. [10.254.3.30], dsn=2.0.0, stat=Sent (n5J8xnu6021224 Message accepted for delivery)
-**** Another send mail issue resolved by Matt
-The server failed to send out PIT email.
-
-Type "mail" as user e2eauto to see the returned email.
-Final-Recipient: RFC822; wang_matthew@emc.com
-Action: failed
-Status: 5.1.8
-Remote-MTA: DNS; mailhub.lss.emc.com
-Diagnostic-Code: SMTP; 553 5.1.8 <wang_matthew@emc.com>... Domain of sender addr
-ess e2eauto@localhost.localdomain does not exist
-Last-Attempt-Date: Wed, 3 Mar 2010 18:47:19 +0800
-
-Already fixed with following solution:
-1.	Set a real hostname: hostname lion
-2.	Add a line to /etc/hosts: 10.32.171.186    ion.lss.emc.com lion
-Please archive this email in case you met this again on new agent.
-
-Matt
-
-**** Why PIT need to disable ping for slave when do hulk installation?
-Because postgresql will check its peer. disable ping will make master think there has no slave on line. Then slave will be restarted by ssh commands and then PXE installation.
-
-** Project lesson learn 											   :WORK:
-*** Plan
-**** Checklist
-1. 
-
-**** Reminder
-1. Don't over commit.
-2. Detail the scope and consider plan/design/develop/test/verify even buffer time.
-
-*** Design
-**** Checklist
-
-*** Development
-**** Checklist
-
-*** Test
-**** Checklist
-
-*** Quality improvement
-Learn from PSP (Personal Software Process)
-- The PSP phase structure includes two review phases:
-    * Design Review
-    * Code Review
-To do an effective review, you need to follow a structured review process. The PSP recommends using *checklists* to help developers to consistently follow an orderly procedure.
-
-- PSP strong focus on *root-cause analysis* of an individual’s software defects and overruns, and on developing personal checklists and practices to avoid future recurrence, has significantly reduced personal defect rates.
-
-*** Customer support 
-**** Get things better understand and prioritize what should be solve first
-**** Find easy way and simple step to solve the problem or provide the workaround
-
-*** Code review
-Tools: coderev by matt, reviewboard, viewvc
-
-Common Checklist:
-1. Proper code comment for functions and code block
-2. Enough meaningful logs with proper log level
-3. Sigh name on new file
-
-Atmos Checklist:
-1. Impact package installation, (will tool need to impact /exports/makefile/)
-2. Impact installation (master, slave, add RMG/segment)
-3. Impact CM protocal changes
-4. Impact upgrade changes (db schema, data migration)
-** Best practice
-*** Bugzilla comments and update
-When you update a bug in bugzilla, you need to always check what's most useful and necessary information should be updated.
-1. Bug troubleshooting process 
-2. Bug root cause
-3. Fix plan in which release 
-4. If no fix plan in this release, whether need to add into release notes? Release notes should include:
-   * Symptom - This bug would cause what problem
-   * Workaround - What workaround should be do to fix this issue. This could be a manually process.
-
-Code commit and verify:
-1. When commit the code, make sure first update the repository first to avoid confliction
-2. The build should be first clean, then rebuild the whole directory
-*** [[https://tvg01.lss.emc.com/mediawiki/index.php/Bugzilla_UDK_List][Bugzilla UDK]] (user defined keywords)
-- Investigating
-- Underfixing
-- Underreviewing
-- GUI
-- CLI
-- Large_Scale
-** Conary related commands
-Atmos devkit upgrade (version 1.4.1)
-# sudo conary migrate group-adk=adk.cap.emc.com@emc:adk-1.4-devel --interactive 
-
-** Free discussion
-*** Why too many tasks?
-1. Lots of features - from customer
-2. Across feature and across components
-3. Parallel releases
-4. Continuous requirement changes
-5. CM redesign, all components redesign
-6. Less experienced people
-7. Unclear requirement, dependency of different requirements
-
-Suggestion:
-1. Assign task by feature to reduce switch
-2. Divide people into feature/release
-3. If too many new hires, need to change process for the management, like code review...
 
 ** Atmos 1.2.7 cycle [3/3]											:ARCHIVE:
 *** DONE Setup MaaS similar testbed and try to reproduce random subtenant creation issues
@@ -4539,6 +4955,8 @@ This will go against with CORP policy
    CLOSED: [2009-07-13 Mon 21:
 * Technical
 ** Emacs tips														  :EMACS:
+*** Archive topics
+C-c C-x a
 *** emacs中的自动换行
 # 不嫌烦的，每次M-x toggle-truncate-lines切换换行与不换行
 # 一劳永逸的，M-x customize-option，输入truncate-partial-width-windows，将出来的设置页面中的参数改为off，然后保存(Save for future sessions)
@@ -4661,6 +5079,35 @@ delete first character
 replace string in file
 # sed -i s/STRING1/STRING2 $file (-i will make the change)
 
+*** Check history command and time
+
+# export HISTTIMEFORMAT='%F %T '
+# history | more
+1  2008-08-05 19:02:39 service network restart
+2  2008-08-05 19:02:39 exit
+3  2008-08-05 19:02:39 id
+4  2008-08-05 19:02:39 cat /etc/redhat-release
+
+注意：这个功能只能用在当 HISTTIMEFORMAT 这个环境变量被设置之后，之后的那些新执行的 bash 命令才会被打上正确的时间戳。在此之前的所有命令，都将会显示成设置 HISTTIMEFORMAT 变量的时间。
+
+使用 HISTSIZE 控制历史命令记录的总行数
+
+将下面两行内容追加到 .bash_profile 文件并重新登录 bash shell，命令历史的记录数将变成 450 条：
+
+
+# vi ~/.bash_profile
+HISTSIZE=450
+HISTFILESIZE=450
+
+*** umount -f issue
+> Actually, before "umount", we tried to stop mauiss but failed, the 
+> process hang there and can't be killed. Gdb can't attach to that 
+> process to see what happened, also the file system can't be umounted 
+> without "lazy". As for the case, we have suggested to reboot the node.
+
+This is perfectly normal when a process is in I/O. It cannot be killed or interrupted. The lazy umount didn't actually dismount the filesystem. What it does is it removes it from the general mount-space, but leaves the reference count positive and only does the actual dismount once the reference count hits zero, which will only happen when the processes close open handles to the filesystem, which (in this case) cannot happen without the I/O completing or failing. There are actually no good use cases for lazy umounts in the product as it stands.
+
+
 *** Good debugging tools
 **** blktrace
 blktrace is a block layer IO tracing mechanism which provides detailed information about request queue operations up to user space. it is like a micro level iostat which can tell exactly which application send what kind of io. the io offset, timestamp 
@@ -4691,7 +5138,7 @@ http://www.gnu.org/software/screen/
 A good screen guide:
   http://en.gentoo-wiki.com/wiki/Screen
 
-screen rc from Matt...
+screen rc from Matt Wang...
 
 # screen -c <rcfile>
 # sessionname mauits
@@ -4708,6 +5155,80 @@ screen -t run 0
 #screen -t x55 3 ssh -i .ssh/mauits.sshkey -l root 10.32.73.55
 #screen -t x56 4 ssh -i .ssh/mauits.sshkey -l root 10.32.73.56
 #screen -t mauits 5
+
+***** Screen wiki page from Matt Geddes
+== Overview ==
+
+Given the distributed nature of the customer base and many groups within CIG at EMC, it's often advantageous to have multiple people logged into a customer (or other) node from two different geographic locations and see the same terminal session. There are a few ways to do this, but this article will concentrate on using the common GNU utility 'screen'.
+
+One common alternative is to use graphical tools, such as desktop sharing, but this has its drawbacks -- consider the case where an two people, one east-coast and one west-coast, are debugging a system in Europe using ESRS. The terminal output is sent over the ESRS tunnel to one support person, who is then sharing out their desktop, so everything is converted to pixels and pushed back over the other side of the country to the other support person. Rather painful. Instead, using screen, much less network traffic is involved and it's sent more directly to each person involved.
+
+== Getting screen ==
+
+If the system being debugged is a Sumatra development machine (running SLES), chances are that it already has screen installed.
+
+In the case of existing Atmos systems running rPath, I maintain a binary of the screen executable that is suitable. It can be found on my NFS home directory (accessible from TVG and build machines) here:
+
+  ~geddem/atmos-bin/screen
+
+== Starting a multi-user session ==
+
+The driver of the session should start a named screen session using a command such as this:
+
+  screen -L -S disk -h 500
+
+Where:
+-L turns on logging to ./screenlog.0. This is useful for then allowing the session log to be recorded for later
+-S disk names the session 'disk'
+-h 500 says to maintain the last 500 lines of terminal history for scrollback
+
+To then allow other users to connect to the session, the session driver should hit Ctrl-A and type:
+
+  :multiuser on
+
+Passengers to the session can now connect by running screen thusly:
+
+  screen -x disk
+
+The same logging or history options may also be added if desired. The passengers should now be able to see the session.
+
+== Notes ==
+
+Whilst I've used the terms 'driver' and 'passenger', it's actually possible for *any* of the parties to control the session. Something to keep in mind.
+
+== Screen operation ==
+
+=== Detaching ===
+
+To detach from a screen instance, but still leave it running, you can hit Ctrl-A and then type 'd'. Note that *all* users may detach from the screen instance and the instance will still remain running in the background. This is useful if running long-running jobs. Bug #17275 has an example -- screen was used to collect the output of the SOL console for a node over a period of weeks. Even if the webex or ESRS session was closed, the screen session was still running in the background. See the Reattaching section below for how to reattach to the screen instance.
+
+=== Listing screen sessions ===
+
+The -list option to screen will have it show a list of screen instances currently running. Eg:
+
+  screen -list
+
+=== Reattaching ===
+
+Simple run screen with the -x option (in the case of multiuser sessions) and the screen name. If the screen session is not multiuser at the moment, use the -r option. Ie:
+
+  screen -r disk
+
+or
+
+  screen -x disk
+
+=== Terminating ===
+
+To close a screen session for *all* users connected, simply terminate the process started by screen. In most cases, this will be the shell and simply typing Ctrl-D should suffice.
+
+=== Scrolling back ===
+
+Screen maintains its own history buffer. To enter scrollback (or copy mode), hit Ctrl-A and <esc>. The PageUp and PageDown keys can now be used to scroll back and forward in the history buffer.
+
+== External useful links ==
+http://en.gentoo-wiki.com/wiki/Screen
+
 
 *** Generate core dump in daemon service
 Add below line in service init script.
@@ -4982,7 +5503,7 @@ rxvt -sr -sl 2500 -sb -geometry 90x30 -tn rxvt -fn "Consolas-20" -e bash --login
 *** [[http://www.parascale.com/index.Php/solutions/overview][ParaScale Cloud Storage]]
 *** [[http://www.seanodes.com][Seanodes的Shared Internal Storage]]
 *** [[http://www.zetta.net][Zetta的Enterprise Cloud Storage On Demand]]
-** COLU architecture
+** COLU architecture												:ARCHIVE:
 Upgrade process: (From management station client to trigger)
 1. Get catalog
 2. Download package
@@ -5011,7 +5532,7 @@ Find my passion in everyday life!
 第二种状态叫“耗”，这时，员工工作处于一种缺少新鲜感和热情的状态，每天都是前一天的重复，每天都在做不想做，但不得不做的事，对环境不满意，对上级不满意，对下属不满意，对大部分与工作相关的事，都提不起精神，每天盼望的，是下班的铃声。工作如同鸡肋，食之无味，弃之可惜。
 第三种状态叫“绝望”，员工对工作的绝望。对与工作相关的一切，厌烦透了。连日常的工作也不想去做了。员工对提升绝望，对提薪绝望，对未来绝望。唯一想做的事，就是尽快离开。这时候，上级对员工也同样陷入了绝望状态。
 
-** Year 2010
+** Year 2010														:ARCHIVE:
 *** Daily plan
 坚持！
 <2010-01-01 17:50>
@@ -5111,6 +5632,17 @@ Qualifications
 - Initiative
 - Analyse existing work environment and alway find out improvement areas
 
+
+** English
+*** Out of office
+To Whom It May Concern,
+
+I'm on a business trip from 4/17 to 4/24. I still have email access, but please expect a delay in my response time. 
+For all sustaining project related questions or requests, please contact Rulian Fiske or Yi Chen. For  any additional or urgent matters, please contact my manager Yubo Zhao or reach out to me at +82-10-6884-2453, thank you.
+
+Best Regards, 
+Jason
+
 ** English words
 
 |----------------+----------------------------|
@@ -5193,6 +5725,9 @@ Qualifications
 | resilient      | 有弹力的                   |
 | rejuvenate     | 使恢复活力                 |
 | caveats        | 警告, 告诫                 |
+| ambivalent     | 矛盾的                     |
+| tsunami        | 海啸                       |
+| Chronicle      | 编年史                     |
 |                |                            |
 
 ** Reading
@@ -5688,6 +6223,14 @@ build a good first impression and give professional background and knowledge.
 
 dont treat yourself as a junior learning, but as a more senior professional. try to leverage other resource and stand in big giant's shoulder!
 
+**** 1:1 learn <2011-9-28>
+- Build team culture is most important. learn from senior people on the subtle changes, watch and learn from others.
+- Manager most work is to promote and get benefit for the employees.
+
+**** 1:1 learn <2011-10-11>
+- try to find out some 闪光点 for CS/L3/L4 local communication and initiative
+- give mgmt team visibility on the local L3/L4 team collaboration points
+- need to start from some small actions that we can raise to show our China team value
 
 **** 1on1 topics
 
@@ -5831,7 +6374,6 @@ About management style
 **** mentoring lunch 2011-01
 
 
- 
 *** From Eric Riedel
 **** 1on1 discussion - 2011/2/21
 
@@ -5884,6 +6426,13 @@ We are not going to fix it, there is a field procedure to fix this. We don't nee
 
 Encourage you to think about creative solution even it's not write not amount of code, like service procedure, etc. 
 
+*** From Tao Bo
+MNC Culture
+• Don’t ask me questions; give me the answers instead!
+• Know your stuff
+• Let others know that you know your stuff!
+– Presentation
+– Communication
 
 *** From Yubo
 **** 1. how to motivate people? 
@@ -6216,6 +6765,66 @@ DoubanDB的底层存储用的是TokyoCabinet，是一个很轻量级、高效的Key-Value数据库。我�
 
 *** “创业教父”马云:CEO的本事就是会用别人的脑袋 
 http://business.sohu.com/20100108/n269457870.shtml
+
+*** 个人职业发展，真诚讨论求建议，谢谢
+
+http://www.newsmth.net/nForum/article/WorkLife/5573288?p=7
+
+说实话我觉得你的心态挺不好的 
+你们研发总监要是这么小肚鸡肠 
+我看你不如走人算了 
+八成还是你想得太多了 
+你待了多久 
+干出了什么成绩 
+为公司赚了多少钱 
+就开始觉得研发总监防着你了，呵呵 
+你的同事不是在跟你竞争 
+跟你竞争的是全国甚至全球的同行 
+你的同事是帮助你赢得跟同行竞争的人 
+除非你的眼界就卡死在现在的单位里了 
+
+毕竟还是社会经验工作经验比较欠缺嘛 
+不算很不正常 
+路是走出来的，不是想出来的 
+大公司，小公司，高校，政府 
+没有绝对的优劣 
+只有是不是适合自己的情况 
+家里没钱需要经济支持，论文也不是很擅长，就到公司去 
+想专著某一方面的事情，就大公司 
+想全方面的历练，也许有一天能自己搞点什么，靠谱的小公司也无妨 
+能发paper暂时不缺钱的，高校 
+能忽悠搞政治的，政府 
+其实抉择没有看上去那么艰难 
+无非是两个问题， 
+你适合做什么 
+你现在最需要的是什么 
+
+第170楼
+ 哪有你说的这么轻松。在体制外工业界，就得时刻作好找下一份工作的准备。不过时间久 
+了其实也无所谓了，工作肯定是能找到的，好点坏点的区别而已。
+
+第185楼
+是 
+体制外就得ready for next job 
+但是如云博所说 
+时间久了就习惯了 
+另外，在圈子里做人比较宽，做事不错的话 
+形成一个口碑 
+就算失去了一个工作 
+也会有人请你去下一个工作 
+虽然终究还是不稳定，因为不一定会呆在一个城市一个地方 
+但也不至于真的失业居家西北风了 
+毕竟好歹天朝这么大，认真读到博士又能做事的人还是少数 
+体制内的稳定也是双刃剑 
+虽然老夫在本版是体制内祥林嫂 
+但是认真地讲 
+如果一个人会成为你的上司十几年 
+除非这个人很好，否则你跟他的地位很难对等 
+企业里，因为都是生意，你也可以走，我也可以走 
+没有人离不开的公司，也没有公司离不开的人 
+大家反而容易互相尊重一点 
+气性强，个性强的人，不适合去体制内 
+
 ** !!!Five minutes!!!
 *** <2010-04-09 22:34>
 Today during my lunch session with Stephen, he gave me many very suggestion. here is summary
@@ -6748,8 +7357,33 @@ Powered by MediaWiki
 伴影月下成双影，蜜蜜话语甜在心。
 月圆伴偶茗清茶，思思中秋月上行。
 
+*** Out of Office reply template:
+
+I am currently on vacation and will back to office on July 11th. I still have email access, but please expect a delay in my response time.
+
+For L4 escalation or sustaining project related questions or requests, please contact Yi Chen.
+
+For any additional or urgent matters, please contact my manager Yubo Zhao or reach out to me at +86-159-0040-0616. Thank you.
+
+Best regards, 
+Jason
+
+
+I will be on a business trip from Aug 15 to Sep 9. There will be a delay in responding to email, but I will respond as soon as possible. For any urgent matters, please call my cellphone: +86-136-2182-5715.
+
+Best regards, 
+Jason
+
+I am out of office from Oct 1st to Oct 7th with limited email accesss. For any urgent matters, please call my cellphone: +86-136-2182-5715.
+
+Best regards, 
+Jason
+
+
 * Wisdom 															  :THINK:
 ** Good Words
+管理就是把复杂的问题简单化，把混乱的事情规范化！-From Jack Welch.
+
 If you dream it, you can DO it! - from Sukwoo. :-)
 
 通过规划利用好现有的能力远比挖掘所谓的潜能更重要。
